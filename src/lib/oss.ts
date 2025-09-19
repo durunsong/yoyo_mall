@@ -178,8 +178,8 @@ export async function uploadFile(
 ): Promise<UploadResult> {
   try {
     const client = getOSSClient();
-    let {
-      file,
+    let { file } = options;
+    const {
       originalName,
       mimeType,
       folder,
@@ -291,7 +291,7 @@ export async function fileExists(key: string): Promise<boolean> {
     const client = getOSSClient();
     await client.head(key);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

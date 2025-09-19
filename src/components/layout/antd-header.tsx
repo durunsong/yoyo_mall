@@ -57,30 +57,30 @@ const languageItems: MenuProps['items'] = [
   { key: 'ko-KR', label: '🇰🇷 한국어' },
 ];
 
-// 用户菜单
-const userMenuItems: MenuProps['items'] = [
-  {
-    key: 'profile',
-    label: '个人中心',
-    icon: <UserOutlined />,
-  },
-  {
-    key: 'orders',
-    label: '我的订单',
-    icon: <ShoppingCartOutlined />,
-  },
-  {
-    key: 'wishlist',
-    label: '我的收藏',
-    icon: <HeartOutlined />,
-  },
-  { type: 'divider' },
-  {
-    key: 'logout',
-    label: '退出登录',
-    icon: <LogoutOutlined />,
-  },
-];
+// 用户菜单 (暂时未使用，保留供后续开发)
+// const userMenuItems: MenuProps['items'] = [
+//   {
+//     key: 'profile',
+//     label: '个人中心',
+//     icon: <UserOutlined />,
+//   },
+//   {
+//     key: 'orders',
+//     label: '我的订单',
+//     icon: <ShoppingCartOutlined />,
+//   },
+//   {
+//     key: 'wishlist',
+//     label: '我的收藏',
+//     icon: <HeartOutlined />,
+//   },
+//   { type: 'divider' },
+//   {
+//     key: 'logout',
+//     label: '退出登录',
+//     icon: <LogoutOutlined />,
+//   },
+// ];
 
 export function AntdHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -142,31 +142,31 @@ export function AntdHeader() {
     window.location.href = newPath;
   };
 
-  // 处理用户菜单点击
-  const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
-    console.log('用户菜单:', key);
-
-    switch (key) {
-      case 'profile':
-        // 跳转到个人中心
-        router.push('/profile');
-        break;
-      case 'orders':
-        // 跳转到我的订单
-        router.push('/profile?tab=orders');
-        break;
-      case 'wishlist':
-        // 跳转到我的收藏
-        router.push('/profile?tab=wishlist');
-        break;
-      case 'logout':
-        // 处理登出
-        handleLogout();
-        break;
-      default:
-        break;
-    }
-  };
+  // 处理用户菜单点击 (暂时未使用)
+  // const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
+  //   console.log('用户菜单:', key);
+  //
+  //   switch (key) {
+  //     case 'profile':
+  //       // 跳转到个人中心
+  //       router.push('/profile');
+  //       break;
+  //     case 'orders':
+  //       // 跳转到我的订单
+  //       router.push('/profile?tab=orders');
+  //       break;
+  //     case 'wishlist':
+  //       // 跳转到我的收藏
+  //       router.push('/profile?tab=wishlist');
+  //       break;
+  //     case 'logout':
+  //       // 处理登出
+  //       handleLogout();
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
 
   // 处理登出
   const handleLogout = () => {

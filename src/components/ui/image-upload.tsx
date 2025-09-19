@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   Upload,
   Button,
@@ -28,9 +28,7 @@ import {
   LoadingOutlined,
   FileImageOutlined,
 } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
-
-const { Text, Title } = Typography;
+const { Text } = Typography;
 const { Dragger } = Upload;
 
 // 上传结果类型
@@ -81,9 +79,9 @@ export function ImageUpload({
   className,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
-    {},
-  );
+  // const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+  //   {},
+  // ); // 暂时未使用
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');

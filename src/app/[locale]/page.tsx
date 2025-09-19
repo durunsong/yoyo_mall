@@ -20,7 +20,6 @@ import {
 
 export default function HomePage() {
   const t = useTranslations('home');
-  const common = useTranslations('common');
   return (
     <div className="min-h-screen">
       {/* Hero Section */}

@@ -13,7 +13,6 @@ import {
   Input,
   Button,
   Checkbox,
-  Space,
   Divider,
   Typography,
   message,
@@ -26,7 +25,6 @@ import {
   PhoneOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
-  GoogleOutlined,
 } from '@ant-design/icons';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -122,7 +120,7 @@ export function AuthModal({
       await new Promise(resolve => setTimeout(resolve, 1000));
       message.success('登录成功！');
       onClose();
-    } catch (error) {
+    } catch {
       message.error('登录失败，请检查邮箱和密码');
     } finally {
       setLoginLoading(false);
@@ -138,7 +136,7 @@ export function AuthModal({
       await new Promise(resolve => setTimeout(resolve, 1000));
       message.success('注册成功！请查看邮箱验证邮件');
       onClose();
-    } catch (error) {
+    } catch {
       message.error('注册失败，请稍后重试');
     } finally {
       setRegisterLoading(false);
@@ -158,8 +156,8 @@ export function AuthModal({
       // });
       message.success('谷歌登录成功！');
       onClose();
-    } catch (error) {
-      console.error('谷歌登录失败:', error);
+    } catch (err: any) {
+      console.error('谷歌登录失败:', err);
       message.error('谷歌登录失败');
     } finally {
       setGoogleLoading(false);

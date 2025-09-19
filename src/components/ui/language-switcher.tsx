@@ -30,7 +30,7 @@ export function LanguageSwitcher({
   className,
 }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
+  // const router = useRouter(); // 暂时未使用
   const pathname = usePathname();
   const { currentLocale, setLocale } = useLocaleStorage();
 

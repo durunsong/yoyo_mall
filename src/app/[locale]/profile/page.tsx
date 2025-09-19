@@ -14,7 +14,6 @@ import {
   Form,
   Input,
   Select,
-  DatePicker,
   Upload,
   Tabs,
   Table,
@@ -25,7 +24,6 @@ import {
   Space,
   Divider,
   List,
-  Rate,
   Progress,
   Statistic,
   message,
@@ -39,12 +37,8 @@ import {
   ShoppingOutlined,
   HeartOutlined,
   GiftOutlined,
-  CreditCardOutlined,
   SecurityScanOutlined,
-  BellOutlined,
   EnvironmentOutlined,
-  StarOutlined,
-  TrophyOutlined,
   WalletOutlined,
 } from '@ant-design/icons';
 import type { UploadProps, TabsProps } from 'antd';
@@ -120,7 +114,7 @@ const mockAddresses = [
 ];
 
 export default function ProfilePage() {
-  const t = useTranslations('profile');
+  // const t = useTranslations('profile'); // 暂时未使用
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
@@ -141,7 +135,7 @@ export default function ProfilePage() {
       console.log('保存用户信息:', values);
       message.success('个人信息保存成功');
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       message.error('保存失败，请重试');
     }
   };

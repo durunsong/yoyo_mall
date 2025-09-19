@@ -3,7 +3,7 @@
  * 使用next-intl进行多语言支持
  */
 
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation'; // 暂时未使用
 import { getRequestConfig } from 'next-intl/server';
 
 // 支持的语言列表

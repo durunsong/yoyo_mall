@@ -29,7 +29,6 @@ import {
 } from 'antd';
 import {
   PlusOutlined,
-  SearchOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
@@ -328,7 +327,7 @@ export default function ProductsAntdPage() {
 
       setModalVisible(false);
       form.resetFields();
-    } catch (error) {
+    } catch {
       message.error('保存失败');
     } finally {
       setLoading(false);

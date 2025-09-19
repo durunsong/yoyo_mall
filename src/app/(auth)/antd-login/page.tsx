@@ -49,7 +49,7 @@ export default function AntdLoginPage() {
       // TODO: 实现登录逻辑
       await new Promise(resolve => setTimeout(resolve, 1000)); // 模拟API调用
       message.success('登录成功！');
-    } catch (error) {
+    } catch {
       message.error('登录失败，请检查您的邮箱和密码');
     } finally {
       setLoading(false);

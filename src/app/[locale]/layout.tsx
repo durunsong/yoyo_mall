@@ -14,7 +14,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
 
   // 获取国际化消息
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <NextIntlClientProvider messages={messages}>

@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 
 export function useLocaleStorage() {
-  const params = useParams();
+  // const params = useParams(); // 暂时未使用
   const pathname = usePathname();
 
   // 从路由中检测当前语言
