@@ -116,9 +116,15 @@ importers:
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
+      use-debounce:
+        specifier: ^10.0.6
+        version: 10.0.6(react@19.1.0)
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
+      web-vitals:
+        specifier: ^5.1.0
+        version: 5.1.0
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -198,6 +204,9 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
+      webpack-bundle-analyzer:
+        specifier: ^4.10.2
+        version: 4.10.2
 
 packages:
 
@@ -4705,6 +4714,12 @@ packages:
       proxy-agent:
         optional: true
 
+  use-debounce@10.0.6:
+    resolution: {integrity: sha512-C5OtPyhAZgVoteO9heXMTdW7v/IbFI+8bSVKYCJrSmiWWCLsbUxiBSp4t9v0hNBTGY97bT72ydDIDyGSFWfwXg==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: '*'
+
   use-intl@3.26.5:
     resolution: {integrity: sha512-OdsJnC/znPvHCHLQH/duvQNXnP1w0hPfS+tkSi3mAbfjYBGh4JnyfdwkQBfIVf7t8gs9eSX/CntxUMvtKdG2MQ==}
     peerDependencies:
@@ -4736,12 +4751,20 @@ packages:
   walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
 
+  web-vitals@5.1.0:
+    resolution: {integrity: sha512-ArI3kx5jI0atlTtmV0fWU3fjpLmq/nD3Zr1iFFlJLaqa5wLBkUSzINwBPySCX/8jRyjlmy1Volw1kz1g9XE4Jg==}
+
   webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
 
   webpack-bundle-analyzer@4.10.1:
     resolution: {integrity: sha512-s3P7pgexgT/HTUSYgxJyn28A+99mmLq4HsJepMPzu0R8ImJc52QNqaFYW1Z2z2uIb1/J3eYgaAWVpaC+v/1aAQ==}
+    engines: {node: '>= 10.13.0'}
+    hasBin: true
+
+  webpack-bundle-analyzer@4.10.2:
+    resolution: {integrity: sha512-vJptkMm9pk5si4Bv922ZbKLV8UTT4zib4FPgXMhgzUny0bfDDkLXAVQs3ly3fS4/TN9ROFtb0NFrm04UXFE/Vw==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
 
@@ -10322,6 +10345,10 @@ snapshots:
     optionalDependencies:
       proxy-agent: 6.5.0
 
+  use-debounce@10.0.6(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+
   use-intl@3.26.5(react@19.1.0):
     dependencies:
       '@formatjs/fast-memoize': 2.2.7
@@ -10356,6 +10383,8 @@ snapshots:
     dependencies:
       makeerror: 1.0.12
 
+  web-vitals@5.1.0: {}
+
   webidl-conversions@7.0.0: {}
 
   webpack-bundle-analyzer@4.10.1:
@@ -10369,6 +10398,24 @@ snapshots:
       gzip-size: 6.0.0
       html-escaper: 2.0.2
       is-plain-object: 5.0.0
+      opener: 1.5.2
+      picocolors: 1.1.1
+      sirv: 2.0.4
+      ws: 7.5.10
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  webpack-bundle-analyzer@4.10.2:
+    dependencies:
+      '@discoveryjs/json-ext': 0.5.7
+      acorn: 8.15.0
+      acorn-walk: 8.3.4
+      commander: 7.2.0
+      debounce: 1.2.1
+      escape-string-regexp: 4.0.0
+      gzip-size: 6.0.0
+      html-escaper: 2.0.2
       opener: 1.5.2
       picocolors: 1.1.1
       sirv: 2.0.4

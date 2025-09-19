@@ -1,281 +1,348 @@
 /**
  * 商品列表页面
- * 前台商品展示页面 - 支持国际化
+ * 展示所有商品，支持搜索、筛选和分页
  */
 
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Search,
-  Filter,
-  Grid3X3,
-  List,
-  Star,
-  Heart,
-  ShoppingCart,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { 
+  Row, 
+  Col, 
+  Card, 
+  Input, 
+  Select, 
+  Slider, 
+  Button, 
+  Pagination, 
+  Spin, 
+  Empty, 
+  Space,
+  Typography,
+  Breadcrumb,
+  Divider
+} from 'antd';
+import { 
+  SearchOutlined, 
+  FilterOutlined, 
+  ClearOutlined,
+  AppstoreOutlined,
+  BarsOutlined,
+  HomeOutlined
+} from '@ant-design/icons';
+import { useProducts, type ProductQuery } from '@/hooks/use-products';
+import ProductCard from '@/components/products/product-card';
+
+const { Option } = Select;
+const { Title, Text } = Typography;
+
+// 排序选项
+const SORT_OPTIONS = [
+  { value: 'createdAt:desc', label: '最新上架' },
+  { value: 'price:asc', label: '价格从低到高' },
+  { value: 'price:desc', label: '价格从高到低' },
+  { value: 'name:asc', label: '名称A-Z' },
+  { value: 'name:desc', label: '名称Z-A' },
+];
+
+// 每页商品数选项
+const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
 export default function ProductsPage() {
-  const t = useTranslations('products');
-  const common = useTranslations('common');
-  // 模拟商品数据
-  const products = [
-    {
-      id: '1',
-      name: 'iPhone 15 Pro',
-      price: 999.0,
-      originalPrice: 1099.0,
-      image: '/placeholder-product.jpg',
-      rating: 4.8,
-      reviews: 256,
-      inStock: true,
-    },
-    {
-      id: '2',
-      name: 'MacBook Air M3',
-      price: 1199.0,
-      originalPrice: null,
-      image: '/placeholder-product.jpg',
-      rating: 4.9,
-      reviews: 189,
-      inStock: true,
-    },
-    {
-      id: '3',
-      name: 'AirPods Pro',
-      price: 249.0,
-      originalPrice: 279.0,
-      image: '/placeholder-product.jpg',
-      rating: 4.7,
-      reviews: 432,
-      inStock: false,
-    },
-    {
-      id: '4',
-      name: 'iPad Air',
-      price: 599.0,
-      originalPrice: null,
-      image: '/placeholder-product.jpg',
-      rating: 4.6,
-      reviews: 123,
-      inStock: true,
-    },
-    {
-      id: '5',
-      name: 'Apple Watch Series 9',
-      price: 399.0,
-      originalPrice: 429.0,
-      image: '/placeholder-product.jpg',
-      rating: 4.8,
-      reviews: 298,
-      inStock: true,
-    },
-    {
-      id: '6',
-      name: 'Mac mini M3',
-      price: 799.0,
-      originalPrice: null,
-      image: '/placeholder-product.jpg',
-      rating: 4.5,
-      reviews: 87,
-      inStock: true,
-    },
-  ];
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  // 从URL参数初始化查询条件
+  const [query, setQuery] = useState<ProductQuery>(() => ({
+    page: Number(searchParams.get('page')) || 1,
+    limit: Number(searchParams.get('limit')) || 24,
+    search: searchParams.get('search') || '',
+    category: searchParams.get('category') || '',
+    sortBy: (searchParams.get('sortBy') as any) || 'createdAt',
+    sortOrder: (searchParams.get('sortOrder') as any) || 'desc',
+    minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+    maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+  }));
 
-  const categories = [
-    { key: 'all', label: t('categories.all') },
-    { key: 'mobile', label: t('categories.mobile') },
-    { key: 'computer', label: t('categories.computer') },
-    { key: 'appliances', label: t('categories.appliances') },
-    { key: 'clothing', label: t('categories.clothing') },
-    { key: 'home', label: t('categories.home') },
-  ];
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [tempSearch, setTempSearch] = useState(query.search || '');
+
+  const { products, pagination, loading, error, refetch } = useProducts(query);
+
+  // 更新URL参数
+  const updateURL = (newQuery: ProductQuery) => {
+    const params = new URLSearchParams();
+    
+    Object.entries(newQuery).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value));
+      }
+    });
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  // 处理查询参数变化
+  const handleQueryChange = (updates: Partial<ProductQuery>) => {
+    const newQuery = { ...query, ...updates, page: 1 }; // 重置到第一页
+    setQuery(newQuery);
+    updateURL(newQuery);
+  };
+
+  // 处理页码变化
+  const handlePageChange = (page: number) => {
+    const newQuery = { ...query, page };
+    setQuery(newQuery);
+    updateURL(newQuery);
+  };
+
+  // 处理搜索
+  const handleSearch = () => {
+    handleQueryChange({ search: tempSearch });
+  };
+
+  // 处理排序变化
+  const handleSortChange = (value: string) => {
+    const [sortBy, sortOrder] = value.split(':');
+    handleQueryChange({ sortBy: sortBy as any, sortOrder: sortOrder as any });
+  };
+
+  // 处理价格范围变化
+  const handlePriceRangeChange = (value: [number, number]) => {
+    setPriceRange(value);
+    handleQueryChange({ 
+      minPrice: value[0] > 0 ? value[0] : undefined,
+      maxPrice: value[1] < 1000 ? value[1] : undefined 
+    });
+  };
+
+  // 清除筛选条件
+  const clearFilters = () => {
+    setTempSearch('');
+    setPriceRange([0, 1000]);
+    const newQuery: ProductQuery = {
+      page: 1,
+      limit: query.limit,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    };
+    setQuery(newQuery);
+    updateURL(newQuery);
+  };
+
+  // 监听URL参数变化
+  useEffect(() => {
+    const urlQuery: ProductQuery = {
+      page: Number(searchParams.get('page')) || 1,
+      limit: Number(searchParams.get('limit')) || 24,
+      search: searchParams.get('search') || '',
+      category: searchParams.get('category') || '',
+      sortBy: (searchParams.get('sortBy') as any) || 'createdAt',
+      sortOrder: (searchParams.get('sortOrder') as any) || 'desc',
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+    };
+    
+    setQuery(urlQuery);
+    setTempSearch(urlQuery.search || '');
+    
+    if (urlQuery.minPrice || urlQuery.maxPrice) {
+      setPriceRange([urlQuery.minPrice || 0, urlQuery.maxPrice || 1000]);
+    }
+  }, [searchParams]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
+      {/* 面包屑导航 */}
+      <Breadcrumb className="mb-4">
+        <Breadcrumb.Item>
+          <Link href="/">
+            <HomeOutlined /> 首页
+          </Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>商品列表</Breadcrumb.Item>
+        {query.category && (
+          <Breadcrumb.Item>{query.category}</Breadcrumb.Item>
+        )}
+      </Breadcrumb>
+
       {/* 页面标题 */}
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">{t('title')}</h1>
-        <p className="text-gray-600">{t('description')}</p>
+      <div className="mb-6">
+        <Title level={2}>商品列表</Title>
+        {pagination && (
+          <Text type="secondary">
+            共找到 {pagination.total} 件商品
+          </Text>
+        )}
       </div>
 
-      {/* 搜索和筛选 */}
-      <div className="mb-8">
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
-              <Input
-                placeholder={t('searchPlaceholder')}
-                className="h-12 pl-10"
+      <Row gutter={24}>
+        {/* 筛选侧边栏 */}
+        <Col xs={24} md={6} className="mb-6">
+          <Card title="筛选条件" size="small">
+            <Space direction="vertical" className="w-full">
+              {/* 搜索 */}
+              <div>
+                <Text strong className="block mb-2">搜索</Text>
+                <Input.Search
+                  placeholder="搜索商品..."
+                  value={tempSearch}
+                  onChange={(e) => setTempSearch(e.target.value)}
+                  onSearch={handleSearch}
+                  onPressEnter={handleSearch}
+                />
+              </div>
+
+              <Divider />
+
+              {/* 价格范围 */}
+              <div>
+                <Text strong className="block mb-2">价格范围</Text>
+                <Slider
+                  range
+                  min={0}
+                  max={1000}
+                  value={priceRange}
+                  onChange={setPriceRange}
+                  onAfterChange={handlePriceRangeChange}
+                  tooltip={{
+                    formatter: (value) => `$${value}`
+                  }}
+                />
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>${priceRange[0]}</span>
+                  <span>${priceRange[1]}</span>
+                </div>
+              </div>
+
+              <Divider />
+
+              {/* 清除筛选 */}
+              <Button 
+                icon={<ClearOutlined />} 
+                onClick={clearFilters}
+                className="w-full"
+              >
+                清除筛选
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+
+        {/* 商品列表 */}
+        <Col xs={24} md={18}>
+          {/* 工具栏 */}
+          <Card className="mb-4" size="small">
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Space>
+                  <Text>排序：</Text>
+                  <Select
+                    value={`${query.sortBy}:${query.sortOrder}`}
+                    onChange={handleSortChange}
+                    style={{ width: 160 }}
+                  >
+                    {SORT_OPTIONS.map(option => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+
+                  <Text>每页：</Text>
+                  <Select
+                    value={query.limit}
+                    onChange={(value) => handleQueryChange({ limit: value })}
+                    style={{ width: 80 }}
+                  >
+                    {PAGE_SIZE_OPTIONS.map(size => (
+                      <Option key={size} value={size}>{size}</Option>
+                    ))}
+                  </Select>
+                </Space>
+              </Col>
+
+              <Col>
+                <Button.Group>
+                  <Button
+                    type={viewMode === 'grid' ? 'primary' : 'default'}
+                    icon={<AppstoreOutlined />}
+                    onClick={() => setViewMode('grid')}
+                  />
+                  <Button
+                    type={viewMode === 'list' ? 'primary' : 'default'}
+                    icon={<BarsOutlined />}
+                    onClick={() => setViewMode('list')}
+                  />
+                </Button.Group>
+              </Col>
+            </Row>
+          </Card>
+
+          {/* 商品网格 */}
+          {loading ? (
+            <div className="text-center py-20">
+              <Spin size="large" tip="加载中..." />
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <Empty
+                description={
+                  <span>
+                    {error}
+                    <br />
+                    <Button type="primary" onClick={() => refetch()}>
+                      重试
+                    </Button>
+                  </span>
+                }
               />
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              {common('filter')}
-            </Button>
-            <Button variant="outline" size="icon">
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon">
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-8 lg:flex-row">
-        {/* 侧边栏分类 */}
-        <div className="flex-shrink-0 lg:w-64">
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="mb-4 font-semibold">商品分类</h3>
-              <div className="space-y-2">
-                {categories.map(category => (
-                  <button
-                    key={category.key}
-                    className="block w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-gray-100"
+          ) : products.length === 0 ? (
+            <Empty
+              description="没有找到商品"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <>
+              <Row gutter={[16, 16]}>
+                {products.map((product) => (
+                  <Col
+                    key={product.id}
+                    xs={viewMode === 'grid' ? 12 : 24}
+                    sm={viewMode === 'grid' ? 8 : 24}
+                    md={viewMode === 'grid' ? 8 : 24}
+                    lg={viewMode === 'grid' ? 6 : 24}
                   >
-                    {category.label}
-                  </button>
+                    <ProductCard product={product} />
+                  </Col>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+              </Row>
 
-          {/* 价格筛选 */}
-          <Card className="mt-4">
-            <CardContent className="p-4">
-              <h3 className="mb-4 font-semibold">{t('priceRange')}</h3>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input placeholder={t('minPrice')} />
-                  <Input placeholder={t('maxPrice')} />
+              {/* 分页 */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="mt-8 text-center">
+                  <Pagination
+                    current={pagination.page}
+                    total={pagination.total}
+                    pageSize={pagination.limit}
+                    onChange={handlePageChange}
+                    showSizeChanger={false}
+                    showQuickJumper
+                    showTotal={(total, range) =>
+                      `${range[0]}-${range[1]} 共 ${total} 件商品`
+                    }
+                  />
                 </div>
-                <Button className="w-full" variant="outline">
-                  {t('apply')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 商品网格 */}
-        <div className="flex-1">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-gray-600">
-              {t('totalProducts', { count: products.length })}
-            </p>
-            <select className="rounded-md border px-3 py-2">
-              <option>{t('sortBy.default')}</option>
-              <option>{t('sortBy.priceLowToHigh')}</option>
-              <option>{t('sortBy.priceHighToLow')}</option>
-              <option>{t('sortBy.ratingHighest')}</option>
-              <option>{t('sortBy.newest')}</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map(product => (
-              <Card
-                key={product.id}
-                className="group transition-shadow hover:shadow-lg"
-              >
-                <CardContent className="p-0">
-                  {/* 商品图片 */}
-                  <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-300">
-                        <span className="text-xs text-gray-500">商品图片</span>
-                      </div>
-                    </div>
-                    {!product.inStock && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <span className="font-medium text-white">
-                          {t('outOfStock')}
-                        </span>
-                      </div>
-                    )}
-                    {product.originalPrice && (
-                      <div className="absolute top-2 left-2 rounded bg-red-500 px-2 py-1 text-xs text-white">
-                        {t('sale')}
-                      </div>
-                    )}
-                    <button className="absolute top-2 right-2 rounded-full bg-white p-2 opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-                      <Heart className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* 商品信息 */}
-                  <div className="p-4">
-                    <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900">
-                      {product.name}
-                    </h3>
-
-                    {/* 评分 */}
-                    <div className="mb-2 flex items-center">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < Math.floor(product.rating)
-                                ? 'fill-current text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="ml-1 text-sm text-gray-600">
-                        {product.rating} ({product.reviews})
-                      </span>
-                    </div>
-
-                    {/* 价格 */}
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-lg font-bold text-blue-600">
-                          ${product.price}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-sm text-gray-500 line-through">
-                            ${product.originalPrice}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 操作按钮 */}
-                    <Button className="w-full" disabled={!product.inStock}>
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      {product.inStock ? t('addToCart') : t('outOfStock')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 分页 */}
-          <div className="mt-8 flex items-center justify-center">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" disabled>
-                上一页
-              </Button>
-              <Button variant="outline">1</Button>
-              <Button variant="outline">2</Button>
-              <Button variant="outline">3</Button>
-              <Button variant="outline">下一页</Button>
-            </div>
-          </div>
-        </div>
-      </div>
+              )}
+            </>
+          )}
+        </Col>
+      </Row>
     </div>
   );
 }

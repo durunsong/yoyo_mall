@@ -35,9 +35,11 @@ import { AuthModal } from '@/components/auth/auth-modal';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useLocaleStorage } from '@/hooks/use-locale-storage';
 import { useRouter } from 'next/navigation';
+import ShoppingCartBadge from './shopping-cart-badge';
+import ProductSearch from '@/components/products/product-search';
 
 const { Header } = Layout;
-const { Search } = Input;
+// const { Search } = Input; // 不再需要，使用自定义搜索组件
 const { Text } = Typography;
 
 // 导航菜单配置
@@ -89,11 +91,7 @@ export function AntdHeader() {
   const { isOpen, defaultTab, openModal, closeModal } = useAuthModal();
   const { setLocale } = useLocaleStorage();
 
-  // 处理搜索
-  const handleSearch = (value: string) => {
-    console.log('搜索:', value);
-    // TODO: 实现搜索逻辑
-  };
+  // 移除handleSearch，现在使用ProductSearch组件
 
   // 处理语言切换
   const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
@@ -235,13 +233,7 @@ export function AntdHeader() {
 
             {/* 搜索框 - 桌面端 */}
             <div className="mx-8 hidden max-w-md flex-1 lg:block">
-              <Search
-                placeholder="搜索商品..."
-                allowClear
-                enterButton={<SearchOutlined />}
-                size="large"
-                onSearch={handleSearch}
-              />
+              <ProductSearch placeholder="搜索商品..." />
             </div>
 
             {/* 右侧操作按钮 */}
@@ -270,15 +262,7 @@ export function AntdHeader() {
               </Badge>
 
               {/* 购物车 */}
-              <Badge count={0} showZero={false}>
-                <Button
-                  type="text"
-                  icon={<ShoppingCartOutlined />}
-                  onClick={() => {
-                    // TODO: 打开购物车
-                  }}
-                />
-              </Badge>
+              <ShoppingCartBadge />
 
               {/* 用户菜单 */}
               <Button type="text" onClick={() => openModal('login')}>
@@ -310,12 +294,7 @@ export function AntdHeader() {
       >
         <div className="space-y-4">
           {/* 搜索框 */}
-          <Search
-            placeholder="搜索商品..."
-            allowClear
-            enterButton
-            onSearch={handleSearch}
-          />
+          <ProductSearch placeholder="搜索商品..." />
 
           {/* 导航菜单 */}
           <Menu
