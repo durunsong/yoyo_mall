@@ -1,0 +1,19 @@
+{
+  "buildCommand": "prisma generate && pnpm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "functions": {
+    "app/api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "env": {
+    "SKIP_ENV_VALIDATION": "1"
+  },
+  "build": {
+    "env": {
+      "SKIP_ENV_VALIDATION": "1"
+    }
+  }
+}
