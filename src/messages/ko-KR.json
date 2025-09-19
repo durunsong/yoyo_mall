@@ -1,0 +1,78 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "search": "검색",
+    "filter": "필터",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "delete": "삭제",
+    "edit": "편집",
+    "add": "추가",
+    "home": "홈",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "close": "닫기",
+    "submit": "제출",
+    "reset": "재설정"
+  },
+  "navigation": {
+    "home": "홈",
+    "products": "상품",
+    "categories": "카테고리",
+    "brands": "브랜드",
+    "deals": "할인",
+    "cart": "장바구니",
+    "account": "내 계정",
+    "login": "로그인",
+    "register": "회원가입",
+    "logout": "로그아웃",
+    "admin": "관리자"
+  },
+  "header": {
+    "searchPlaceholder": "상품 검색...",
+    "freeShipping": "$99 이상 무료배송",
+    "returnPolicy": "7일 무료 반품",
+    "customerService": "고객센터",
+    "language": "한국어"
+  },
+  "home": {
+    "hero": {
+      "title": "YOYO Mall에 오신 것을 환영합니다",
+      "subtitle": "전 세계 프리미엄 상품을 발견하고 안전하고 편리한 해외직구를 경험하세요",
+      "startShopping": "쇼핑 시작",
+      "learnMore": "더 알아보기"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "다시 오신 것을 환영합니다",
+      "subtitle": "계정 정보를 입력하여 로그인하세요",
+      "email": "이메일 주소",
+      "emailPlaceholder": "이메일 주소를 입력하세요",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요",
+      "rememberMe": "로그인 상태 유지",
+      "forgotPassword": "비밀번호를 잊으셨나요?",
+      "loginButton": "로그인",
+      "or": "또는",
+      "noAccount": "계정이 없으신가요?",
+      "signUp": "지금 가입하기"
+    }
+  },
+  "products": {
+    "title": "상품 목록",
+    "description": "모든 상품 보기",
+    "addToCart": "장바구니 담기",
+    "outOfStock": "품절"
+  },
+  "cart": {
+    "title": "장바구니",
+    "empty": {
+      "title": "장바구니가 비어있습니다",
+      "description": "아직 추가된 상품이 없습니다. 멋진 상품을 찾아보세요!",
+      "startShopping": "쇼핑 시작"
+    }
+  }
+}
