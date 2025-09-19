@@ -1,0 +1,10 @@
+{
+  "title": "购物车",
+  "empty": "购物车为空",
+  "quantity": "数量",
+  "total": "总计",
+  "subtotal": "小计",
+  "checkout": "结算",
+  "remove": "移除",
+  "update": "更新"
+}
