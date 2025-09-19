@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build --turbopack",
+    "build": "prisma generate && next build",
     "build:analyze": "ANALYZE=true npm run build",
     "start": "next start",
     "postinstall": "prisma generate",
@@ -60,7 +60,6 @@
     "tailwind-merge": "^2.6.0",
     "use-debounce": "^10.0.6",
     "uuid": "^13.0.0",
-    "web-vitals": "^5.1.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.8"
   },
