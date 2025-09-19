@@ -71,5 +71,9 @@
   "sendMessage": "Send Message",
   "contactUs": "Contact Us",
   "subject": "Subject",
-  "message": "Message"
+  "message": "Message",
+  "heroTitle": "Welcome to YOYO Mall",
+  "heroSubtitle": "Discover quality products, enjoy shopping",
+  "shopNow": "Shop Now",
+  "learnMore": "Learn More"
 }

@@ -71,5 +71,9 @@
   "sendMessage": "发送消息",
   "contactUs": "联系我们",
   "subject": "主题",
-  "message": "消息"
+  "message": "消息",
+  "heroTitle": "欢迎来到 YOYO Mall",
+  "heroSubtitle": "发现优质商品，享受购物乐趣",
+  "shopNow": "立即购物",
+  "learnMore": "了解更多"
 }
