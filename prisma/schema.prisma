@@ -27,6 +27,7 @@ model User {
   orders    Order[]
   reviews   Review[]
   wishlist  WishlistItem[]
+  cartItems CartItem[]
 
   @@map("users")
 }
@@ -70,7 +71,8 @@ model Address {
   updatedAt    DateTime    @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
+  shippingOrders Order[] @relation("OrderShippingAddress")
+  billingOrders  Order[] @relation("OrderBillingAddress")
 
   @@map("addresses")
 }
@@ -145,6 +147,7 @@ model Product {
   reviews       Review[]
   orderItems    OrderItem[]
   wishlistItems WishlistItem[]
+  cartItems     CartItem[]
 
   @@map("products")
 }
@@ -181,6 +184,7 @@ model ProductVariant {
   attributes  VariantAttribute[]
   inventory   Inventory?
   orderItems  OrderItem[]
+  cartItems   CartItem[]
 
   @@map("product_variants")
 }
@@ -235,7 +239,8 @@ model Order {
   updatedAt         DateTime    @updatedAt
 
   user            User          @relation(fields: [userId], references: [id])
-  shippingAddress Address?      @relation(fields: [shippingAddressId], references: [id])
+  shippingAddress Address?      @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddress  Address?      @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   items           OrderItem[]
   payments        Payment[]
   shipments       Shipment[]
@@ -333,6 +338,24 @@ model WishlistItem {
 
   @@unique([userId, productId])
   @@map("wishlist_items")
+}
+
+// 购物车
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  variantId String?
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant?  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, variantId])
+  @@map("cart_items")
 }
 
 // 优惠券模型
