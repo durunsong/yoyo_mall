@@ -3,3 +3,4 @@
  */
 
 export { RootProviders } from './root-providers';
+export { AuthProvider } from './auth-provider';

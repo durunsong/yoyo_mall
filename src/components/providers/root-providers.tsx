@@ -13,6 +13,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider } from 'antd';
 import { antdTheme } from '@/lib/antd-theme';
 import zhCN from 'antd/locale/zh_CN';
+import { AuthProvider } from './auth-provider';
 
 interface RootProvidersProps {
   children: React.ReactNode;
@@ -20,10 +21,12 @@ interface RootProvidersProps {
 
 export function RootProviders({ children }: RootProvidersProps) {
   return (
-    <AntdRegistry>
-      <ConfigProvider theme={antdTheme} locale={zhCN}>
-        {children}
-      </ConfigProvider>
-    </AntdRegistry>
+    <AuthProvider>
+      <AntdRegistry>
+        <ConfigProvider theme={antdTheme} locale={zhCN}>
+          {children}
+        </ConfigProvider>
+      </AntdRegistry>
+    </AuthProvider>
   );
 }
