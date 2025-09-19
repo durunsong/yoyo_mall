@@ -27,6 +27,7 @@ import {
   EyeTwoTone,
 } from '@ant-design/icons';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { useStaticTranslations } from '@/hooks/use-translations';
 
 const { Text, Link } = Typography;
 
@@ -52,7 +53,7 @@ interface RegisterFormValues {
 }
 
 // 密码强度校验函数
-const getPasswordStrength = (password: string) => {
+const getPasswordStrength = (password: string, t: (key: string) => string) => {
   let score = 0;
   const checks = {
     length: password.length >= 8,
@@ -67,13 +68,13 @@ const getPasswordStrength = (password: string) => {
     if (check) score += 20;
   });
 
-  let level = '弱';
+  let level = t('passwordWeak');
   let color = '#ff4d4f';
   if (score >= 80) {
-    level = '强';
+    level = t('passwordStrong');
     color = '#52c41a';
   } else if (score >= 60) {
-    level = '中';
+    level = t('passwordMedium');
     color = '#faad14';
   }
 
@@ -83,11 +84,11 @@ const getPasswordStrength = (password: string) => {
     color,
     checks,
     suggestions: [
-      !checks.length && '密码长度至少8位',
-      !checks.lowercase && '包含小写字母',
-      !checks.uppercase && '包含大写字母',
-      !checks.number && '包含数字',
-      !checks.special && '包含特殊字符',
+      !checks.length && t('passwordMinLength'),
+      !checks.lowercase && t('passwordNeedLowercase'),
+      !checks.uppercase && t('passwordNeedUppercase'),
+      !checks.number && t('passwordNeedNumber'),
+      !checks.special && t('passwordNeedSpecial'),
     ].filter(Boolean) as string[],
   };
 };
@@ -97,13 +98,14 @@ export function AuthModal({
   onClose,
   defaultTab = 'login',
 }: AuthModalProps) {
+  const { t } = useStaticTranslations('auth');
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
-    level: '弱',
+    level: t('passwordWeak'),
     color: '#ff4d4f',
     suggestions: [] as string[],
   });
@@ -118,10 +120,10 @@ export function AuthModal({
       console.log('登录信息:', values);
       // TODO: 实现登录API调用
       await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success('登录成功！');
+      message.success(t('loginSuccess'));
       onClose();
     } catch {
-      message.error('登录失败，请检查邮箱和密码');
+      message.error(t('loginFailed'));
     } finally {
       setLoginLoading(false);
     }
@@ -134,10 +136,10 @@ export function AuthModal({
       console.log('注册信息:', values);
       // TODO: 实现注册API调用
       await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success('注册成功！请查看邮箱验证邮件');
+      message.success(t('registerSuccess'));
       onClose();
     } catch {
-      message.error('注册失败，请稍后重试');
+      message.error(t('registerFailed'));
     } finally {
       setRegisterLoading(false);
     }
@@ -154,11 +156,11 @@ export function AuthModal({
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ token: credentialResponse.credential })
       // });
-      message.success('谷歌登录成功！');
+      message.success(t('loginSuccess'));
       onClose();
     } catch (err: any) {
       console.error('谷歌登录失败:', err);
-      message.error('谷歌登录失败');
+      message.error(t('loginFailed'));
     } finally {
       setGoogleLoading(false);
     }
@@ -167,16 +169,16 @@ export function AuthModal({
   // 处理谷歌登录失败
   const handleGoogleError = () => {
     console.error('谷歌登录失败');
-    message.error('谷歌登录失败，请重试');
+    message.error(t('loginFailed'));
   };
 
   // 密码强度实时检测
   const handlePasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const password = e.target.value;
-      setPasswordStrength(getPasswordStrength(password));
+      setPasswordStrength(getPasswordStrength(password, t));
     },
-    [],
+    [t],
   );
 
   // 演示账户信息
@@ -184,11 +186,11 @@ export function AuthModal({
     <div className="mb-4 rounded-lg bg-blue-50 p-3">
       <div className="mb-2 flex items-center">
         <Text strong className="text-blue-600">
-          💡 演示账户
+          💡 {t('demoAccount')}
         </Text>
       </div>
       <Text className="text-sm text-blue-600">
-        邮箱: demo@example.com, 密码: Demo123!
+        {t('demoAccountInfo')}
       </Text>
     </div>
   );
@@ -205,25 +207,25 @@ export function AuthModal({
         size="large"
       >
         <Form.Item
-          label="用户名/邮箱/手机号"
+          label={t('usernameEmailPhone')}
           name="email"
-          rules={[{ required: true, message: '请输入用户名、邮箱或手机号' }]}
+          rules={[{ required: true, message: t('enterUsernameEmailPhone') }]}
         >
           <Input
             prefix={<UserOutlined className="text-gray-400" />}
-            placeholder="用户名/邮箱/手机号"
+            placeholder={t('usernameEmailPhone')}
             autoComplete="username"
           />
         </Form.Item>
 
         <Form.Item
-          label="密码"
+          label={t('password')}
           name="password"
-          rules={[{ required: true, message: '请输入密码' }]}
+          rules={[{ required: true, message: t('passwordRequired') }]}
         >
           <Input.Password
             prefix={<LockOutlined className="text-gray-400" />}
-            placeholder="密码"
+            placeholder={t('password')}
             autoComplete="current-password"
             iconRender={visible =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
@@ -234,9 +236,9 @@ export function AuthModal({
         <Form.Item>
           <div className="flex items-center justify-between">
             <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>记住我</Checkbox>
+              <Checkbox>{t('rememberMe')}</Checkbox>
             </Form.Item>
-            <Link className="text-blue-600">忘记密码？</Link>
+            <Link className="text-blue-600">{t('forgotPassword')}</Link>
           </div>
         </Form.Item>
 
@@ -248,7 +250,7 @@ export function AuthModal({
             className="h-10 w-full"
             size="large"
           >
-            登录
+            {t('login')}
           </Button>
         </Form.Item>
       </Form>
@@ -265,12 +267,12 @@ export function AuthModal({
         size="large"
       >
         <Form.Item
-          label="用户名"
+          label={t('username')}
           name="username"
           rules={[
-            { required: true, message: '请输入用户名' },
-            { min: 3, message: '用户名至少3个字符' },
-            { max: 20, message: '用户名最多20个字符' },
+            { required: true, message: t('nameRequired') },
+            { min: 3, message: t('usernameMinLength') },
+            { max: 20, message: t('usernameMaxLength') },
           ]}
         >
           <Input
@@ -281,11 +283,11 @@ export function AuthModal({
         </Form.Item>
 
         <Form.Item
-          label="邮箱"
+          label={t('email')}
           name="email"
           rules={[
-            { required: true, message: '请输入邮箱地址' },
-            { type: 'email', message: '请输入有效的邮箱地址' },
+            { required: true, message: t('emailRequired') },
+            { type: 'email', message: t('emailInvalid') },
           ]}
         >
           <Input
@@ -296,11 +298,11 @@ export function AuthModal({
         </Form.Item>
 
         <Form.Item
-          label="手机号"
+          label={t('phone')}
           name="phone"
           rules={[
-            { required: true, message: '请输入手机号' },
-            { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号' },
+            { required: true, message: t('phoneRequired') },
+            { pattern: /^1[3-9]\d{9}$/, message: t('phoneInvalid') },
           ]}
         >
           <Input
@@ -311,17 +313,17 @@ export function AuthModal({
         </Form.Item>
 
         <Form.Item
-          label="密码"
+          label={t('password')}
           name="password"
           rules={[
-            { required: true, message: '请输入密码' },
-            { min: 8, message: '密码至少8个字符' },
+            { required: true, message: t('passwordRequired') },
+            { min: 8, message: t('passwordTooShort') },
             {
               validator: (_, value) => {
                 if (!value) return Promise.resolve();
-                const strength = getPasswordStrength(value);
+                const strength = getPasswordStrength(value, t);
                 if (strength.score < 60) {
-                  return Promise.reject(new Error('密码强度不够，请参考建议'));
+                  return Promise.reject(new Error(t('passwordTooWeak')));
                 }
                 return Promise.resolve();
               },
@@ -343,7 +345,7 @@ export function AuthModal({
         <Form.Item>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Text className="text-sm">密码强度:</Text>
+              <Text className="text-sm">{t('passwordStrength')}:</Text>
               <Text
                 className="text-sm"
                 style={{ color: passwordStrength.color }}
@@ -359,7 +361,7 @@ export function AuthModal({
             />
             {passwordStrength.suggestions.length > 0 && (
               <div className="text-xs text-gray-500">
-                <div>建议:</div>
+                <div>{t('suggestions')}:</div>
                 <ul className="list-inside list-disc space-y-1">
                   {passwordStrength.suggestions.map((suggestion, index) => (
                     <li key={index}>{suggestion}</li>
@@ -371,17 +373,17 @@ export function AuthModal({
         </Form.Item>
 
         <Form.Item
-          label="确认密码"
+          label={t('confirmPassword')}
           name="confirmPassword"
           dependencies={['password']}
           rules={[
-            { required: true, message: '请确认密码' },
+            { required: true, message: t('confirmPasswordRequired') },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('两次输入的密码不一致'));
+                return Promise.reject(new Error(t('passwordMismatch')));
               },
             }),
           ]}
@@ -404,13 +406,13 @@ export function AuthModal({
               validator: (_, value) =>
                 value
                   ? Promise.resolve()
-                  : Promise.reject(new Error('请同意用户协议')),
+                  : Promise.reject(new Error(t('agreeTermsRequired'))),
             },
           ]}
         >
           <Checkbox>
-            我已阅读并同意 <Link className="text-blue-600">用户协议</Link> 和{' '}
-            <Link className="text-blue-600">隐私政策</Link>
+            {t('agreeTerms')} <Link className="text-blue-600">{t('userAgreement')}</Link> {t('and')}{' '}
+            <Link className="text-blue-600">{t('privacyPolicy')}</Link>
           </Checkbox>
         </Form.Item>
 
@@ -422,7 +424,7 @@ export function AuthModal({
             className="h-10 w-full"
             size="large"
           >
-            注册
+            {t('register')}
           </Button>
         </Form.Item>
       </Form>
@@ -431,7 +433,7 @@ export function AuthModal({
 
   return (
     <Modal
-      title="登录"
+      title={activeTab === 'login' ? t('login') : t('register')}
       open={open}
       onCancel={onClose}
       footer={null}
@@ -447,18 +449,18 @@ export function AuthModal({
           items={[
             {
               key: 'login',
-              label: '登录',
+              label: t('login'),
               children: loginTab,
             },
             {
               key: 'register',
-              label: '注册',
+              label: t('register'),
               children: registerTab,
             },
           ]}
         />
 
-        <Divider>或者</Divider>
+        <Divider>{t('or')}</Divider>
 
         {/* 谷歌登录按钮 */}
         <div className="px-2">

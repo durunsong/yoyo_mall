@@ -6,7 +6,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { Row, Col, Card, Button, Space, Statistic } from 'antd';
 import {
   ShoppingOutlined,
@@ -17,9 +16,10 @@ import {
   HomeOutlined,
   SkinOutlined,
 } from '@ant-design/icons';
+import { useStaticTranslations } from '@/hooks/use-translations';
 
 export default function HomePage() {
-  const t = useTranslations('home');
+  const { t } = useStaticTranslations('common');
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -31,10 +31,10 @@ export default function HomePage() {
                 className="mb-6 text-white"
                 style={{ fontSize: '3.5rem', marginBottom: '24px' }}
               >
-                {t('hero.title')}
+                {t('heroTitle')}
               </h1>
               <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
-                {t('hero.subtitle')}
+                {t('heroSubtitle')}
               </p>
               <Space size="large">
                 <Button
@@ -42,10 +42,10 @@ export default function HomePage() {
                   size="large"
                   className="border-white bg-white text-blue-600 hover:bg-blue-50"
                 >
-                  <Link href="/products">{t('hero.shopNow')}</Link>
+                  <Link href="/products">{t('shopNow')}</Link>
                 </Button>
                 <Button ghost size="large">
-                  <Link href="/about">{t('hero.learnMore')}</Link>
+                  <Link href="/about">{t('learnMore')}</Link>
                 </Button>
               </Space>
             </Col>
