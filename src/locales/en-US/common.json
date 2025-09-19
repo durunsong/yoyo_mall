@@ -57,5 +57,19 @@
   "processing": "Processing",
   "completed": "Completed",
   "cancelled": "Cancelled",
-  "failed": "Failed"
+  "failed": "Failed",
+  "nameMinLength": "Name must be at least 2 characters",
+  "subjectMinLength": "Subject must be at least 5 characters",
+  "messageMinLength": "Message must be at least 20 characters",
+  "formSubmitFailed": "Form submission failed",
+  "thankYouMessage": "Thank you for your message! We will reply to you as soon as possible.",
+  "enterYourName": "Please enter your name",
+  "enterYourEmail": "Please enter your email address",
+  "enterSubject": "Please enter contact subject",
+  "enterYourMessage": "Please enter your message content",
+  "sending": "Sending...",
+  "sendMessage": "Send Message",
+  "contactUs": "Contact Us",
+  "subject": "Subject",
+  "message": "Message"
 }

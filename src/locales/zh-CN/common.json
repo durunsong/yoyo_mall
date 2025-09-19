@@ -57,5 +57,19 @@
   "processing": "处理中",
   "completed": "已完成",
   "cancelled": "已取消",
-  "failed": "失败"
+  "failed": "失败",
+  "nameMinLength": "姓名至少需要2个字符",
+  "subjectMinLength": "主题至少需要5个字符",
+  "messageMinLength": "消息至少需要20个字符",
+  "formSubmitFailed": "表单提交失败",
+  "thankYouMessage": "感谢您的留言！我们会尽快回复您。",
+  "enterYourName": "请输入您的姓名",
+  "enterYourEmail": "请输入您的邮箱地址",
+  "enterSubject": "请输入联系主题",
+  "enterYourMessage": "请输入您的消息内容",
+  "sending": "发送中...",
+  "sendMessage": "发送消息",
+  "contactUs": "联系我们",
+  "subject": "主题",
+  "message": "消息"
 }

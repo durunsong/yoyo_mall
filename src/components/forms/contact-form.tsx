@@ -12,25 +12,28 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useStaticTranslations } from '@/hooks/use-translations';
 
-// 表单验证schema
-const contactSchema = z.object({
-  name: z.string().min(2, '姓名至少需要2个字符'),
-  email: z.string().email('请输入有效的邮箱地址'),
-  subject: z.string().min(5, '主题至少需要5个字符'),
-  message: z.string().min(20, '消息至少需要20个字符'),
+// 表单验证schema - 使用翻译
+const getContactSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, t('nameMinLength')),
+  email: z.string().email(t('emailInvalid')),
+  subject: z.string().min(5, t('subjectMinLength')),
+  message: z.string().min(20, t('messageMinLength')),
 });
 
-type ContactFormData = z.infer<typeof contactSchema>;
-
 interface ContactFormProps {
-  onSubmit?: (data: ContactFormData) => void | Promise<void>;
+  onSubmit?: (data: any) => void | Promise<void>;
   className?: string;
 }
 
 export function ContactForm({ onSubmit, className }: ContactFormProps) {
+  const { t } = useStaticTranslations('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const contactSchema = getContactSchema(t);
+  type ContactFormData = z.infer<typeof contactSchema>;
 
   const {
     register,
@@ -54,7 +57,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
       reset();
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (error) {
-      console.error('表单提交失败:', error);
+      console.error(t('formSubmitFailed'), error);
     } finally {
       setIsSubmitting(false);
     }
@@ -63,48 +66,48 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>联系我们</CardTitle>
+        <CardTitle>{t('contactUs')}</CardTitle>
       </CardHeader>
       <CardContent>
         {submitSuccess && (
           <div className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-green-800">
-            感谢您的留言！我们会尽快回复您。
+            {t('thankYouMessage')}
           </div>
         )}
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <Input
-            label="姓名"
+            label={t('name')}
             {...register('name')}
             error={errors.name?.message}
-            placeholder="请输入您的姓名"
+            placeholder={t('enterYourName')}
             required
           />
 
           <Input
-            label="邮箱"
+            label={t('email')}
             type="email"
             {...register('email')}
             error={errors.email?.message}
-            placeholder="请输入您的邮箱地址"
+            placeholder={t('enterYourEmail')}
             required
           />
 
           <Input
-            label="主题"
+            label={t('subject')}
             {...register('subject')}
             error={errors.subject?.message}
-            placeholder="请输入联系主题"
+            placeholder={t('enterSubject')}
             required
           />
 
           <div className="space-y-1">
             <label className="text-sm leading-none font-medium">
-              消息 <span className="text-destructive">*</span>
+              {t('message')} <span className="text-destructive">*</span>
             </label>
             <textarea
               {...register('message')}
-              placeholder="请输入您的消息内容"
+              placeholder={t('enterYourMessage')}
               rows={4}
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             />
@@ -118,10 +121,10 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
           <Button
             type="submit"
             loading={isSubmitting}
-            loadingText="发送中..."
+            loadingText={t('sending')}
             className="w-full"
           >
-            发送消息
+            {t('sendMessage')}
           </Button>
         </form>
       </CardContent>

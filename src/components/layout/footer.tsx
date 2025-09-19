@@ -3,6 +3,8 @@
  * 网站底部，包含链接、联系信息、社交媒体等
  */
 
+'use client';
+
 import Link from 'next/link';
 import {
   Mail,
@@ -13,46 +15,47 @@ import {
   Instagram,
   Youtube,
 } from 'lucide-react';
+import { useStaticTranslations } from '@/hooks/use-translations';
 
-// Footer链接配置
-const footerLinks = {
+// Footer链接配置函数 - 现在使用翻译
+const getFooterLinks = (t: (key: string) => string) => ({
   company: {
-    title: '公司信息',
+    title: t('companyInfo'),
     links: [
-      { name: '关于我们', href: '/about' },
-      { name: '联系我们', href: '/contact' },
-      { name: '招聘信息', href: '/careers' },
-      { name: '新闻资讯', href: '/news' },
+      { name: t('aboutUs'), href: '/about' },
+      { name: t('contactUs'), href: '/contact' },
+      { name: t('careers'), href: '/careers' },
+      { name: t('news'), href: '/news' },
     ],
   },
   customer: {
-    title: '客户服务',
+    title: t('customerService'),
     links: [
-      { name: '帮助中心', href: '/help' },
-      { name: '配送信息', href: '/shipping' },
-      { name: '退货政策', href: '/returns' },
-      { name: '常见问题', href: '/faq' },
+      { name: t('helpCenter'), href: '/help' },
+      { name: t('shippingInfo'), href: '/shipping' },
+      { name: t('returnPolicy'), href: '/returns' },
+      { name: t('faq'), href: '/faq' },
     ],
   },
   account: {
-    title: '我的账户',
+    title: t('myAccount'),
     links: [
-      { name: '我的订单', href: '/orders' },
-      { name: '我的心愿单', href: '/wishlist' },
-      { name: '账户设置', href: '/account' },
-      { name: '地址管理', href: '/addresses' },
+      { name: t('myOrders'), href: '/orders' },
+      { name: t('myWishlist'), href: '/wishlist' },
+      { name: t('accountSettings'), href: '/account' },
+      { name: t('addressManagement'), href: '/addresses' },
     ],
   },
   legal: {
-    title: '法律条款',
+    title: t('legalTerms'),
     links: [
-      { name: '使用条款', href: '/terms' },
-      { name: '隐私政策', href: '/privacy' },
-      { name: 'Cookie政策', href: '/cookies' },
-      { name: '免责声明', href: '/disclaimer' },
+      { name: t('termsOfService'), href: '/terms' },
+      { name: t('privacyPolicy'), href: '/privacy' },
+      { name: t('cookiePolicy'), href: '/cookies' },
+      { name: t('disclaimer'), href: '/disclaimer' },
     ],
   },
-};
+});
 
 // 社交媒体链接
 const socialLinks = [
@@ -68,6 +71,9 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { t } = useStaticTranslations('navigation');
+  const footerLinks = getFooterLinks(t);
+
   return (
     <footer className="bg-gray-900 text-white">
       {/* Newsletter Section */}
@@ -75,17 +81,17 @@ export function Footer() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 md:mb-0">
-              <h3 className="mb-2 text-lg font-semibold">订阅我们的新闻通讯</h3>
-              <p className="text-gray-300">获取最新优惠和产品资讯</p>
+              <h3 className="mb-2 text-lg font-semibold">{t('subscribeNewsletter')}</h3>
+              <p className="text-gray-300">{t('getLatestOffers')}</p>
             </div>
             <div className="flex w-full md:w-auto">
               <input
                 type="email"
-                placeholder="输入您的邮箱地址"
+                placeholder={t('enterEmailAddress')}
                 className="flex-1 rounded-l-md px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-80"
               />
               <button className="rounded-r-md bg-blue-600 px-6 py-2 transition-colors hover:bg-blue-700">
-                订阅
+                {t('subscribe')}
               </button>
             </div>
           </div>
@@ -104,7 +110,7 @@ export function Footer() {
               <span className="text-xl font-bold">YOYO Mall</span>
             </div>
             <p className="mb-4 text-sm text-gray-300">
-              专业的跨境电商平台，致力于为全球用户提供优质的商品和服务。
+              {t('companyDescription')}
             </p>
 
             {/* Contact Info */}
@@ -150,13 +156,13 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 text-sm text-gray-300 md:mb-0">
-              © 2024 YOYO Mall. 保留所有权利。
+              © 2024 YOYO Mall. {t('allRightsReserved')}
             </div>
 
             {/* Social Links */}
             <div className="flex items-center space-x-4">
               <span className="hidden text-sm text-gray-300 md:inline">
-                关注我们:
+                {t('followUs')}:
               </span>
               {socialLinks.map(social => {
                 const Icon = social.icon;

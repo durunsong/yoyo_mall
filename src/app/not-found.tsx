@@ -8,8 +8,11 @@
 import Link from 'next/link';
 import { Button, Result } from 'antd';
 import { HomeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { useStaticTranslations } from '@/hooks/use-translations';
 
 export default function NotFound() {
+  const { t } = useStaticTranslations('error');
+
   const handleGoBack = () => {
     if (typeof window !== 'undefined') {
       window.history.back();
@@ -21,14 +24,14 @@ export default function NotFound() {
       <Result
         status="404"
         title="404"
-        subTitle="抱歉，您访问的页面不存在"
+        subTitle={t('pageNotFoundMessage')}
         extra={
           <div className="space-x-4">
             <Button type="primary" icon={<HomeOutlined />}>
-              <Link href="/">返回首页</Link>
+              <Link href="/">{t('goHome')}</Link>
             </Button>
             <Button icon={<ArrowLeftOutlined />} onClick={handleGoBack}>
-              返回上一页
+              {t('goBack')}
             </Button>
           </div>
         }
