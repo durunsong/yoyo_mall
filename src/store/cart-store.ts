@@ -12,11 +12,11 @@ interface CartState {
   // 状态
   items: CartItem[];
   isOpen: boolean;
-  
+
   // 计算属性
   itemCount: number;
   subtotal: number;
-  
+
   // 操作方法
   addItem: (item: Omit<CartItem, 'id'>) => void;
   removeItem: (itemId: string) => void;
@@ -39,29 +39,32 @@ export const useCartStore = create<CartState>()(
       // 初始状态
       items: [],
       isOpen: false,
-      
+
       // 计算属性
       get itemCount() {
         return get().items.reduce((total, item) => total + item.quantity, 0);
       },
-      
+
       get subtotal() {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return get().items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0,
+        );
       },
-      
+
       // 添加商品到购物车
-      addItem: (newItem) =>
-        set((state) => {
+      addItem: newItem =>
+        set(state => {
           const existingItem = state.items.find(
-            (item) =>
+            item =>
               item.productId === newItem.productId &&
               item.variantId === newItem.variantId,
           );
-          
+
           if (existingItem) {
             // 如果商品已存在，增加数量
             return {
-              items: state.items.map((item) =>
+              items: state.items.map(item =>
                 item.id === existingItem.id
                   ? { ...item, quantity: item.quantity + newItem.quantity }
                   : item,
@@ -74,47 +77,47 @@ export const useCartStore = create<CartState>()(
             };
           }
         }),
-      
+
       // 移除商品
-      removeItem: (itemId) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== itemId),
+      removeItem: itemId =>
+        set(state => ({
+          items: state.items.filter(item => item.id !== itemId),
         })),
-      
+
       // 更新商品数量
       updateQuantity: (itemId, quantity) =>
-        set((state) => {
+        set(state => {
           if (quantity <= 0) {
             return {
-              items: state.items.filter((item) => item.id !== itemId),
+              items: state.items.filter(item => item.id !== itemId),
             };
           }
-          
+
           return {
-            items: state.items.map((item) =>
+            items: state.items.map(item =>
               item.id === itemId ? { ...item, quantity } : item,
             ),
           };
         }),
-      
+
       // 清空购物车
       clearCart: () =>
         set(() => ({
           items: [],
         })),
-      
+
       // 切换购物车显示状态
       toggleCart: () =>
-        set((state) => ({
+        set(state => ({
           isOpen: !state.isOpen,
         })),
-      
+
       // 打开购物车
       openCart: () =>
         set(() => ({
           isOpen: true,
         })),
-      
+
       // 关闭购物车
       closeCart: () =>
         set(() => ({
@@ -125,7 +128,7 @@ export const useCartStore = create<CartState>()(
       name: 'cart-storage',
       storage: createJSONStorage(() => localStorage),
       // 只持久化items，其他状态重新计算
-      partialize: (state) => ({
+      partialize: state => ({
         items: state.items,
       }),
     },

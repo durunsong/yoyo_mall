@@ -8,11 +8,11 @@ interface LocaleLayoutProps {
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: LocaleLayoutProps) {
   // 等待 params
   const { locale } = await params;
-  
+
   // 获取国际化消息
   const messages = await getMessages();
 

@@ -19,12 +19,14 @@ Module not found: Can't resolve 'class-variance-authority'
 ## 🔍 问题分析
 
 ### 根本原因
+
 项目使用了shadcn/ui风格的Button组件，但缺少必要的依赖：
 
 1. **@radix-ui/react-slot**: 用于创建可组合的React组件
 2. **class-variance-authority (cva)**: 用于管理CSS类名变体
 
 ### 技术背景
+
 - **Radix UI**: 无样式、可访问的UI组件库
 - **CVA**: TypeScript优先的类名变体API
 - **Slot组件**: 允许子组件接管父组件的渲染
@@ -38,6 +40,7 @@ pnpm add @radix-ui/react-slot class-variance-authority
 ```
 
 **安装结果**:
+
 ```
 dependencies:
 + @radix-ui/react-slot 1.2.3
@@ -58,9 +61,11 @@ export * from './utils/index';
 ## 📁 修改的文件
 
 ### 新创建的文件
+
 - ✅ `src/lib/utils.ts` - 工具函数重新导出文件
 
 ### 依赖更新
+
 - ✅ `package.json` - 添加了两个新依赖
 
 ## 🎯 Button组件技术栈
@@ -96,20 +101,20 @@ const buttonVariants = cva(
         outline: 'border border-input bg-background...',
         secondary: 'bg-secondary text-secondary-foreground...',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4...'
+        link: 'text-primary underline-offset-4...',
       },
       size: {
         default: 'h-10 px-4 py-2',
         sm: 'h-9 rounded-md px-3',
         lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10'
-      }
+        icon: 'h-10 w-10',
+      },
     },
     defaultVariants: {
       variant: 'default',
-      size: 'default'
-    }
-  }
+      size: 'default',
+    },
+  },
 );
 ```
 
@@ -140,6 +145,7 @@ export interface ButtonProps
 ## ✅ 修复验证
 
 ### 依赖检查
+
 ```bash
 # 验证安装
 pnpm list @radix-ui/react-slot class-variance-authority
@@ -150,6 +156,7 @@ class-variance-authority 0.7.1
 ```
 
 ### 组件使用
+
 ```typescript
 // 基础按钮
 <Button>点击我</Button>
@@ -165,26 +172,29 @@ class-variance-authority 0.7.1
 
 ## 🎨 样式变体对比
 
-| 变体 | 样式效果 | 使用场景 |
-|------|----------|----------|
-| `default` | 蓝色主题背景 | 主要操作按钮 |
-| `destructive` | 红色警告背景 | 删除、危险操作 |
-| `outline` | 透明背景+边框 | 次要操作按钮 |
-| `secondary` | 灰色背景 | 辅助操作按钮 |
-| `ghost` | 悬停时显示背景 | 图标按钮、菜单项 |
-| `link` | 链接样式 | 文本链接按钮 |
+| 变体          | 样式效果       | 使用场景         |
+| ------------- | -------------- | ---------------- |
+| `default`     | 蓝色主题背景   | 主要操作按钮     |
+| `destructive` | 红色警告背景   | 删除、危险操作   |
+| `outline`     | 透明背景+边框  | 次要操作按钮     |
+| `secondary`   | 灰色背景       | 辅助操作按钮     |
+| `ghost`       | 悬停时显示背景 | 图标按钮、菜单项 |
+| `link`        | 链接样式       | 文本链接按钮     |
 
 ## 🚀 性能优化
 
 ### 1. 按需导入
+
 - 只导入需要的Radix组件
 - CVA在构建时进行样式优化
 
 ### 2. 类名优化
+
 - `tailwind-merge`去除重复类名
 - `clsx`条件性应用类名
 
 ### 3. TypeScript支持
+
 - 完整的类型检查
 - IntelliSense自动补全
 

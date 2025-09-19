@@ -49,17 +49,20 @@ interface LoadingScreenProps {
 /**
  * LoadingScreen组件 - 全屏加载状态
  */
-export function LoadingScreen({ text = '加载中...', overlay = true }: LoadingScreenProps) {
+export function LoadingScreen({
+  text = '加载中...',
+  overlay = true,
+}: LoadingScreenProps) {
   return (
     <div
       className={cn(
-        'fixed inset-0 flex items-center justify-center z-50',
+        'fixed inset-0 z-50 flex items-center justify-center',
         overlay && 'bg-black/50 backdrop-blur-sm',
       )}
     >
-      <div className="flex flex-col items-center space-y-4 bg-white p-8 rounded-lg shadow-lg">
+      <div className="flex flex-col items-center space-y-4 rounded-lg bg-white p-8 shadow-lg">
         <Spinner size="lg" />
-        <p className="text-gray-600 font-medium">{text}</p>
+        <p className="font-medium text-gray-600">{text}</p>
       </div>
     </div>
   );
@@ -92,7 +95,7 @@ export function LoadingButton({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+        'inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       disabled={loading}
@@ -125,7 +128,7 @@ export function Skeleton({ className, animate = true }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'bg-gray-200 rounded-md',
+        'rounded-md bg-gray-200',
         animate && 'animate-pulse',
         className,
       )}
@@ -138,13 +141,13 @@ export function Skeleton({ className, animate = true }: SkeletonProps) {
  */
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 space-y-4">
-      <Skeleton className="w-full h-48" />
+    <div className="space-y-4 rounded-lg border bg-white p-4 shadow-sm">
+      <Skeleton className="h-48 w-full" />
       <div className="space-y-2">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
       </div>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <Skeleton className="h-6 w-20" />
         <Skeleton className="h-8 w-24" />
       </div>
@@ -157,8 +160,8 @@ export function ProductCardSkeleton() {
  */
 export function PageLoader({ text = '页面加载中...' }: { text?: string }) {
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center space-y-4">
+    <div className="flex min-h-[400px] items-center justify-center">
+      <div className="space-y-4 text-center">
         <Spinner size="lg" />
         <p className="text-gray-600">{text}</p>
       </div>

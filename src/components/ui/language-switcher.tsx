@@ -25,32 +25,35 @@ interface LanguageSwitcherProps {
   className?: string;
 }
 
-export function LanguageSwitcher({ 
-  variant = 'default', 
-  className 
+export function LanguageSwitcher({
+  variant = 'default',
+  className,
 }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { currentLocale, setLocale } = useLocaleStorage();
 
-  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0];
+  const currentLanguage =
+    languages.find(lang => lang.code === currentLocale) || languages[0];
 
   const handleLanguageChange = (newLocale: string) => {
     // 使用hook保存语言偏好
     setLocale(newLocale);
-    
+
     // 构建新的URL
     const currentPathname = pathname;
     let newPath: string;
-    
+
     // 获取当前路径中的语言部分
     const pathSegments = currentPathname.split('/').filter(Boolean);
     const currentLocaleFromPath = pathSegments[0];
-    
+
     // 检查第一个段是否是语言代码
-    const isCurrentPathHasLocale = languages.some(lang => lang.code === currentLocaleFromPath);
-    
+    const isCurrentPathHasLocale = languages.some(
+      lang => lang.code === currentLocaleFromPath,
+    );
+
     if (newLocale === 'zh-CN') {
       // 切换到默认语言，移除语言前缀
       if (isCurrentPathHasLocale) {
@@ -71,14 +74,14 @@ export function LanguageSwitcher({
         newPath = `/${newLocale}${currentPathname === '/' ? '' : currentPathname}`;
       }
     }
-    
+
     // 清理路径
     newPath = newPath.replace(/\/+/g, '/');
     if (newPath === '') newPath = '/';
-    
+
     console.log(`语言切换: ${currentLocale} → ${newLocale}`);
     console.log(`路径切换: ${currentPathname} → ${newPath}`);
-    
+
     // 使用window.location.href进行完整的页面重新加载
     window.location.href = newPath;
     setIsOpen(false);
@@ -93,25 +96,26 @@ export function LanguageSwitcher({
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center space-x-1"
         >
-          <Globe className="w-4 h-4" />
+          <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{currentLanguage.name}</span>
-          <ChevronDown className="w-3 h-3" />
+          <ChevronDown className="h-3 w-3" />
         </Button>
-        
+
         {isOpen && (
           <>
             <div
               className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute right-0 top-full mt-1 z-20 bg-white border rounded-md shadow-lg min-w-[120px]">
-              {languages.map((language) => (
+            <div className="absolute top-full right-0 z-20 mt-1 min-w-[120px] rounded-md border bg-white shadow-lg">
+              {languages.map(language => (
                 <button
                   key={language.code}
                   onClick={() => handleLanguageChange(language.code)}
                   className={cn(
-                    'flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors',
-                    currentLocale === language.code && 'bg-blue-50 text-blue-600'
+                    'flex w-full items-center space-x-2 px-3 py-2 text-sm transition-colors hover:bg-gray-50',
+                    currentLocale === language.code &&
+                      'bg-blue-50 text-blue-600',
                   )}
                 >
                   <span>{language.flag}</span>
@@ -132,29 +136,29 @@ export function LanguageSwitcher({
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2"
       >
-        <Globe className="w-4 h-4" />
+        <Globe className="h-4 w-4" />
         <span>{currentLanguage.flag}</span>
         <span>{currentLanguage.name}</span>
-        <ChevronDown className="w-4 h-4" />
+        <ChevronDown className="h-4 w-4" />
       </Button>
-      
+
       {isOpen && (
         <>
           <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-2 z-20 bg-white border rounded-md shadow-lg min-w-[160px]">
-            <div className="p-2 border-b">
-              <p className="text-xs text-gray-500 font-medium">选择语言</p>
+          <div className="absolute top-full right-0 z-20 mt-2 min-w-[160px] rounded-md border bg-white shadow-lg">
+            <div className="border-b p-2">
+              <p className="text-xs font-medium text-gray-500">选择语言</p>
             </div>
-            {languages.map((language) => (
+            {languages.map(language => (
               <button
                 key={language.code}
                 onClick={() => handleLanguageChange(language.code)}
                 className={cn(
-                  'flex items-center space-x-3 w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors',
-                  currentLocale === language.code && 'bg-blue-50 text-blue-600'
+                  'flex w-full items-center space-x-3 px-3 py-2 text-sm transition-colors hover:bg-gray-50',
+                  currentLocale === language.code && 'bg-blue-50 text-blue-600',
                 )}
               >
                 <span className="text-lg">{language.flag}</span>

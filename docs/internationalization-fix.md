@@ -23,6 +23,7 @@ rmdir messages
 ```
 
 **新结构**:
+
 ```
 src/
 ├── messages/
@@ -38,6 +39,7 @@ src/
 **文件**: `src/i18n.ts`
 
 **修复前** (使用已弃用的 API):
+
 ```tsx
 export default getRequestConfig(async ({ locale }) => {
   if (!locales.includes(locale as Locale)) notFound();
@@ -48,6 +50,7 @@ export default getRequestConfig(async ({ locale }) => {
 ```
 
 **修复后** (使用新的 API):
+
 ```tsx
 export default getRequestConfig(async ({ requestLocale }) => {
   // 等待并获取请求的语言
@@ -59,7 +62,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   return {
-    locale,                                           // ✅ 返回 locale
+    locale, // ✅ 返回 locale
     messages: (await import(`./messages/${locale}.json`)).default, // ✅ 正确路径
   };
 });
@@ -70,6 +73,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
 **文件**: `src/app/[locale]/layout.tsx`
 
 **修复前** (直接解构 params):
+
 ```tsx
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -83,6 +87,7 @@ export default async function LocaleLayout({
 ```
 
 **修复后** (等待 params):
+
 ```tsx
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -102,11 +107,13 @@ export default async function LocaleLayout({
 **文件**: `next.config.ts`
 
 **修复前** (没有指定配置路径):
+
 ```tsx
 const withNextIntl = createNextIntlPlugin();
 ```
 
 **修复后** (指定配置文件路径):
+
 ```tsx
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 ```
@@ -123,7 +130,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 ### 现在支持的功能
 
-- 🌐 **多语言路由**: 
+- 🌐 **多语言路由**:
   - `/` → 中文 (默认)
   - `/en-US/` → 英文
   - `/ja-JP/` → 日文
@@ -158,6 +165,7 @@ yoyo_mall/
 ## 🚀 测试验证
 
 现在可以访问：
+
 - ✅ `http://localhost:3000/` (中文)
 - ✅ `http://localhost:3000/en-US/` (英文)
 - ✅ 所有原有功能正常工作

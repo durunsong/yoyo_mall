@@ -5,17 +5,23 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Package, 
-  ShoppingCart, 
-  Users, 
+import {
+  Package,
+  ShoppingCart,
+  Users,
   DollarSign,
   BarChart3,
   Settings,
   FileText,
-  Bell
+  Bell,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -105,7 +111,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 管理后台头部 */}
-      <div className="bg-white border-b">
+      <div className="border-b bg-white">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -114,7 +120,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
-                <Bell className="w-4 h-4 mr-2" />
+                <Bell className="mr-2 h-4 w-4" />
                 通知
               </Button>
               <Button asChild>
@@ -127,8 +133,8 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-6">
         {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => {
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map(stat => {
             const Icon = stat.icon;
             return (
               <Card key={stat.title}>
@@ -140,7 +146,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     比上月 {stat.change}
                   </p>
                 </CardContent>
@@ -149,23 +155,26 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* 快速操作 */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">快速操作</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {quickActions.map((action) => {
+            <h2 className="mb-4 text-lg font-semibold">快速操作</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {quickActions.map(action => {
                 const Icon = action.icon;
                 return (
-                  <Card key={action.title} className="hover:shadow-md transition-shadow">
+                  <Card
+                    key={action.title}
+                    className="transition-shadow hover:shadow-md"
+                  >
                     <CardHeader>
                       <div className="flex items-center space-x-2">
                         <Icon className="h-5 w-5 text-blue-600" />
-                        <CardTitle className="text-base">{action.title}</CardTitle>
+                        <CardTitle className="text-base">
+                          {action.title}
+                        </CardTitle>
                       </div>
-                      <CardDescription>
-                        {action.description}
-                      </CardDescription>
+                      <CardDescription>{action.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <Button asChild className="w-full" variant="outline">
@@ -180,30 +189,38 @@ export default function AdminDashboard() {
 
           {/* 最近订单 */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">最近订单</h2>
+            <h2 className="mb-4 text-lg font-semibold">最近订单</h2>
             <Card>
               <CardHeader>
                 <CardTitle>订单列表</CardTitle>
-                <CardDescription>
-                  最新的订单信息
-                </CardDescription>
+                <CardDescription>最新的订单信息</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  {recentOrders.map(order => (
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                    >
                       <div>
                         <p className="font-medium">{order.id}</p>
-                        <p className="text-sm text-gray-600">{order.customer}</p>
+                        <p className="text-sm text-gray-600">
+                          {order.customer}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{order.amount}</p>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          order.status === '已完成' ? 'bg-green-100 text-green-800' :
-                          order.status === '已发货' ? 'bg-blue-100 text-blue-800' :
-                          order.status === '处理中' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${
+                            order.status === '已完成'
+                              ? 'bg-green-100 text-green-800'
+                              : order.status === '已发货'
+                                ? 'bg-blue-100 text-blue-800'
+                                : order.status === '处理中'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                          }`}
+                        >
                           {order.status}
                         </span>
                       </div>

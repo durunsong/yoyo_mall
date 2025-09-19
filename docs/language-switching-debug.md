@@ -31,6 +31,7 @@ const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
 ### 1. 简化中间件 ✅
 
 **修复前** (复杂的自定义逻辑):
+
 ```typescript
 export default function middleware(request: NextRequest) {
   const preferredLocale = request.cookies.get('preferred-locale')?.value;
@@ -40,6 +41,7 @@ export default function middleware(request: NextRequest) {
 ```
 
 **修复后** (使用标准next-intl中间件):
+
 ```typescript
 export default createMiddleware({
   locales,
@@ -53,6 +55,7 @@ export default createMiddleware({
 ### 2. 修复Header语言切换 ✅
 
 **添加依赖**:
+
 ```typescript
 import { useLocaleStorage } from '@/hooks/use-locale-storage';
 
@@ -63,28 +66,29 @@ export function AntdHeader() {
 ```
 
 **实现切换逻辑**:
+
 ```typescript
 const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
   const newLocale = key as string;
   console.log('切换语言:', newLocale);
-  
+
   // 1. 保存语言偏好
   setLocale(newLocale);
-  
+
   // 2. 构建新URL
   const currentPathname = pathname;
   let newPath: string;
-  
+
   // 3. 解析当前路径
   const pathSegments = currentPathname.split('/').filter(Boolean);
   const currentLocaleFromPath = pathSegments[0];
   const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
   const isCurrentPathHasLocale = locales.includes(currentLocaleFromPath);
-  
+
   // 4. 构建新路径
   if (newLocale === 'zh-CN') {
     // 默认语言：移除前缀
-    newPath = isCurrentPathHasLocale 
+    newPath = isCurrentPathHasLocale
       ? '/' + pathSegments.slice(1).join('/')
       : currentPathname;
   } else {
@@ -96,11 +100,11 @@ const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
       newPath = `/${newLocale}${currentPathname === '/' ? '' : currentPathname}`;
     }
   }
-  
+
   // 5. 清理并跳转
   newPath = newPath.replace(/\/+/g, '/');
   if (newPath === '') newPath = '/';
-  
+
   console.log(`路径切换: ${currentPathname} → ${newPath}`);
   window.location.href = newPath;
 };
@@ -118,10 +122,12 @@ console.log(`路径切换: ${currentPathname} → ${newPath}`);
 ## 📋 修改的文件
 
 ### 更新的文件
+
 - ✅ `src/middleware.ts` - 简化为标准next-intl中间件
 - ✅ `src/components/layout/antd-header.tsx` - 实现语言切换逻辑
 
 ### 保持的文件
+
 - ✅ `src/components/ui/language-switcher.tsx` - 独立的语言切换器组件
 - ✅ `src/hooks/use-locale-storage.ts` - 语言存储Hook
 
@@ -130,16 +136,19 @@ console.log(`路径切换: ${currentPathname} → ${newPath}`);
 ### 预期的语言切换流程
 
 1. **用户点击语言选项** (例如: 中文 → 日语)
+
    ```
    Header中的Dropdown点击 "🇯🇵 日本語"
    ```
 
 2. **触发handleLanguageChange**
+
    ```typescript
-   handleLanguageChange({ key: 'ja-JP' })
+   handleLanguageChange({ key: 'ja-JP' });
    ```
 
 3. **保存语言偏好**
+
    ```typescript
    setLocale('ja-JP');
    // → Cookie: preferred-locale=ja-JP
@@ -148,6 +157,7 @@ console.log(`路径切换: ${currentPathname} → ${newPath}`);
    ```
 
 4. **路径计算**
+
    ```
    当前: /                    → 目标: /ja-JP/
    当前: /products           → 目标: /ja-JP/products
@@ -156,6 +166,7 @@ console.log(`路径切换: ${currentPathname} → ${newPath}`);
    ```
 
 5. **页面跳转**
+
    ```typescript
    window.location.href = newPath;
    // 完整的页面重新加载，确保语言生效
@@ -199,27 +210,34 @@ console.log(`路径切换: ${currentPathname} → ${newPath}`);
 ## ⚠️ 注意事项
 
 ### 1. 浏览器刷新
+
 使用 `window.location.href` 而不是 `router.push()` 是有意的：
+
 - 确保完整的页面重新加载
 - 清除React组件状态缓存
 - 让next-intl重新初始化语言环境
 
 ### 2. 路径处理
+
 考虑了所有可能的路径情况：
+
 - 根路径 `/`
 - 带页面的路径 `/products`
 - 带语言前缀的路径 `/ja-JP/products`
 
 ### 3. 默认语言特殊处理
+
 中文作为默认语言不显示前缀，符合 `localePrefix: 'as-needed'` 配置
 
 ## 🚀 用户体验改进
 
 ### 修复前
+
 - 点击语言切换器 → 无反应
 - 只有控制台输出，没有实际切换
 
 ### 修复后
+
 - 点击语言切换器 → 立即跳转并切换语言
 - 页面内容实时更新为选择的语言
 - 语言偏好持久化保存

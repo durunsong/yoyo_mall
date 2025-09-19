@@ -1,56 +1,59 @@
 # MCP配置与开发规范
-*跨境电商网站开发的标准化规范*
+
+_跨境电商网站开发的标准化规范_
 
 ## 🔧 MCP (Model Context Protocol) 配置
 
 ### 1. 基础配置文件
 
 #### .cursorrules
+
 ```yaml
 # 跨境电商网站开发规范
-project_type: "Cross-border E-commerce Website"
-framework: "Next.js 15 + React 19"
-language: "TypeScript"
-styling: "Tailwind CSS"
-database: "PostgreSQL + Prisma"
+project_type: 'Cross-border E-commerce Website'
+framework: 'Next.js 15 + React 19'
+language: 'TypeScript'
+styling: 'Tailwind CSS'
+database: 'PostgreSQL + Prisma'
 
 # 开发原则
 development_principles:
-  - "用中文进行沟通和注释"
-  - "不要随意删改已有功能和逻辑"
-  - "每次修改代码前，不清楚的地方及时提问"
-  - "不要修改其他未提及的功能"
-  - "尽可能做详细的注释"
-  - "严谨仔细，代码风格优雅"
-  - "高性能，高可用，可扩展"
+  - '用中文进行沟通和注释'
+  - '不要随意删改已有功能和逻辑'
+  - '每次修改代码前，不清楚的地方及时提问'
+  - '不要修改其他未提及的功能'
+  - '尽可能做详细的注释'
+  - '严谨仔细，代码风格优雅'
+  - '高性能，高可用，可扩展'
 
 # 代码质量要求
 code_quality:
-  - "TypeScript严格模式"
-  - "ESLint + Prettier代码格式化"
-  - "组件化和模块化设计"
-  - "响应式设计(PC+移动端)"
-  - "性能优化优先"
-  - "无障碍访问支持"
+  - 'TypeScript严格模式'
+  - 'ESLint + Prettier代码格式化'
+  - '组件化和模块化设计'
+  - '响应式设计(PC+移动端)'
+  - '性能优化优先'
+  - '无障碍访问支持'
 
 # 架构要求
 architecture:
-  - "清晰的文件夹结构"
-  - "分层架构设计"
-  - "API设计RESTful规范"
-  - "状态管理使用Zustand"
-  - "国际化支持(next-intl)"
+  - '清晰的文件夹结构'
+  - '分层架构设计'
+  - 'API设计RESTful规范'
+  - '状态管理使用Zustand'
+  - '国际化支持(next-intl)'
 
 # 安全要求
 security:
-  - "输入验证和清理"
-  - "SQL注入防护"
-  - "XSS攻击防护"
-  - "CSRF保护"
-  - "敏感信息加密"
+  - '输入验证和清理'
+  - 'SQL注入防护'
+  - 'XSS攻击防护'
+  - 'CSRF保护'
+  - '敏感信息加密'
 ```
 
 #### .gitignore 配置
+
 ```gitignore
 # 依赖
 node_modules/
@@ -99,6 +102,7 @@ temp/
 ### 2. 开发环境配置
 
 #### VSCode 配置 (.vscode/settings.json)
+
 ```json
 {
   "typescript.preferences.importModuleSpecifier": "relative",
@@ -123,6 +127,7 @@ temp/
 ```
 
 #### ESLint 配置 (.eslintrc.json)
+
 ```json
 {
   "extends": [
@@ -149,6 +154,7 @@ temp/
 ```
 
 #### Prettier 配置 (.prettierrc)
+
 ```json
 {
   "semi": true,
@@ -169,38 +175,39 @@ temp/
 
 ```typescript
 // 组件文件 - PascalCase
-ProductCard.tsx
-UserProfile.tsx
-ShoppingCart.tsx
+ProductCard.tsx;
+UserProfile.tsx;
+ShoppingCart.tsx;
 
 // 页面文件 - kebab-case
-product-detail.tsx
-user-dashboard.tsx
-order-history.tsx
+product - detail.tsx;
+user - dashboard.tsx;
+order - history.tsx;
 
 // 工具文件 - camelCase
-formatPrice.ts
-validateEmail.ts
-apiClient.ts
+formatPrice.ts;
+validateEmail.ts;
+apiClient.ts;
 
 // 类型定义文件 - kebab-case
-product-types.ts
-user-types.ts
-api-types.ts
+product - types.ts;
+user - types.ts;
+api - types.ts;
 
 // 常量文件 - UPPER_SNAKE_CASE
-API_ENDPOINTS.ts
-PAYMENT_METHODS.ts
+API_ENDPOINTS.ts;
+PAYMENT_METHODS.ts;
 ```
 
 ### 2. 代码结构规范
 
 #### 组件结构模板
+
 ```typescript
 /**
  * 商品卡片组件
  * 用于展示商品的基本信息，支持响应式设计
- * 
+ *
  * @component
  * @example
  * <ProductCard product={productData} onAddToCart={handleAddToCart} />
@@ -231,11 +238,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   // 状态管理
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // 事件处理函数
   const handleAddToCart = useCallback(async () => {
     if (!onAddToCart) return;
-    
+
     setIsLoading(true);
     try {
       await onAddToCart(product.id);
@@ -263,7 +270,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* 商品信息 */}
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -272,7 +279,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
           {product.description}
         </p>
-        
+
         {/* 价格和按钮 */}
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold text-blue-600">
@@ -296,11 +303,12 @@ export default ProductCard;
 ```
 
 #### API 路由结构模板
+
 ```typescript
 /**
  * 商品列表API
  * GET /api/products - 获取商品列表
- * 
+ *
  * @route GET /api/products
  * @param {Object} searchParams - 查询参数
  * @param {string} searchParams.category - 商品分类
@@ -345,12 +353,24 @@ export async function GET(request: NextRequest) {
         // 分类筛选
         params.category ? { categoryId: params.category } : {},
         // 搜索筛选
-        params.search ? {
-          OR: [
-            { name: { contains: params.search, mode: 'insensitive' as const } },
-            { description: { contains: params.search, mode: 'insensitive' as const } },
-          ],
-        } : {},
+        params.search
+          ? {
+              OR: [
+                {
+                  name: {
+                    contains: params.search,
+                    mode: 'insensitive' as const,
+                  },
+                },
+                {
+                  description: {
+                    contains: params.search,
+                    mode: 'insensitive' as const,
+                  },
+                },
+              ],
+            }
+          : {},
         // 只显示已发布的商品
         { published: true },
       ],
@@ -378,9 +398,11 @@ export async function GET(request: NextRequest) {
     // 处理商品数据
     const formattedProducts = products.map(product => ({
       ...product,
-      averageRating: product.reviews.length > 0
-        ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
-        : 0,
+      averageRating:
+        product.reviews.length > 0
+          ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
+            product.reviews.length
+          : 0,
       reviewCount: product.reviews.length,
     }));
 
@@ -400,22 +422,21 @@ export async function GET(request: NextRequest) {
       data: formattedProducts,
       pagination,
     });
-
   } catch (error) {
     console.error('获取商品列表失败:', error);
-    
+
     // 参数验证错误
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: '请求参数无效', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 服务器错误
     return NextResponse.json(
       { success: false, error: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -559,6 +580,7 @@ export type ProductSortBy = 'name' | 'price' | 'createdAt' | 'updatedAt';
 ## 📁 项目结构规范
 
 ### 标准目录结构
+
 ```
 yoyo-mall/
 ├── app/                          # Next.js App Router
@@ -718,9 +740,11 @@ Closes #123
 ## Pull Request 模板
 
 ### 变更描述
+
 简要描述本次变更的内容和目的
 
 ### 变更类型
+
 - [ ] 新功能
 - [ ] Bug修复
 - [ ] 代码重构
@@ -728,11 +752,13 @@ Closes #123
 - [ ] 性能优化
 
 ### 测试情况
+
 - [ ] 单元测试通过
 - [ ] 集成测试通过
 - [ ] 手动测试完成
 
 ### 检查清单
+
 - [ ] 代码符合项目规范
 - [ ] 添加了必要的注释
 - [ ] 更新了相关文档
@@ -792,37 +818,37 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linting
-      run: npm run lint
-    
-    - name: Type checking
-      run: npm run type-check
-    
-    - name: Run tests
-      run: npm run test:coverage
-    
-    - name: Build project
-      run: npm run build
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Run tests
+        run: npm run test:coverage
+
+      - name: Build project
+        run: npm run build
 ```
 
 ## 📊 性能监控规范
@@ -837,29 +863,30 @@ export const trackPerformance = {
     // Largest Contentful Paint
     if (value > 2500) console.warn('LCP过慢:', value);
   },
-  
+
   FID: (value: number) => {
     // First Input Delay
     if (value > 100) console.warn('FID过慢:', value);
   },
-  
+
   CLS: (value: number) => {
     // Cumulative Layout Shift
     if (value > 0.1) console.warn('CLS过高:', value);
   },
-  
+
   // 自定义指标
   apiResponse: (endpoint: string, duration: number) => {
     if (duration > 1000) {
       console.warn(`API响应慢: ${endpoint} - ${duration}ms`);
     }
   },
-  
+
   componentRender: (component: string, duration: number) => {
-    if (duration > 16.67) { // 60fps
+    if (duration > 16.67) {
+      // 60fps
       console.warn(`组件渲染慢: ${component} - ${duration}ms`);
     }
-  }
+  },
 };
 ```
 
@@ -870,17 +897,17 @@ export const trackPerformance = {
 export class ErrorMonitor {
   static logError(error: Error, context: string) {
     console.error(`[${context}]`, error);
-    
+
     // 发送到监控服务
     if (process.env.NODE_ENV === 'production') {
       // Sentry or other error tracking service
     }
   }
-  
+
   static logWarning(message: string, data?: any) {
     console.warn(message, data);
   }
-  
+
   static logInfo(message: string, data?: any) {
     console.info(message, data);
   }
@@ -897,4 +924,4 @@ export class ErrorMonitor {
 4. **性能监控**: 持续关注关键指标，及时优化
 5. **文档维护**: 保持文档的及时更新
 
-*遵循这些规范将确保项目的高质量和可维护性。*
+_遵循这些规范将确保项目的高质量和可维护性。_

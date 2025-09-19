@@ -25,7 +25,7 @@ import {
   message,
   Avatar,
   Tooltip,
-  Divider
+  Divider,
 } from 'antd';
 import {
   PlusOutlined,
@@ -34,10 +34,10 @@ import {
   DeleteOutlined,
   EyeOutlined,
   FilterOutlined,
-  PackageOutlined,
+  AppstoreOutlined,
   ExportOutlined,
   ImportOutlined,
-  ShoppingCartOutlined
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -83,8 +83,8 @@ export default function ProductsAntdPage() {
       id: '1',
       name: 'iPhone 15 Pro 钛金属',
       sku: 'IPHONE-15-PRO-128GB-TITANIUM',
-      price: 999.00,
-      originalPrice: 1099.00,
+      price: 999.0,
+      originalPrice: 1099.0,
       stock: 50,
       category: '手机数码',
       brand: 'Apple',
@@ -95,7 +95,7 @@ export default function ProductsAntdPage() {
           key: 'products/iphone15pro.jpg',
           thumbnailUrl: 'https://example.com/iphone15pro_thumb.jpg',
           originalName: 'iphone15pro.jpg',
-        }
+        },
       ],
       description: '全新iPhone 15 Pro，搭载A17 Pro芯片',
       featured: true,
@@ -106,7 +106,7 @@ export default function ProductsAntdPage() {
       id: '2',
       name: 'MacBook Air M3 13英寸',
       sku: 'MBA-M3-13-256GB-SILVER',
-      price: 1199.00,
+      price: 1199.0,
       stock: 25,
       category: '电脑办公',
       brand: 'Apple',
@@ -116,7 +116,7 @@ export default function ProductsAntdPage() {
           url: 'https://example.com/macbook-air-m3.jpg',
           key: 'products/macbook-air-m3.jpg',
           originalName: 'macbook-air-m3.jpg',
-        }
+        },
       ],
       description: '轻薄便携的MacBook Air，配备M3芯片',
       featured: false,
@@ -127,7 +127,7 @@ export default function ProductsAntdPage() {
       id: '3',
       name: 'AirPods Pro 第三代',
       sku: 'AIRPODS-PRO-3-WHITE',
-      price: 249.00,
+      price: 249.0,
       stock: 100,
       category: '音频设备',
       brand: 'Apple',
@@ -152,7 +152,7 @@ export default function ProductsAntdPage() {
           size={60}
           shape="square"
           src={images[0]?.thumbnailUrl || images[0]?.url}
-          icon={<PackageOutlined />}
+          icon={<AppstoreOutlined />}
         />
       ),
     },
@@ -162,9 +162,13 @@ export default function ProductsAntdPage() {
       render: (_, record) => (
         <div>
           <div className="font-medium">{record.name}</div>
-          <Text type="secondary" className="text-sm">SKU: {record.sku}</Text>
+          <Text type="secondary" className="text-sm">
+            SKU: {record.sku}
+          </Text>
           <br />
-          <Text type="secondary" className="text-sm">{record.brand} • {record.category}</Text>
+          <Text type="secondary" className="text-sm">
+            {record.brand} • {record.category}
+          </Text>
         </div>
       ),
     },
@@ -229,17 +233,17 @@ export default function ProductsAntdPage() {
       render: (_, record) => (
         <Space size="small">
           <Tooltip title="查看">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
               size="small"
               onClick={() => handleView(record)}
             />
           </Tooltip>
           <Tooltip title="编辑">
-            <Button 
-              type="text" 
-              icon={<EditOutlined />} 
+            <Button
+              type="text"
+              icon={<EditOutlined />}
               size="small"
               onClick={() => handleEdit(record)}
             />
@@ -251,9 +255,9 @@ export default function ProductsAntdPage() {
               okText="确定"
               cancelText="取消"
             >
-              <Button 
-                type="text" 
-                icon={<DeleteOutlined />} 
+              <Button
+                type="text"
+                icon={<DeleteOutlined />}
                 size="small"
                 danger
               />
@@ -292,17 +296,23 @@ export default function ProductsAntdPage() {
   const handleSave = async (values: any) => {
     try {
       setLoading(true);
-      
+
       // 模拟保存操作
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       if (editingProduct) {
         // 更新商品
-        setProducts(products.map(p => 
-          p.id === editingProduct.id 
-            ? { ...p, ...values, updatedAt: new Date().toISOString().split('T')[0] }
-            : p
-        ));
+        setProducts(
+          products.map(p =>
+            p.id === editingProduct.id
+              ? {
+                  ...p,
+                  ...values,
+                  updatedAt: new Date().toISOString().split('T')[0],
+                }
+              : p,
+          ),
+        );
         message.success('商品更新成功');
       } else {
         // 添加新商品
@@ -315,7 +325,7 @@ export default function ProductsAntdPage() {
         setProducts([...products, newProduct]);
         message.success('商品添加成功');
       }
-      
+
       setModalVisible(false);
       form.resetFields();
     } catch (error) {
@@ -330,7 +340,7 @@ export default function ProductsAntdPage() {
       message.warning('请选择要删除的商品');
       return;
     }
-    
+
     Modal.confirm({
       title: '批量删除',
       content: `确定要删除选中的 ${selectedRowKeys.length} 个商品吗？`,
@@ -348,10 +358,11 @@ export default function ProductsAntdPage() {
   };
 
   // 过滤商品数据
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchText.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchText.toLowerCase())
+  const filteredProducts = products.filter(
+    product =>
+      product.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.sku.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.brand.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
@@ -376,26 +387,26 @@ export default function ProductsAntdPage() {
               onChange={e => setSearchText(e.target.value)}
             />
           </Col>
-          
+
           <Col xs={24} sm={12} md={16}>
             <div className="flex justify-end">
               <Space>
                 <Button icon={<FilterOutlined />}>筛选</Button>
                 <Button icon={<ExportOutlined />}>导出</Button>
                 <Button icon={<ImportOutlined />}>导入</Button>
-                
+
                 {selectedRowKeys.length > 0 && (
-                  <Button 
-                    danger 
+                  <Button
+                    danger
                     icon={<DeleteOutlined />}
                     onClick={handleBatchDelete}
                   >
                     批量删除 ({selectedRowKeys.length})
                   </Button>
                 )}
-                
-                <Button 
-                  type="primary" 
+
+                <Button
+                  type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleAdd}
                 >
@@ -417,7 +428,7 @@ export default function ProductsAntdPage() {
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条`,
+            showTotal: total => `共 ${total} 条`,
           }}
           scroll={{ x: 1200 }}
         />
@@ -566,25 +577,24 @@ export default function ProductsAntdPage() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="特色商品" name="featured" valuePropName="checked">
+              <Form.Item
+                label="特色商品"
+                name="featured"
+                valuePropName="checked"
+              >
                 <Switch />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item label="商品描述" name="description">
-            <Input.TextArea
-              rows={4}
-              placeholder="请输入商品描述"
-            />
+            <Input.TextArea rows={4} placeholder="请输入商品描述" />
           </Form.Item>
 
           <Divider />
 
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setModalVisible(false)}>
-              取消
-            </Button>
+            <Button onClick={() => setModalVisible(false)}>取消</Button>
             <Button type="primary" htmlType="submit" loading={loading}>
               {editingProduct ? '更新' : '创建'}
             </Button>

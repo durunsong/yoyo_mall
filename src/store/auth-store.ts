@@ -18,7 +18,7 @@ interface AuthState {
   user: UserInfo | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  
+
   // 操作方法
   setUser: (user: UserInfo | null) => void;
   setLoading: (loading: boolean) => void;
@@ -34,41 +34,41 @@ export const useAuthStore = create<AuthState>()(
       // 初始状态
       user: null,
       isLoading: false,
-      
+
       // 计算属性
       get isAuthenticated() {
         return !!get().user;
       },
-      
+
       // 设置用户信息
-      setUser: (user) =>
+      setUser: user =>
         set(() => ({
           user,
         })),
-      
+
       // 设置加载状态
-      setLoading: (loading) =>
+      setLoading: loading =>
         set(() => ({
           isLoading: loading,
         })),
-      
+
       // 用户登录
-      login: (user) =>
+      login: user =>
         set(() => ({
           user,
           isLoading: false,
         })),
-      
+
       // 用户登出
       logout: () =>
         set(() => ({
           user: null,
           isLoading: false,
         })),
-      
+
       // 更新用户资料
-      updateProfile: (updates) =>
-        set((state) => ({
+      updateProfile: updates =>
+        set(state => ({
           user: state.user ? { ...state.user, ...updates } : null,
         })),
     }),
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
       // 只持久化用户信息，加载状态不持久化
-      partialize: (state) => ({
+      partialize: state => ({
         user: state.user,
       }),
     },

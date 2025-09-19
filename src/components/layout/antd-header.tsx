@@ -8,17 +8,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Layout, 
-  Menu, 
-  Input, 
-  Button, 
-  Badge, 
-  Dropdown, 
+import {
+  Layout,
+  Menu,
+  Input,
+  Button,
+  Badge,
+  Dropdown,
   Space,
   Drawer,
   Avatar,
-  Typography
+  Typography,
 } from 'antd';
 import {
   SearchOutlined,
@@ -28,7 +28,7 @@ import {
   GlobalOutlined,
   BellOutlined,
   HeartOutlined,
-  LogoutOutlined
+  LogoutOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { AuthModal } from '@/components/auth/auth-modal';
@@ -59,26 +59,26 @@ const languageItems: MenuProps['items'] = [
 
 // 用户菜单
 const userMenuItems: MenuProps['items'] = [
-  { 
-    key: 'profile', 
+  {
+    key: 'profile',
     label: '个人中心',
-    icon: <UserOutlined />
+    icon: <UserOutlined />,
   },
-  { 
-    key: 'orders', 
+  {
+    key: 'orders',
     label: '我的订单',
-    icon: <ShoppingCartOutlined />
+    icon: <ShoppingCartOutlined />,
   },
-  { 
-    key: 'wishlist', 
+  {
+    key: 'wishlist',
     label: '我的收藏',
-    icon: <HeartOutlined />
+    icon: <HeartOutlined />,
   },
   { type: 'divider' },
-  { 
-    key: 'logout', 
+  {
+    key: 'logout',
     label: '退出登录',
-    icon: <LogoutOutlined />
+    icon: <LogoutOutlined />,
   },
 ];
 
@@ -99,22 +99,22 @@ export function AntdHeader() {
   const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
     const newLocale = key as string;
     console.log('切换语言:', newLocale);
-    
+
     // 使用hook保存语言偏好
     setLocale(newLocale);
-    
+
     // 构建新的URL
     const currentPathname = pathname;
     let newPath: string;
-    
+
     // 获取当前路径中的语言部分
     const pathSegments = currentPathname.split('/').filter(Boolean);
     const currentLocaleFromPath = pathSegments[0];
-    
+
     // 检查第一个段是否是语言代码
     const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
     const isCurrentPathHasLocale = locales.includes(currentLocaleFromPath);
-    
+
     if (newLocale === 'zh-CN') {
       // 切换到默认语言，移除语言前缀
       if (isCurrentPathHasLocale) {
@@ -131,13 +131,13 @@ export function AntdHeader() {
         newPath = `/${newLocale}${currentPathname === '/' ? '' : currentPathname}`;
       }
     }
-    
+
     // 清理路径
     newPath = newPath.replace(/\/+/g, '/');
     if (newPath === '') newPath = '/';
-    
+
     console.log(`路径切换: ${currentPathname} → ${newPath}`);
-    
+
     // 使用window.location.href进行完整的页面重新加载
     window.location.href = newPath;
   };
@@ -145,7 +145,7 @@ export function AntdHeader() {
   // 处理用户菜单点击
   const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
     console.log('用户菜单:', key);
-    
+
     switch (key) {
       case 'profile':
         // 跳转到个人中心
@@ -173,17 +173,19 @@ export function AntdHeader() {
     // 清理用户状态
     localStorage.removeItem('user-token');
     localStorage.removeItem('user-info');
-    
+
     // 清理认证相关的cookie
-    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    document.cookie = 'refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    
+    document.cookie =
+      'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie =
+      'refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
     // 显示登出成功消息
     console.log('用户已登出');
-    
+
     // 刷新页面或跳转到首页
     router.push('/');
-    
+
     // 可选：显示登出成功提示
     // message.success('已成功登出');
   };
@@ -191,7 +193,7 @@ export function AntdHeader() {
   return (
     <>
       {/* 顶部通知栏 */}
-      <div className="bg-blue-600 text-white text-center py-1 text-sm">
+      <div className="bg-blue-600 py-1 text-center text-sm text-white">
         <Space size="large">
           <Text className="text-white">免费配送满$99</Text>
           <Text className="text-white">7天无理由退货</Text>
@@ -200,21 +202,26 @@ export function AntdHeader() {
       </div>
 
       {/* 主导航栏 */}
-      <Header className="bg-white shadow-sm px-4 lg:px-8" style={{ height: 'auto', lineHeight: 'normal', padding: '12px 24px' }}>
-        <div className="max-w-7xl mx-auto">
+      <Header
+        className="bg-white px-4 shadow-sm lg:px-8"
+        style={{ height: 'auto', lineHeight: 'normal', padding: '12px 24px' }}
+      >
+        <div className="mx-auto max-w-7xl">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">Y</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
+                  <span className="text-xl font-bold text-white">Y</span>
                 </div>
-                <span className="hidden sm:block text-xl font-bold text-gray-900">YOYO Mall</span>
+                <span className="hidden text-xl font-bold text-gray-900 sm:block">
+                  YOYO Mall
+                </span>
               </Link>
             </div>
 
             {/* 桌面端导航菜单 */}
-            <div className="hidden lg:flex flex-1 justify-center">
+            <div className="hidden flex-1 justify-center lg:flex">
               <Menu
                 mode="horizontal"
                 selectedKeys={[pathname]}
@@ -227,7 +234,7 @@ export function AntdHeader() {
             </div>
 
             {/* 搜索框 - 桌面端 */}
-            <div className="hidden lg:block mx-8 flex-1 max-w-md">
+            <div className="mx-8 hidden max-w-md flex-1 lg:block">
               <Search
                 placeholder="搜索商品..."
                 allowClear
@@ -264,8 +271,8 @@ export function AntdHeader() {
 
               {/* 购物车 */}
               <Badge count={0} showZero={false}>
-                <Button 
-                  type="text" 
+                <Button
+                  type="text"
                   icon={<ShoppingCartOutlined />}
                   onClick={() => {
                     // TODO: 打开购物车
@@ -318,10 +325,7 @@ export function AntdHeader() {
             items={navItems.map(item => ({
               key: item.key,
               label: (
-                <Link 
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
+                <Link href={item.href} onClick={() => setMobileMenuOpen(false)}>
                   {item.label}
                 </Link>
               ),
@@ -329,8 +333,8 @@ export function AntdHeader() {
           />
 
           {/* 其他操作 */}
-          <div className="space-y-2 pt-4 border-t">
-            <Button 
+          <div className="space-y-2 border-t pt-4">
+            <Button
               block
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -347,11 +351,7 @@ export function AntdHeader() {
       </Drawer>
 
       {/* 认证弹窗 */}
-      <AuthModal 
-        open={isOpen}
-        onClose={closeModal}
-        defaultTab={defaultTab}
-      />
+      <AuthModal open={isOpen} onClose={closeModal} defaultTab={defaultTab} />
     </>
   );
 }

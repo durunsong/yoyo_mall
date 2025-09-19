@@ -34,47 +34,47 @@ interface ErrorFallbackProps {
 /**
  * 默认错误回退组件
  */
-function DefaultErrorFallback({ error, resetError, onGoHome }: ErrorFallbackProps) {
+function DefaultErrorFallback({
+  error,
+  resetError,
+  onGoHome,
+}: ErrorFallbackProps) {
   return (
-    <div className="min-h-[400px] flex items-center justify-center p-4">
+    <div className="flex min-h-[400px] items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-6 h-6 text-red-600" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
           </div>
           <CardTitle className="text-red-600">出现错误</CardTitle>
         </CardHeader>
-        <CardContent className="text-center space-y-4">
+        <CardContent className="space-y-4 text-center">
           <p className="text-gray-600">
             抱歉，页面出现了意外错误。请尝试刷新页面或返回首页。
           </p>
-          
+
           {process.env.NODE_ENV === 'development' && error && (
             <details className="text-left">
-              <summary className="cursor-pointer text-sm font-medium text-gray-700 mb-2">
+              <summary className="mb-2 cursor-pointer text-sm font-medium text-gray-700">
                 错误详情 (开发模式)
               </summary>
-              <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+              <pre className="overflow-auto rounded bg-gray-100 p-3 text-xs">
                 {error.message}
                 {error.stack && `\n\n${error.stack}`}
               </pre>
             </details>
           )}
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={resetError}
-              variant="outline"
-              className="flex-1"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={resetError} variant="outline" className="flex-1">
+              <RefreshCw className="mr-2 h-4 w-4" />
               重试
             </Button>
             <Button
-              onClick={onGoHome || (() => window.location.href = '/')}
+              onClick={onGoHome || (() => (window.location.href = '/'))}
               className="flex-1"
             >
-              <Home className="w-4 h-4 mr-2" />
+              <Home className="mr-2 h-4 w-4" />
               返回首页
             </Button>
           </div>
@@ -107,7 +107,7 @@ export class ErrorBoundary extends React.Component<
     // 记录错误信息
     console.error('ErrorBoundary 捕获到错误:', error);
     console.error('错误信息:', errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
@@ -132,7 +132,7 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      
+
       return (
         <FallbackComponent
           error={this.state.error}
@@ -158,15 +158,15 @@ export function ApiError({ error, onRetry, className }: ApiErrorProps) {
   const errorMessage = typeof error === 'string' ? error : error.message;
 
   return (
-    <div className={`text-center py-8 ${className}`}>
-      <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-        <AlertTriangle className="w-6 h-6 text-red-600" />
+    <div className={`py-8 text-center ${className}`}>
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+        <AlertTriangle className="h-6 w-6 text-red-600" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">加载失败</h3>
-      <p className="text-gray-600 mb-4">{errorMessage}</p>
+      <h3 className="mb-2 text-lg font-semibold text-gray-900">加载失败</h3>
+      <p className="mb-4 text-gray-600">{errorMessage}</p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           重试
         </Button>
       )}
@@ -179,20 +179,18 @@ export function ApiError({ error, onRetry, className }: ApiErrorProps) {
  */
 export function NotFound() {
   return (
-    <div className="min-h-[400px] flex items-center justify-center p-4">
+    <div className="flex min-h-[400px] items-center justify-center p-4">
       <div className="text-center">
-        <div className="text-6xl font-bold text-gray-300 mb-4">404</div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">页面未找到</h1>
-        <p className="text-gray-600 mb-6">
+        <div className="mb-4 text-6xl font-bold text-gray-300">404</div>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900">页面未找到</h1>
+        <p className="mb-6 text-gray-600">
           抱歉，您访问的页面不存在或已被移除。
         </p>
         <div className="space-x-4">
           <Button onClick={() => window.history.back()} variant="outline">
             返回上页
           </Button>
-          <Button onClick={() => window.location.href = '/'}>
-            返回首页
-          </Button>
+          <Button onClick={() => (window.location.href = '/')}>返回首页</Button>
         </div>
       </div>
     </div>
@@ -204,17 +202,15 @@ export function NotFound() {
  */
 export function NetworkError({ onRetry }: { onRetry?: () => void }) {
   return (
-    <div className="text-center py-8">
-      <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-        <AlertTriangle className="w-6 h-6 text-yellow-600" />
+    <div className="py-8 text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
+        <AlertTriangle className="h-6 w-6 text-yellow-600" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">网络连接错误</h3>
-      <p className="text-gray-600 mb-4">
-        请检查您的网络连接，然后重试。
-      </p>
+      <h3 className="mb-2 text-lg font-semibold text-gray-900">网络连接错误</h3>
+      <p className="mb-4 text-gray-600">请检查您的网络连接，然后重试。</p>
       {onRetry && (
         <Button onClick={onRetry} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           重试
         </Button>
       )}

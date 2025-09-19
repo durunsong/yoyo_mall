@@ -5,6 +5,7 @@
 ## ✨ 功能特色
 
 ### 🔐 登录功能
+
 - 支持用户名/邮箱/手机号登录
 - 密码输入支持显示/隐藏切换
 - "记住我"选项
@@ -12,6 +13,7 @@
 - 演示账户信息提示
 
 ### 📝 注册功能
+
 - 完整的用户信息收集（用户名、邮箱、手机号）
 - 实时密码强度检测和可视化指示器
 - 密码确认验证
@@ -19,15 +21,17 @@
 - 详细的表单验证规则
 
 ### 🔒 密码强度校验
+
 - 8位最小长度要求
 - 大小写字母检测
-- 数字字符检测  
+- 数字字符检测
 - 特殊字符检测
 - 实时强度评分（弱/中/强）
 - 彩色进度条显示
 - 具体建议提示
 
 ### 🌐 谷歌一键登录
+
 - 集成 `@react-oauth/google`
 - 支持登录和注册场景
 - 响应式按钮设计
@@ -48,12 +52,8 @@ function App() {
     <div>
       <button onClick={() => openModal('login')}>登录</button>
       <button onClick={() => openModal('register')}>注册</button>
-      
-      <AuthModal 
-        open={isOpen}
-        onClose={closeModal}
-        defaultTab={defaultTab}
-      />
+
+      <AuthModal open={isOpen} onClose={closeModal} defaultTab={defaultTab} />
     </div>
   );
 }
@@ -62,6 +62,7 @@ function App() {
 ### 2. 集成到头部导航
 
 组件已经集成到以下导航组件中：
+
 - `src/components/layout/antd-header.tsx` - Ant Design版本
 - `src/components/layout/header.tsx` - 常规版本
 
@@ -70,12 +71,12 @@ function App() {
 使用 `useAuthModal` Hook 管理弹窗状态：
 
 ```tsx
-const { 
-  isOpen,      // 弹窗是否打开
-  defaultTab,  // 默认标签页 ('login' | 'register')
-  openModal,   // 打开弹窗函数
-  closeModal,  // 关闭弹窗函数
-  switchTab    // 切换标签页函数
+const {
+  isOpen, // 弹窗是否打开
+  defaultTab, // 默认标签页 ('login' | 'register')
+  openModal, // 打开弹窗函数
+  closeModal, // 关闭弹窗函数
+  switchTab, // 切换标签页函数
 } = useAuthModal();
 ```
 
@@ -95,20 +96,23 @@ GOOGLE_CLIENT_SECRET="your_google_client_secret"
 ### 密码强度规则
 
 当前密码强度规则：
+
 - ✅ 长度至少8位 (20分)
-- ✅ 包含小写字母 (20分)  
+- ✅ 包含小写字母 (20分)
 - ✅ 包含大写字母 (20分)
 - ✅ 包含数字 (20分)
 - ✅ 包含特殊字符 (20分)
 
 总分100分：
+
 - 0-39分：弱（红色）
-- 40-79分：中（橙色）  
+- 40-79分：中（橙色）
 - 80-100分：强（绿色）
 
 ## 🎨 样式定制
 
 ### 弹窗尺寸
+
 ```tsx
 <Modal
   width={500}        // 可调整宽度
@@ -118,9 +122,10 @@ GOOGLE_CLIENT_SECRET="your_google_client_secret"
 ```
 
 ### 密码强度指示器
+
 ```tsx
-<Progress 
-  percent={passwordStrength.score} 
+<Progress
+  percent={passwordStrength.score}
   strokeColor={passwordStrength.color}
   showInfo={false}
   size="small"
@@ -130,13 +135,14 @@ GOOGLE_CLIENT_SECRET="your_google_client_secret"
 ## 🔄 API 集成
 
 ### 登录API
+
 ```tsx
 const handleLogin = async (values: LoginFormValues) => {
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values)
+      body: JSON.stringify(values),
     });
     // 处理响应...
   } catch (error) {
@@ -146,13 +152,14 @@ const handleLogin = async (values: LoginFormValues) => {
 ```
 
 ### 注册API
+
 ```tsx
 const handleRegister = async (values: RegisterFormValues) => {
   try {
     const response = await fetch('/api/auth/register', {
-      method: 'POST', 
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values)
+      body: JSON.stringify(values),
     });
     // 处理响应...
   } catch (error) {
@@ -162,13 +169,14 @@ const handleRegister = async (values: RegisterFormValues) => {
 ```
 
 ### 谷歌OAuth API
+
 ```tsx
 const handleGoogleSuccess = async (credentialResponse: any) => {
   try {
     const response = await fetch('/api/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: credentialResponse.credential })
+      body: JSON.stringify({ token: credentialResponse.credential }),
     });
     // 处理响应...
   } catch (error) {
@@ -202,6 +210,7 @@ const handleGoogleSuccess = async (credentialResponse: any) => {
 ## 🚀 后续扩展
 
 可以考虑添加的功能：
+
 - 微信登录集成
 - 短信验证码登录
 - 双因素认证

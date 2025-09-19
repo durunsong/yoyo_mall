@@ -33,6 +33,7 @@
 ## 步骤 4: 获取凭据
 
 创建完成后，您将获得：
+
 - **Client ID** - 复制此值到 `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - **Client Secret** - 复制此值到 `GOOGLE_CLIENT_SECRET`
 

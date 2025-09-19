@@ -6,15 +6,15 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Card, 
-  Typography, 
-  Space, 
-  Row, 
-  Col, 
+import {
+  Card,
+  Typography,
+  Space,
+  Row,
+  Col,
   Divider,
   Button,
-  message
+  message,
 } from 'antd';
 import { ImageUpload, AvatarUpload } from '@/components/ui';
 
@@ -56,16 +56,18 @@ export default function UploadDemoPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="mx-auto max-w-6xl p-6">
       <div className="mb-8">
         <Title level={2}>图片上传功能演示</Title>
         <Paragraph className="text-gray-600">
           演示各种图片上传场景的使用方法，基于阿里云OSS存储
         </Paragraph>
-        
+
         <Space>
           <Button onClick={handleShowData}>查看数据</Button>
-          <Button onClick={handleClearAll} danger>清空所有</Button>
+          <Button onClick={handleClearAll} danger>
+            清空所有
+          </Button>
         </Space>
       </div>
 
@@ -77,7 +79,7 @@ export default function UploadDemoPage() {
               <Text type="secondary">
                 支持多张图片上传，自动生成缩略图，适用于商品展示
               </Text>
-              
+
               <ImageUpload
                 value={productImages}
                 onChange={setProductImages}
@@ -90,9 +92,9 @@ export default function UploadDemoPage() {
                 listType="picture-card"
               />
 
-              <div className="bg-gray-50 p-3 rounded">
+              <div className="rounded bg-gray-50 p-3">
                 <Text strong>配置参数：</Text>
-                <ul className="text-sm text-gray-600 mt-2">
+                <ul className="mt-2 text-sm text-gray-600">
                   <li>最大数量：5张</li>
                   <li>存储路径：yoyo_mall/products/</li>
                   <li>生成缩略图：是</li>
@@ -111,7 +113,7 @@ export default function UploadDemoPage() {
               <Text type="secondary">
                 单张图片上传，高质量保存，适用于品牌Logo
               </Text>
-              
+
               <ImageUpload
                 value={brandLogo}
                 onChange={setBrandLogo}
@@ -124,9 +126,9 @@ export default function UploadDemoPage() {
                 listType="picture-card"
               />
 
-              <div className="bg-gray-50 p-3 rounded">
+              <div className="rounded bg-gray-50 p-3">
                 <Text strong>配置参数：</Text>
-                <ul className="text-sm text-gray-600 mt-2">
+                <ul className="mt-2 text-sm text-gray-600">
                   <li>最大数量：1张</li>
                   <li>存储路径：yoyo_mall/brands/</li>
                   <li>生成缩略图：否</li>
@@ -142,10 +144,8 @@ export default function UploadDemoPage() {
         <Col xs={24} lg={12}>
           <Card title="轮播图上传">
             <Space direction="vertical" className="w-full">
-              <Text type="secondary">
-                大图上传，适用于首页轮播图等场景
-              </Text>
-              
+              <Text type="secondary">大图上传，适用于首页轮播图等场景</Text>
+
               <ImageUpload
                 value={bannerImage}
                 onChange={setBannerImage}
@@ -159,9 +159,9 @@ export default function UploadDemoPage() {
                 listType="text"
               />
 
-              <div className="bg-gray-50 p-3 rounded">
+              <div className="rounded bg-gray-50 p-3">
                 <Text strong>配置参数：</Text>
-                <ul className="text-sm text-gray-600 mt-2">
+                <ul className="mt-2 text-sm text-gray-600">
                   <li>最大数量：1张</li>
                   <li>最大大小：5MB</li>
                   <li>存储路径：yoyo_mall/banners/</li>
@@ -177,10 +177,8 @@ export default function UploadDemoPage() {
         <Col xs={24} lg={12}>
           <Card title="用户头像上传">
             <Space direction="vertical" className="w-full">
-              <Text type="secondary">
-                圆形头像上传，自动裁剪和优化
-              </Text>
-              
+              <Text type="secondary">圆形头像上传，自动裁剪和优化</Text>
+
               <div className="text-center">
                 <AvatarUpload
                   value={userAvatar}
@@ -191,9 +189,9 @@ export default function UploadDemoPage() {
                 />
               </div>
 
-              <div className="bg-gray-50 p-3 rounded">
+              <div className="rounded bg-gray-50 p-3">
                 <Text strong>配置参数：</Text>
-                <ul className="text-sm text-gray-600 mt-2">
+                <ul className="mt-2 text-sm text-gray-600">
                   <li>显示大小：120px</li>
                   <li>最大大小：2MB</li>
                   <li>存储路径：yoyo_mall/avatars/</li>
@@ -224,18 +222,18 @@ export default function UploadDemoPage() {
               <li>✅ 文件删除管理</li>
             </ul>
           </Col>
-          
+
           <Col xs={24} md={12}>
             <Title level={4}>存储结构</Title>
-            <div className="bg-gray-50 p-4 rounded font-mono text-sm">
+            <div className="rounded bg-gray-50 p-4 font-mono text-sm">
               <div>OSS Bucket: next-static-oss</div>
               <div>基础路径: yoyo_mall/</div>
-              <div>├── products/     # 商品图片</div>
-              <div>├── brands/       # 品牌Logo</div>
-              <div>├── banners/      # 轮播图</div>
-              <div>├── avatars/      # 用户头像</div>
-              <div>├── categories/   # 分类图片</div>
-              <div>└── temp/         # 临时文件</div>
+              <div>├── products/ # 商品图片</div>
+              <div>├── brands/ # 品牌Logo</div>
+              <div>├── banners/ # 轮播图</div>
+              <div>├── avatars/ # 用户头像</div>
+              <div>├── categories/ # 分类图片</div>
+              <div>└── temp/ # 临时文件</div>
             </div>
           </Col>
         </Row>

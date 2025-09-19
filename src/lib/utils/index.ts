@@ -159,7 +159,9 @@ export function deepClone<T>(obj: T): T {
  * @param obj - 原始对象
  * @returns 移除空值后的对象
  */
-export function removeEmptyValues<T extends Record<string, any>>(obj: T): Partial<T> {
+export function removeEmptyValues<T extends Record<string, any>>(
+  obj: T,
+): Partial<T> {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     if (value !== null && value !== undefined && value !== '') {
       acc[key as keyof T] = value;
@@ -212,11 +214,11 @@ export function throttle<T extends (...args: any[]) => void>(
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -246,7 +248,8 @@ export function isValidPhoneNumber(phone: string): boolean {
  * @returns 随机字符串
  */
 export function generateRandomString(length: number): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));

@@ -6,20 +6,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Upload, 
-  Avatar, 
-  Button, 
-  message, 
+import {
+  Upload,
+  Avatar,
+  Button,
+  message,
   Space,
   Modal,
-  Typography
+  Typography,
 } from 'antd';
 import {
   UploadOutlined,
   UserOutlined,
   LoadingOutlined,
-  CameraOutlined
+  CameraOutlined,
 } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -47,7 +47,10 @@ export function AvatarUpload({
   // 上传前验证
   const beforeUpload = (file: File) => {
     // 检查文件类型
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
+    const isJpgOrPng =
+      file.type === 'image/jpeg' ||
+      file.type === 'image/png' ||
+      file.type === 'image/webp';
     if (!isJpgOrPng) {
       message.error('只能上传 JPG/PNG/WebP 格式的图片!');
       return false;
@@ -75,7 +78,7 @@ export function AvatarUpload({
 
     try {
       setUploading(true);
-      
+
       const response = await fetch('/api/upload/image', {
         method: 'POST',
         body: formData,
@@ -113,11 +116,11 @@ export function AvatarUpload({
     <div className="avatar-upload">
       <Space direction="vertical" align="center">
         {/* 头像显示区域 */}
-        <div 
+        <div
           className="avatar-wrapper"
-          style={{ 
+          style={{
             position: 'relative',
-            cursor: value ? 'pointer' : 'default'
+            cursor: value ? 'pointer' : 'default',
           }}
           onClick={handlePreview}
         >
@@ -131,7 +134,7 @@ export function AvatarUpload({
               border: '2px solid #d9d9d9',
             }}
           />
-          
+
           {/* 悬浮的相机图标 */}
           <div
             style={{
@@ -173,7 +176,8 @@ export function AvatarUpload({
 
         {/* 提示文字 */}
         <Text type="secondary" style={{ fontSize: 12, textAlign: 'center' }}>
-          支持 JPG、PNG、WebP 格式<br />
+          支持 JPG、PNG、WebP 格式
+          <br />
           文件大小不超过 {maxSize}MB
         </Text>
       </Space>
@@ -188,11 +192,7 @@ export function AvatarUpload({
         centered
       >
         <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <Avatar
-            size={200}
-            src={value}
-            shape={shape}
-          />
+          <Avatar size={200} src={value} shape={shape} />
         </div>
       </Modal>
 
@@ -200,7 +200,7 @@ export function AvatarUpload({
         .avatar-upload {
           display: inline-block;
         }
-        
+
         .avatar-wrapper:hover .ant-avatar {
           opacity: 0.8;
         }

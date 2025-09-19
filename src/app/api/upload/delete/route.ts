@@ -15,7 +15,7 @@ export async function DELETE(request: NextRequest) {
     if (!key && (!keys || !Array.isArray(keys) || keys.length === 0)) {
       return NextResponse.json(
         { error: '请提供要删除的文件key或keys数组' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -31,11 +31,11 @@ export async function DELETE(request: NextRequest) {
       } catch (error) {
         console.error('删除文件失败:', error);
         return NextResponse.json(
-          { 
+          {
             error: '删除文件失败',
-            message: error instanceof Error ? error.message : '未知错误'
+            message: error instanceof Error ? error.message : '未知错误',
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -52,27 +52,24 @@ export async function DELETE(request: NextRequest) {
       } catch (error) {
         console.error('批量删除文件失败:', error);
         return NextResponse.json(
-          { 
+          {
             error: '批量删除文件失败',
-            message: error instanceof Error ? error.message : '未知错误'
+            message: error instanceof Error ? error.message : '未知错误',
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
-    return NextResponse.json(
-      { error: '无效的请求参数' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: '无效的请求参数' }, { status: 400 });
   } catch (error) {
     console.error('文件删除API错误:', error);
     return NextResponse.json(
-      { 
+      {
         error: '服务器错误',
-        message: error instanceof Error ? error.message : '未知错误'
+        message: error instanceof Error ? error.message : '未知错误',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

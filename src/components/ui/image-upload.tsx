@@ -6,19 +6,19 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { 
-  Upload, 
-  Button, 
-  Card, 
-  Image, 
-  Progress, 
-  Space, 
-  Typography, 
-  Row, 
+import {
+  Upload,
+  Button,
+  Card,
+  Image,
+  Progress,
+  Space,
+  Typography,
+  Row,
   Col,
   message,
   Modal,
-  Tag
+  Tag,
 } from 'antd';
 import {
   UploadOutlined,
@@ -26,7 +26,7 @@ import {
   EyeOutlined,
   PlusOutlined,
   LoadingOutlined,
-  FileImageOutlined
+  FileImageOutlined,
 } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 
@@ -81,7 +81,9 @@ export function ImageUpload({
   className,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  );
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
@@ -112,7 +114,12 @@ export function ImageUpload({
   };
 
   // 自定义上传函数
-  const customUpload = async ({ file, onProgress, onSuccess, onError }: any) => {
+  const customUpload = async ({
+    file,
+    onProgress,
+    onSuccess,
+    onError,
+  }: any) => {
     const formData = new FormData();
     formData.append('files', file);
     formData.append('type', type);
@@ -123,7 +130,7 @@ export function ImageUpload({
 
     try {
       setUploading(true);
-      
+
       const response = await fetch('/api/upload/image', {
         method: 'POST',
         body: formData,
@@ -267,7 +274,7 @@ export function ImageUpload({
 
     return (
       <Space direction="vertical" className="w-full">
-        {value.map((file) => (
+        {value.map(file => (
           <Card key={file.key} size="small">
             <Space>
               <FileImageOutlined />
@@ -339,11 +346,7 @@ export function ImageUpload({
         width={800}
         centered
       >
-        <Image
-          alt="preview"
-          style={{ width: '100%' }}
-          src={previewImage}
-        />
+        <Image alt="preview" style={{ width: '100%' }} src={previewImage} />
       </Modal>
 
       <style jsx>{`
@@ -355,19 +358,19 @@ export function ImageUpload({
           cursor: pointer;
           transition: border-color 0.3s;
         }
-        
+
         .upload-button:hover {
           border-color: #1890ff;
         }
-        
+
         .upload-card {
           width: 120px;
         }
-        
+
         .upload-card .ant-card-cover {
           padding: 8px;
         }
-        
+
         .upload-card .ant-card-body {
           padding: 8px;
         }

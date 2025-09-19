@@ -9,16 +9,16 @@ import { locales, defaultLocale } from './i18n';
 export default createMiddleware({
   // 支持的语言列表
   locales,
-  
+
   // 默认语言
   defaultLocale,
-  
+
   // 路径配置
   localePrefix: 'as-needed', // 默认语言不显示前缀
-  
+
   // 备用语言检测
   alternateLinks: true,
-  
+
   // 语言检测策略
   localeDetection: true,
 });

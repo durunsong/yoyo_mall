@@ -8,7 +8,7 @@ import { getRequestConfig } from 'next-intl/server';
 
 // 支持的语言列表
 export const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'] as const;
-export type Locale = typeof locales[number];
+export type Locale = (typeof locales)[number];
 
 // 默认语言
 export const defaultLocale: Locale = 'zh-CN';

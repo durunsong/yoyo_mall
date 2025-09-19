@@ -30,7 +30,7 @@ import {
   Statistic,
   message,
   Modal,
-  Switch
+  Switch,
 } from 'antd';
 import {
   UserOutlined,
@@ -45,7 +45,7 @@ import {
   EnvironmentOutlined,
   StarOutlined,
   TrophyOutlined,
-  WalletOutlined
+  WalletOutlined,
 } from '@ant-design/icons';
 import type { UploadProps, TabsProps } from 'antd';
 
@@ -65,10 +65,10 @@ const mockUserData = {
   memberLevel: 'Gold',
   memberPoints: 2580,
   totalOrders: 45,
-  totalSpent: 12580.00,
+  totalSpent: 12580.0,
   joinDate: '2023-08-12',
   bio: '热爱购物的用户',
-  company: 'YOYO科技有限公司'
+  company: 'YOYO科技有限公司',
 };
 
 // 模拟订单数据
@@ -79,7 +79,7 @@ const mockOrders = [
     status: 'delivered',
     total: 299.99,
     items: 3,
-    products: ['iPhone 数据线', 'AirPods Pro', '手机壳']
+    products: ['iPhone 数据线', 'AirPods Pro', '手机壳'],
   },
   {
     id: 'ORD002',
@@ -87,7 +87,7 @@ const mockOrders = [
     status: 'shipping',
     total: 159.99,
     items: 2,
-    products: ['蓝牙耳机', '充电宝']
+    products: ['蓝牙耳机', '充电宝'],
   },
   {
     id: 'ORD003',
@@ -95,8 +95,8 @@ const mockOrders = [
     status: 'processing',
     total: 89.99,
     items: 1,
-    products: ['无线鼠标']
-  }
+    products: ['无线鼠标'],
+  },
 ];
 
 // 模拟收货地址数据
@@ -107,7 +107,7 @@ const mockAddresses = [
     phone: '13888888888',
     address: '北京市朝阳区建国门外大街1号',
     postcode: '100022',
-    isDefault: true
+    isDefault: true,
   },
   {
     id: 'addr2',
@@ -115,8 +115,8 @@ const mockAddresses = [
     phone: '13999999999',
     address: '上海市浦东新区陆家嘴环路1000号',
     postcode: '200120',
-    isDefault: false
-  }
+    isDefault: false,
+  },
 ];
 
 export default function ProfilePage() {
@@ -126,7 +126,7 @@ export default function ProfilePage() {
   const [form] = Form.useForm();
 
   // 处理头像上传
-  const handleAvatarUpload: UploadProps['onChange'] = (info) => {
+  const handleAvatarUpload: UploadProps['onChange'] = info => {
     if (info.file.status === 'done') {
       message.success('头像上传成功');
     } else if (info.file.status === 'error') {
@@ -152,7 +152,7 @@ export default function ProfilePage() {
       delivered: { color: 'green', text: '已送达' },
       shipping: { color: 'blue', text: '配送中' },
       processing: { color: 'orange', text: '处理中' },
-      cancelled: { color: 'red', text: '已取消' }
+      cancelled: { color: 'red', text: '已取消' },
     };
     const statusInfo = statusMap[status as keyof typeof statusMap];
     return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
@@ -165,7 +165,7 @@ export default function ProfilePage() {
       Silver: '#C0C0C0',
       Gold: '#FFD700',
       Platinum: '#E5E4E2',
-      Diamond: '#B9F2FF'
+      Diamond: '#B9F2FF',
     };
     return levelMap[level as keyof typeof levelMap] || '#1890ff';
   };
@@ -186,30 +186,34 @@ export default function ProfilePage() {
       title: '商品',
       dataIndex: 'products',
       key: 'products',
-      render: (products: string[]) => products.join(', ')
+      render: (products: string[]) => products.join(', '),
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => getOrderStatusTag(status)
+      render: (status: string) => getOrderStatusTag(status),
     },
     {
       title: '金额',
       dataIndex: 'total',
       key: 'total',
-      render: (total: number) => `¥${total.toFixed(2)}`
+      render: (total: number) => `¥${total.toFixed(2)}`,
     },
     {
       title: '操作',
       key: 'actions',
       render: () => (
         <Space>
-          <Button type="link" size="small">查看详情</Button>
-          <Button type="link" size="small">再次购买</Button>
+          <Button type="link" size="small">
+            查看详情
+          </Button>
+          <Button type="link" size="small">
+            再次购买
+          </Button>
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   // 标签页配置
@@ -226,39 +230,52 @@ export default function ProfilePage() {
         <Row gutter={[24, 24]}>
           {/* 左侧：用户信息卡片 */}
           <Col xs={24} lg={8}>
-            <Card title="个人资料" extra={
-              <Button 
-                type="link" 
-                icon={<EditOutlined />}
-                onClick={() => setIsEditing(true)}
-              >
-                编辑
-              </Button>
-            }>
-              <div className="text-center mb-6">
+            <Card
+              title="个人资料"
+              extra={
+                <Button
+                  type="link"
+                  icon={<EditOutlined />}
+                  onClick={() => setIsEditing(true)}
+                >
+                  编辑
+                </Button>
+              }
+            >
+              <div className="mb-6 text-center">
                 <div className="relative inline-block">
-                  <Avatar size={100} src={mockUserData.avatar} icon={<UserOutlined />} />
+                  <Avatar
+                    size={100}
+                    src={mockUserData.avatar}
+                    icon={<UserOutlined />}
+                  />
                   <Upload
                     showUploadList={false}
                     onChange={handleAvatarUpload}
-                    className="absolute bottom-0 right-0"
+                    className="absolute right-0 bottom-0"
                   >
-                    <Button 
-                      type="primary" 
-                      size="small" 
-                      shape="circle" 
+                    <Button
+                      type="primary"
+                      size="small"
+                      shape="circle"
                       icon={<CameraOutlined />}
                       className="shadow-lg"
                     />
                   </Upload>
                 </div>
-                <h3 className="mt-4 mb-2 text-lg font-semibold">{mockUserData.fullName}</h3>
-                <Badge 
-                  count={mockUserData.memberLevel} 
-                  style={{ backgroundColor: getMemberLevelColor(mockUserData.memberLevel) }}
+                <h3 className="mt-4 mb-2 text-lg font-semibold">
+                  {mockUserData.fullName}
+                </h3>
+                <Badge
+                  count={mockUserData.memberLevel}
+                  style={{
+                    backgroundColor: getMemberLevelColor(
+                      mockUserData.memberLevel,
+                    ),
+                  }}
                 />
               </div>
-              
+
               <Space direction="vertical" className="w-full">
                 <div className="flex justify-between">
                   <span className="text-gray-600">用户名:</span>
@@ -282,31 +299,31 @@ export default function ProfilePage() {
             {/* 会员权益卡片 */}
             <Card title="会员权益" className="mt-4">
               <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span>积分余额</span>
                   <span className="text-lg font-semibold text-orange-500">
                     {mockUserData.memberPoints.toLocaleString()}
                   </span>
                 </div>
-                <Progress 
-                  percent={65} 
+                <Progress
+                  percent={65}
                   strokeColor="#ff7a00"
                   format={() => '升级至白金会员还需 920 积分'}
                 />
               </div>
               <Row gutter={16}>
                 <Col span={12}>
-                  <Statistic 
-                    title="总订单数" 
-                    value={mockUserData.totalOrders} 
+                  <Statistic
+                    title="总订单数"
+                    value={mockUserData.totalOrders}
                     prefix={<ShoppingOutlined />}
                     valueStyle={{ color: '#1890ff' }}
                   />
                 </Col>
                 <Col span={12}>
-                  <Statistic 
-                    title="总消费" 
-                    value={mockUserData.totalSpent} 
+                  <Statistic
+                    title="总消费"
+                    value={mockUserData.totalSpent}
                     precision={2}
                     prefix="¥"
                     valueStyle={{ color: '#52c41a' }}
@@ -321,28 +338,28 @@ export default function ProfilePage() {
             <Row gutter={[16, 16]}>
               <Col xs={12} sm={6}>
                 <Card hoverable className="text-center">
-                  <ShoppingOutlined className="text-2xl text-blue-500 mb-2" />
+                  <ShoppingOutlined className="mb-2 text-2xl text-blue-500" />
                   <div className="text-sm">我的订单</div>
                   <div className="text-xs text-gray-500">管理订单</div>
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
                 <Card hoverable className="text-center">
-                  <HeartOutlined className="text-2xl text-red-500 mb-2" />
+                  <HeartOutlined className="mb-2 text-2xl text-red-500" />
                   <div className="text-sm">我的收藏</div>
                   <div className="text-xs text-gray-500">收藏商品</div>
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
                 <Card hoverable className="text-center">
-                  <GiftOutlined className="text-2xl text-purple-500 mb-2" />
+                  <GiftOutlined className="mb-2 text-2xl text-purple-500" />
                   <div className="text-sm">优惠券</div>
                   <div className="text-xs text-gray-500">我的优惠券</div>
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
                 <Card hoverable className="text-center">
-                  <WalletOutlined className="text-2xl text-green-500 mb-2" />
+                  <WalletOutlined className="mb-2 text-2xl text-green-500" />
                   <div className="text-sm">余额</div>
                   <div className="text-xs text-gray-500">账户余额</div>
                 </Card>
@@ -350,16 +367,22 @@ export default function ProfilePage() {
             </Row>
 
             {/* 最近订单 */}
-            <Card title="最近订单" className="mt-6" extra={
-              <Button type="link">查看全部</Button>
-            }>
+            <Card
+              title="最近订单"
+              className="mt-6"
+              extra={<Button type="link">查看全部</Button>}
+            >
               <List
                 dataSource={mockOrders.slice(0, 3)}
                 renderItem={order => (
                   <List.Item
                     actions={[
-                      <Button type="link" key="view">查看详情</Button>,
-                      <Button type="link" key="rebuy">再次购买</Button>
+                      <Button type="link" key="view">
+                        查看详情
+                      </Button>,
+                      <Button type="link" key="rebuy">
+                        再次购买
+                      </Button>,
                     ]}
                   >
                     <List.Item.Meta
@@ -372,9 +395,11 @@ export default function ProfilePage() {
                       description={
                         <div>
                           <div>商品: {order.products.join(', ')}</div>
-                          <div className="flex justify-between mt-1">
+                          <div className="mt-1 flex justify-between">
                             <span>{order.date}</span>
-                            <span className="font-semibold">¥{order.total}</span>
+                            <span className="font-semibold">
+                              ¥{order.total}
+                            </span>
                           </div>
                         </div>
                       }
@@ -385,7 +410,7 @@ export default function ProfilePage() {
             </Card>
           </Col>
         </Row>
-      )
+      ),
     },
     {
       key: 'orders',
@@ -397,14 +422,14 @@ export default function ProfilePage() {
       ),
       children: (
         <Card>
-          <Table 
+          <Table
             dataSource={mockOrders}
             columns={orderColumns}
             pagination={{ pageSize: 10 }}
             rowKey="id"
           />
         </Card>
-      )
+      ),
     },
     {
       key: 'addresses',
@@ -424,17 +449,25 @@ export default function ProfilePage() {
           <Row gutter={[16, 16]}>
             {mockAddresses.map(addr => (
               <Col xs={24} md={12} key={addr.id}>
-                <Card 
+                <Card
                   actions={[
-                    <Button type="link" key="edit">编辑</Button>,
-                    <Button type="link" danger key="delete">删除</Button>
+                    <Button type="link" key="edit">
+                      编辑
+                    </Button>,
+                    <Button type="link" danger key="delete">
+                      删除
+                    </Button>,
                   ]}
                 >
                   {addr.isDefault && (
-                    <Tag color="gold" className="mb-2">默认地址</Tag>
+                    <Tag color="gold" className="mb-2">
+                      默认地址
+                    </Tag>
                   )}
                   <div className="space-y-2">
-                    <div><strong>{addr.name}</strong> {addr.phone}</div>
+                    <div>
+                      <strong>{addr.name}</strong> {addr.phone}
+                    </div>
                     <div>{addr.address}</div>
                     <div>邮编: {addr.postcode}</div>
                   </div>
@@ -443,7 +476,7 @@ export default function ProfilePage() {
             ))}
           </Row>
         </div>
-      )
+      ),
     },
     {
       key: 'security',
@@ -458,26 +491,32 @@ export default function ProfilePage() {
           <Col xs={24} lg={12}>
             <Card title="账户安全">
               <Space direction="vertical" className="w-full" size="large">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">登录密码</div>
-                    <div className="text-sm text-gray-500">定期更改密码以保护账户安全</div>
+                    <div className="text-sm text-gray-500">
+                      定期更改密码以保护账户安全
+                    </div>
                   </div>
                   <Button type="link">修改</Button>
                 </div>
                 <Divider />
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">手机号码</div>
-                    <div className="text-sm text-gray-500">{mockUserData.phone}</div>
+                    <div className="text-sm text-gray-500">
+                      {mockUserData.phone}
+                    </div>
                   </div>
                   <Button type="link">更换</Button>
                 </div>
                 <Divider />
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">邮箱地址</div>
-                    <div className="text-sm text-gray-500">{mockUserData.email}</div>
+                    <div className="text-sm text-gray-500">
+                      {mockUserData.email}
+                    </div>
                   </div>
                   <Button type="link">更换</Button>
                 </div>
@@ -487,26 +526,32 @@ export default function ProfilePage() {
           <Col xs={24} lg={12}>
             <Card title="隐私设置">
               <Space direction="vertical" className="w-full" size="large">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">接收推广信息</div>
-                    <div className="text-sm text-gray-500">通过邮件和短信接收优惠信息</div>
+                    <div className="text-sm text-gray-500">
+                      通过邮件和短信接收优惠信息
+                    </div>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <Divider />
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">订单状态通知</div>
-                    <div className="text-sm text-gray-500">接收订单状态变更通知</div>
+                    <div className="text-sm text-gray-500">
+                      接收订单状态变更通知
+                    </div>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <Divider />
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">个性化推荐</div>
-                    <div className="text-sm text-gray-500">根据购买历史推荐商品</div>
+                    <div className="text-sm text-gray-500">
+                      根据购买历史推荐商品
+                    </div>
                   </div>
                   <Switch defaultChecked />
                 </div>
@@ -514,15 +559,15 @@ export default function ProfilePage() {
             </Card>
           </Col>
         </Row>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">个人中心</h1>
-        <p className="text-gray-600 mt-1">管理您的个人信息和账户设置</p>
+        <p className="mt-1 text-gray-600">管理您的个人信息和账户设置</p>
       </div>
 
       <Tabs
@@ -549,7 +594,11 @@ export default function ProfilePage() {
         >
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="姓名" name="fullName" rules={[{ required: true }]}>
+              <Form.Item
+                label="姓名"
+                name="fullName"
+                rules={[{ required: true }]}
+              >
                 <Input />
               </Form.Item>
             </Col>
@@ -565,12 +614,20 @@ export default function ProfilePage() {
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="手机号" name="phone" rules={[{ required: true }]}>
+              <Form.Item
+                label="手机号"
+                name="phone"
+                rules={[{ required: true }]}
+              >
                 <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="邮箱" name="email" rules={[{ required: true, type: 'email' }]}>
+              <Form.Item
+                label="邮箱"
+                name="email"
+                rules={[{ required: true, type: 'email' }]}
+              >
                 <Input />
               </Form.Item>
             </Col>
@@ -586,9 +643,7 @@ export default function ProfilePage() {
               <Button type="primary" htmlType="submit">
                 保存
               </Button>
-              <Button onClick={() => setIsEditing(false)}>
-                取消
-              </Button>
+              <Button onClick={() => setIsEditing(false)}>取消</Button>
             </Space>
           </Form.Item>
         </Form>

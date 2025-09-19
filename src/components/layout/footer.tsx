@@ -4,7 +4,15 @@
  */
 
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+} from 'lucide-react';
 
 // Footer链接配置
 const footerLinks = {
@@ -50,7 +58,12 @@ const footerLinks = {
 const socialLinks = [
   { name: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-600' },
   { name: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-blue-400' },
-  { name: 'Instagram', icon: Instagram, href: '#', color: 'hover:text-pink-500' },
+  {
+    name: 'Instagram',
+    icon: Instagram,
+    href: '#',
+    color: 'hover:text-pink-500',
+  },
   { name: 'YouTube', icon: Youtube, href: '#', color: 'hover:text-red-600' },
 ];
 
@@ -60,18 +73,18 @@ export function Footer() {
       {/* Newsletter Section */}
       <div className="bg-gray-800 py-8">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-semibold mb-2">订阅我们的新闻通讯</h3>
+              <h3 className="mb-2 text-lg font-semibold">订阅我们的新闻通讯</h3>
               <p className="text-gray-300">获取最新优惠和产品资讯</p>
             </div>
             <div className="flex w-full md:w-auto">
               <input
                 type="email"
                 placeholder="输入您的邮箱地址"
-                className="flex-1 md:w-80 px-4 py-2 rounded-l-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 rounded-l-md px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-80"
               />
-              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-r-md transition-colors">
+              <button className="rounded-r-md bg-blue-600 px-6 py-2 transition-colors hover:bg-blue-700">
                 订阅
               </button>
             </div>
@@ -81,31 +94,31 @@ export function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Company Info */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-xl">Y</span>
+            <div className="mb-4 flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
+                <span className="text-xl font-bold text-white">Y</span>
               </div>
               <span className="text-xl font-bold">YOYO Mall</span>
             </div>
-            <p className="text-gray-300 mb-4 text-sm">
+            <p className="mb-4 text-sm text-gray-300">
               专业的跨境电商平台，致力于为全球用户提供优质的商品和服务。
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-2 text-sm text-gray-300">
               <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4" />
+                <Mail className="h-4 w-4" />
                 <span>support@yoyomall.com</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4" />
+                <Phone className="h-4 w-4" />
                 <span>+1 (555) 123-4567</span>
               </div>
               <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="h-4 w-4" />
                 <span>123 Business Street, City, State 12345</span>
               </div>
             </div>
@@ -114,13 +127,13 @@ export function Footer() {
           {/* Footer Links */}
           {Object.entries(footerLinks).map(([key, section]) => (
             <div key={key}>
-              <h4 className="font-semibold mb-4">{section.title}</h4>
+              <h4 className="mb-4 font-semibold">{section.title}</h4>
               <ul className="space-y-2">
-                {section.links.map((link) => (
+                {section.links.map(link => (
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-white transition-colors text-sm"
+                      className="text-sm text-gray-300 transition-colors hover:text-white"
                     >
                       {link.name}
                     </Link>
@@ -135,15 +148,17 @@ export function Footer() {
       {/* Bottom Footer */}
       <div className="border-t border-gray-700">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="text-sm text-gray-300 mb-4 md:mb-0">
+          <div className="flex flex-col items-center justify-between md:flex-row">
+            <div className="mb-4 text-sm text-gray-300 md:mb-0">
               © 2024 YOYO Mall. 保留所有权利。
             </div>
-            
+
             {/* Social Links */}
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-300 hidden md:inline">关注我们:</span>
-              {socialLinks.map((social) => {
+              <span className="hidden text-sm text-gray-300 md:inline">
+                关注我们:
+              </span>
+              {socialLinks.map(social => {
                 const Icon = social.icon;
                 return (
                   <Link
@@ -152,7 +167,7 @@ export function Footer() {
                     className={`text-gray-300 transition-colors ${social.color}`}
                     aria-label={social.name}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="h-5 w-5" />
                   </Link>
                 );
               })}

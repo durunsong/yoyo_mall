@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { 
+import {
   Card,
   Form,
   Input,
@@ -17,7 +17,7 @@ import {
   Col,
   Divider,
   Space,
-  message
+  message,
 } from 'antd';
 import {
   UserOutlined,
@@ -26,7 +26,7 @@ import {
   EyeTwoTone,
   GoogleOutlined,
   WechatOutlined,
-  AppleOutlined
+  AppleOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text, Link: AntLink } = Typography;
@@ -63,13 +63,13 @@ export default function AntdLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
         {/* 头部 */}
-        <div className="text-center mb-8">
+        <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">Y</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
+              <span className="text-2xl font-bold text-white">Y</span>
             </div>
             <span className="text-2xl font-bold text-gray-900">YOYO Mall</span>
           </Link>
@@ -82,7 +82,7 @@ export default function AntdLoginPage() {
         </div>
 
         {/* 登录表单卡片 */}
-        <Card className="shadow-lg border-0">
+        <Card className="border-0 shadow-lg">
           <Form
             form={form}
             name="login"
@@ -118,7 +118,9 @@ export default function AntdLoginPage() {
                 prefix={<LockOutlined className="text-gray-400" />}
                 placeholder="请输入密码"
                 autoComplete="current-password"
-                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                iconRender={visible =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
               />
             </Form.Item>
 
@@ -130,7 +132,10 @@ export default function AntdLoginPage() {
                   </Form.Item>
                 </Col>
                 <Col>
-                  <AntLink href="/forgot-password" className="text-blue-600 hover:text-blue-800">
+                  <AntLink
+                    href="/forgot-password"
+                    className="text-blue-600 hover:text-blue-800"
+                  >
                     忘记密码？
                   </AntLink>
                 </Col>
@@ -167,7 +172,7 @@ export default function AntdLoginPage() {
             >
               使用 Google 登录
             </Button>
-            
+
             <Row gutter={12}>
               <Col span={12}>
                 <Button
@@ -198,7 +203,10 @@ export default function AntdLoginPage() {
           <div className="mt-8 text-center">
             <Text type="secondary">
               还没有账户？{' '}
-              <Link href="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+              <Link
+                href="/register"
+                className="font-medium text-blue-600 hover:text-blue-800"
+              >
                 立即注册
               </Link>
             </Text>
@@ -208,13 +216,22 @@ export default function AntdLoginPage() {
         {/* 底部链接 */}
         <div className="mt-8 text-center">
           <Space split={<span className="text-gray-300">•</span>}>
-            <Link href="/terms" className="text-gray-500 hover:text-gray-700 text-sm">
+            <Link
+              href="/terms"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
               服务条款
             </Link>
-            <Link href="/privacy" className="text-gray-500 hover:text-gray-700 text-sm">
+            <Link
+              href="/privacy"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
               隐私政策
             </Link>
-            <Link href="/help" className="text-gray-500 hover:text-gray-700 text-sm">
+            <Link
+              href="/help"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
               帮助中心
             </Link>
           </Space>

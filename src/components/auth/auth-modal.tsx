@@ -6,18 +6,18 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { 
-  Modal, 
-  Tabs, 
-  Form, 
-  Input, 
-  Button, 
-  Checkbox, 
-  Space, 
-  Divider, 
-  Typography, 
+import {
+  Modal,
+  Tabs,
+  Form,
+  Input,
+  Button,
+  Checkbox,
+  Space,
+  Divider,
+  Typography,
   message,
-  Progress
+  Progress,
 } from 'antd';
 import {
   UserOutlined,
@@ -26,7 +26,7 @@ import {
   PhoneOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
-  GoogleOutlined
+  GoogleOutlined,
 } from '@ant-design/icons';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -61,7 +61,7 @@ const getPasswordStrength = (password: string) => {
     lowercase: /[a-z]/.test(password),
     uppercase: /[A-Z]/.test(password),
     number: /\d/.test(password),
-    special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
   };
 
   // 计算得分
@@ -87,19 +87,28 @@ const getPasswordStrength = (password: string) => {
     suggestions: [
       !checks.length && '密码长度至少8位',
       !checks.lowercase && '包含小写字母',
-      !checks.uppercase && '包含大写字母', 
+      !checks.uppercase && '包含大写字母',
       !checks.number && '包含数字',
-      !checks.special && '包含特殊字符'
-    ].filter(Boolean) as string[]
+      !checks.special && '包含特殊字符',
+    ].filter(Boolean) as string[],
   };
 };
 
-export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProps) {
+export function AuthModal({
+  open,
+  onClose,
+  defaultTab = 'login',
+}: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, level: '弱', color: '#ff4d4f', suggestions: [] as string[] });
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    level: '弱',
+    color: '#ff4d4f',
+    suggestions: [] as string[],
+  });
 
   const [loginForm] = Form.useForm();
   const [registerForm] = Form.useForm();
@@ -164,16 +173,21 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
   };
 
   // 密码强度实时检测
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const password = e.target.value;
-    setPasswordStrength(getPasswordStrength(password));
-  }, []);
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const password = e.target.value;
+      setPasswordStrength(getPasswordStrength(password));
+    },
+    [],
+  );
 
   // 演示账户信息
   const demoAccount = (
-    <div className="bg-blue-50 p-3 rounded-lg mb-4">
-      <div className="flex items-center mb-2">
-        <Text strong className="text-blue-600">💡 演示账户</Text>
+    <div className="mb-4 rounded-lg bg-blue-50 p-3">
+      <div className="mb-2 flex items-center">
+        <Text strong className="text-blue-600">
+          💡 演示账户
+        </Text>
       </div>
       <Text className="text-sm text-blue-600">
         邮箱: demo@example.com, 密码: Demo123!
@@ -184,7 +198,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
   const loginTab = (
     <div className="px-2">
       {demoAccount}
-      
+
       <Form
         form={loginForm}
         layout="vertical"
@@ -195,9 +209,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
         <Form.Item
           label="用户名/邮箱/手机号"
           name="email"
-          rules={[
-            { required: true, message: '请输入用户名、邮箱或手机号' }
-          ]}
+          rules={[{ required: true, message: '请输入用户名、邮箱或手机号' }]}
         >
           <Input
             prefix={<UserOutlined className="text-gray-400" />}
@@ -209,15 +221,15 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
         <Form.Item
           label="密码"
           name="password"
-          rules={[
-            { required: true, message: '请输入密码' }
-          ]}
+          rules={[{ required: true, message: '请输入密码' }]}
         >
           <Input.Password
             prefix={<LockOutlined className="text-gray-400" />}
             placeholder="密码"
             autoComplete="current-password"
-            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            iconRender={visible =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
           />
         </Form.Item>
 
@@ -231,11 +243,11 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
         </Form.Item>
 
         <Form.Item>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
+          <Button
+            type="primary"
+            htmlType="submit"
             loading={loginLoading}
-            className="w-full h-10"
+            className="h-10 w-full"
             size="large"
           >
             登录
@@ -260,7 +272,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
           rules={[
             { required: true, message: '请输入用户名' },
             { min: 3, message: '用户名至少3个字符' },
-            { max: 20, message: '用户名最多20个字符' }
+            { max: 20, message: '用户名最多20个字符' },
           ]}
         >
           <Input
@@ -275,7 +287,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
           name="email"
           rules={[
             { required: true, message: '请输入邮箱地址' },
-            { type: 'email', message: '请输入有效的邮箱地址' }
+            { type: 'email', message: '请输入有效的邮箱地址' },
           ]}
         >
           <Input
@@ -290,7 +302,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
           name="phone"
           rules={[
             { required: true, message: '请输入手机号' },
-            { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号' }
+            { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号' },
           ]}
         >
           <Input
@@ -314,8 +326,8 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
                   return Promise.reject(new Error('密码强度不够，请参考建议'));
                 }
                 return Promise.resolve();
-              }
-            }
+              },
+            },
           ]}
         >
           <Input.Password
@@ -323,7 +335,9 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
             placeholder="yyy111."
             autoComplete="new-password"
             onChange={handlePasswordChange}
-            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            iconRender={visible =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
           />
         </Form.Item>
 
@@ -332,12 +346,15 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Text className="text-sm">密码强度:</Text>
-              <Text className="text-sm" style={{ color: passwordStrength.color }}>
+              <Text
+                className="text-sm"
+                style={{ color: passwordStrength.color }}
+              >
                 {passwordStrength.level}
               </Text>
             </div>
-            <Progress 
-              percent={passwordStrength.score} 
+            <Progress
+              percent={passwordStrength.score}
               strokeColor={passwordStrength.color}
               showInfo={false}
               size="small"
@@ -345,7 +362,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
             {passwordStrength.suggestions.length > 0 && (
               <div className="text-xs text-gray-500">
                 <div>建议:</div>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-inside list-disc space-y-1">
                   {passwordStrength.suggestions.map((suggestion, index) => (
                     <li key={index}>{suggestion}</li>
                   ))}
@@ -375,7 +392,9 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
             prefix={<LockOutlined className="text-gray-400" />}
             placeholder="••••••••"
             autoComplete="new-password"
-            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            iconRender={visible =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
           />
         </Form.Item>
 
@@ -383,23 +402,26 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
           name="agree"
           valuePropName="checked"
           rules={[
-            { 
-              validator: (_, value) => 
-                value ? Promise.resolve() : Promise.reject(new Error('请同意用户协议'))
-            }
+            {
+              validator: (_, value) =>
+                value
+                  ? Promise.resolve()
+                  : Promise.reject(new Error('请同意用户协议')),
+            },
           ]}
         >
           <Checkbox>
-            我已阅读并同意 <Link className="text-blue-600">用户协议</Link> 和 <Link className="text-blue-600">隐私政策</Link>
+            我已阅读并同意 <Link className="text-blue-600">用户协议</Link> 和{' '}
+            <Link className="text-blue-600">隐私政策</Link>
           </Checkbox>
         </Form.Item>
 
         <Form.Item>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
+          <Button
+            type="primary"
+            htmlType="submit"
             loading={registerLoading}
-            className="w-full h-10"
+            className="h-10 w-full"
             size="large"
           >
             注册
@@ -422,19 +444,19 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
       <div className="py-4">
         <Tabs
           activeKey={activeTab}
-          onChange={(key) => setActiveTab(key as 'login' | 'register')}
+          onChange={key => setActiveTab(key as 'login' | 'register')}
           centered
           items={[
             {
               key: 'login',
               label: '登录',
-              children: loginTab
+              children: loginTab,
             },
             {
-              key: 'register', 
+              key: 'register',
               label: '注册',
-              children: registerTab
-            }
+              children: registerTab,
+            },
           ]}
         />
 
@@ -442,7 +464,9 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
 
         {/* 谷歌登录按钮 */}
         <div className="px-2">
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "demo"}>
+          <GoogleOAuthProvider
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'demo'}
+          >
             <div className="w-full">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
@@ -458,9 +482,7 @@ export function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProp
         </div>
 
         {/* 演示账户 - 底部说明 */}
-        <div className="px-2 mt-4">
-          {demoAccount}
-        </div>
+        <div className="mt-4 px-2">{demoAccount}</div>
       </div>
     </Modal>
   );

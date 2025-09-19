@@ -73,7 +73,11 @@ async function main() {
       slug: 'electronics',
       description: '电子产品和数码设备',
       children: [
-        { name: '手机数码', slug: 'mobile-devices', description: '手机和数码设备' },
+        {
+          name: '手机数码',
+          slug: 'mobile-devices',
+          description: '手机和数码设备',
+        },
         { name: '电脑办公', slug: 'computers', description: '电脑和办公设备' },
         { name: '家用电器', slug: 'home-appliances', description: '家用电器' },
       ],
@@ -92,7 +96,7 @@ async function main() {
 
   for (const categoryData of categories) {
     const { children, ...parentData } = categoryData;
-    
+
     const parentCategory = await prisma.category.upsert({
       where: { slug: parentData.slug },
       update: {},
@@ -160,11 +164,12 @@ async function main() {
       create: {
         name: 'iPhone 15 Pro',
         slug: 'iphone-15-pro',
-        description: '全新iPhone 15 Pro，配备钛金属设计，A17 Pro芯片，专业级摄像头系统。',
+        description:
+          '全新iPhone 15 Pro，配备钛金属设计，A17 Pro芯片，专业级摄像头系统。',
         shortDesc: '配备A17 Pro芯片的专业级iPhone',
         sku: 'IPHONE-15-PRO-128GB',
-        price: 999.00,
-        comparePrice: 1099.00,
+        price: 999.0,
+        comparePrice: 1099.0,
         currency: 'USD',
         weight: 187.0,
         categoryId: electronicsCategory.id,
@@ -173,7 +178,8 @@ async function main() {
         trackInventory: true,
         allowOutOfStock: false,
         metaTitle: 'iPhone 15 Pro - 专业级智能手机',
-        metaDesc: '购买全新iPhone 15 Pro，享受先进的A17 Pro芯片性能和专业摄影体验。',
+        metaDesc:
+          '购买全新iPhone 15 Pro，享受先进的A17 Pro芯片性能和专业摄影体验。',
         tags: ['smartphone', 'apple', 'iphone', 'premium'],
         images: {
           create: [
@@ -210,8 +216,8 @@ async function main() {
       name: '新用户欢迎优惠',
       description: '新用户首次购买享受10%折扣',
       type: 'PERCENTAGE',
-      value: 10.00,
-      minimumAmount: 50.00,
+      value: 10.0,
+      minimumAmount: 50.0,
       usageLimit: 1000,
       isActive: true,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
@@ -224,7 +230,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error('❌ 数据库种子失败:', e);
     process.exit(1);
   })

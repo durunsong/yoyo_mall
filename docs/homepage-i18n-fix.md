@@ -5,6 +5,7 @@
 用户反馈：**"现在页面上url语言路径正确，本地存储正确，但是页面上还是全部显示的中文"**
 
 ### 问题现象
+
 - ✅ URL路径正确：`localhost:3000/en-US`
 - ✅ 本地存储正确：`preferred-locale: en-US`
 - ❌ 页面内容：仍然显示中文
@@ -12,11 +13,13 @@
 ## 🔍 根本原因分析
 
 ### 1. 语言切换机制工作正常
+
 - URL路由切换 ✅
-- 本地存储更新 ✅  
+- 本地存储更新 ✅
 - Next-intl Provider 配置 ✅
 
 ### 2. 问题所在：首页组件未使用国际化
+
 ```typescript
 // ❌ 问题代码 - 硬编码中文
 export default function HomePage() {
@@ -34,6 +37,7 @@ export default function HomePage() {
 ## 🔧 修复方案
 
 ### 1. 将组件转为客户端组件 ✅
+
 ```typescript
 // 添加客户端指令
 'use client';
@@ -43,9 +47,10 @@ import { useTranslations } from 'next-intl';
 ```
 
 ### 2. 添加翻译hooks ✅
+
 ```typescript
 export default function HomePage() {
-  const t = useTranslations('home');      // 首页翻译
+  const t = useTranslations('home'); // 首页翻译
   const common = useTranslations('common'); // 通用翻译
   // ...
 }
@@ -54,6 +59,7 @@ export default function HomePage() {
 ### 3. 创建完整的翻译文件 ✅
 
 #### 中文翻译 (`src/messages/zh-CN.json`)
+
 ```json
 {
   "home": {
@@ -71,7 +77,7 @@ export default function HomePage() {
         "description": "精选全球优质商品，品质保证"
       },
       "secure": {
-        "title": "安全保障", 
+        "title": "安全保障",
         "description": "多重安全保障，放心购物"
       },
       "fast": {
@@ -103,6 +109,7 @@ export default function HomePage() {
 ```
 
 #### 英文翻译 (`src/messages/en-US.json`)
+
 ```json
 {
   "home": {
@@ -124,7 +131,7 @@ export default function HomePage() {
         "description": "Multiple security guarantees, shop with confidence"
       },
       "fast": {
-        "title": "Fast Delivery", 
+        "title": "Fast Delivery",
         "description": "Efficient logistics, fast delivery"
       }
     },
@@ -138,7 +145,7 @@ export default function HomePage() {
     "stats": {
       "users": "Global Users",
       "products": "Product Categories",
-      "brands": "Partner Brands", 
+      "brands": "Partner Brands",
       "satisfaction": "Customer Satisfaction"
     },
     "cta": {
@@ -154,15 +161,17 @@ export default function HomePage() {
 ### 4. 更新所有页面内容使用翻译 ✅
 
 #### Hero Section
+
 ```typescript
 // ❌ 修复前
 <h1>欢迎来到 YOYO Mall</h1>
 
-// ✅ 修复后  
+// ✅ 修复后
 <h1>{t('hero.title')}</h1>
 ```
 
 #### Features Section
+
 ```typescript
 // ❌ 修复前
 <h2>为什么选择我们</h2>
@@ -174,21 +183,30 @@ export default function HomePage() {
 ```
 
 #### Categories Section
+
 ```typescript
 // ❌ 修复前
-{[
-  { name: '服装配饰', href: '/products?category=clothing' },
-  { name: '数码产品', href: '/products?category=electronics' }
-]}
+{
+  [
+    { name: '服装配饰', href: '/products?category=clothing' },
+    { name: '数码产品', href: '/products?category=electronics' },
+  ];
+}
 
 // ✅ 修复后
-{[
-  { name: t('categories.fashion'), href: '/products?category=clothing' },
-  { name: t('categories.electronics'), href: '/products?category=electronics' }
-]}
+{
+  [
+    { name: t('categories.fashion'), href: '/products?category=clothing' },
+    {
+      name: t('categories.electronics'),
+      href: '/products?category=electronics',
+    },
+  ];
+}
 ```
 
 #### Statistics Section
+
 ```typescript
 // ❌ 修复前
 <Statistic title="全球用户" value={1200000} />
@@ -198,6 +216,7 @@ export default function HomePage() {
 ```
 
 #### CTA Section
+
 ```typescript
 // ❌ 修复前
 <h2>准备开始购物了吗？</h2>
@@ -234,19 +253,21 @@ export default function HomePage() {
 ### 预期效果对比
 
 #### 中文页面 (/)
+
 ```
 标题：欢迎来到 YOYO Mall
-副标题：发现全球优质商品，享受安全便捷的跨境购物体验  
+副标题：发现全球优质商品，享受安全便捷的跨境购物体验
 功能：全球优质、安全保障、快速配送
 分类：时尚服饰、数码电子、家居生活、美妆护肤
 统计：全球用户、商品种类、合作品牌、客户满意度
 ```
 
-#### 英文页面 (/en-US)  
+#### 英文页面 (/en-US)
+
 ```
 标题：Welcome to YOYO Mall
 副标题：Discover global quality products, enjoy safe and convenient cross-border shopping experience
-功能：Global Quality、Security Guarantee、Fast Delivery  
+功能：Global Quality、Security Guarantee、Fast Delivery
 分类：Fashion、Electronics、Home & Garden、Beauty & Care
 统计：Global Users、Product Categories、Partner Brands、Customer Satisfaction
 ```
@@ -254,37 +275,43 @@ export default function HomePage() {
 ## 📋 修改的文件
 
 ### 核心修复
+
 - ✅ `src/app/[locale]/page.tsx` - 添加国际化支持
 - ✅ `src/messages/zh-CN.json` - 添加中文翻译
 - ✅ `src/messages/en-US.json` - 添加英文翻译
 
 ### 翻译覆盖范围
+
 - ✅ Hero Banner（主横幅）
 - ✅ Features Section（特色功能）
 - ✅ Categories Section（商品分类）
-- ✅ Statistics Section（统计数据）  
+- ✅ Statistics Section（统计数据）
 - ✅ CTA Section（行动召唤）
 
 ## 🔄 技术实现要点
 
 ### 1. 客户端组件转换
+
 需要添加 `'use client';` 指令才能使用 `useTranslations` hook
 
 ### 2. 翻译命名空间设计
+
 - `home` - 首页专用翻译
 - `common` - 通用翻译（按钮、操作等）
 - 层级结构：`home.hero.title`、`home.features.quality.title`
 
 ### 3. 动态内容处理
+
 ```typescript
 // 数组数据国际化
 const categories = [
   { name: t('categories.fashion'), href: '/products?category=clothing' },
-  { name: t('categories.electronics'), href: '/products?category=electronics' }
+  { name: t('categories.electronics'), href: '/products?category=electronics' },
 ];
 ```
 
 ### 4. 组件属性国际化
+
 ```typescript
 // Ant Design 组件属性
 <Statistic title={t('stats.users')} value={1200000} />
@@ -293,11 +320,13 @@ const categories = [
 ## 🎯 问题解决
 
 ### 修复前
+
 - 语言切换器工作 ✅
-- URL和存储更新 ✅  
+- URL和存储更新 ✅
 - 页面内容不变 ❌
 
-### 修复后  
+### 修复后
+
 - 语言切换器工作 ✅
 - URL和存储更新 ✅
 - 页面内容实时更新 ✅

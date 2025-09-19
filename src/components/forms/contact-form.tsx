@@ -48,7 +48,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
         await onSubmit(data);
       } else {
         // 默认提交逻辑
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
       setSubmitSuccess(true);
       reset();
@@ -67,11 +67,11 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
       </CardHeader>
       <CardContent>
         {submitSuccess && (
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
+          <div className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-green-800">
             感谢您的留言！我们会尽快回复您。
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <Input
             label="姓名"
@@ -80,7 +80,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
             placeholder="请输入您的姓名"
             required
           />
-          
+
           <Input
             label="邮箱"
             type="email"
@@ -89,7 +89,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
             placeholder="请输入您的邮箱地址"
             required
           />
-          
+
           <Input
             label="主题"
             {...register('subject')}
@@ -97,22 +97,24 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
             placeholder="请输入联系主题"
             required
           />
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-medium leading-none">
+            <label className="text-sm leading-none font-medium">
               消息 <span className="text-destructive">*</span>
             </label>
             <textarea
               {...register('message')}
               placeholder="请输入您的消息内容"
               rows={4}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             />
             {errors.message && (
-              <p className="text-sm text-destructive">{errors.message.message}</p>
+              <p className="text-destructive text-sm">
+                {errors.message.message}
+              </p>
             )}
           </div>
-          
+
           <Button
             type="submit"
             loading={isSubmitting}

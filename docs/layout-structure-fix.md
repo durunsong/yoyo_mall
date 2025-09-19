@@ -3,6 +3,7 @@
 ## 🐛 问题描述
 
 原有的布局结构存在问题：
+
 - 顶部导航栏（Header）和底部（Footer）只在 `[locale]` 布局中显示
 - 404页面等非国际化路由无法显示导航栏
 - 用户在404页面时无法通过导航栏返回到主页
@@ -12,6 +13,7 @@
 ### 1. 重新组织布局层次结构
 
 #### 修复前的问题结构
+
 ```
 src/app/
 ├── layout.tsx                    # 根布局（空）
@@ -21,6 +23,7 @@ src/app/
 ```
 
 #### 修复后的新结构
+
 ```
 src/app/
 ├── layout.tsx                    # 根布局（包含 Header + Footer）
@@ -35,12 +38,12 @@ src/app/
 #### 2.1 更新根布局 (`src/app/layout.tsx`)
 
 ```tsx
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AntdHeader } from "@/components/layout/antd-header";
-import { Footer } from "@/components/layout/footer";
-import { RootProviders } from "@/components/providers/root-providers";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AntdHeader } from '@/components/layout/antd-header';
+import { Footer } from '@/components/layout/footer';
+import { RootProviders } from '@/components/providers/root-providers';
 import '@ant-design/v5-patch-for-react-19';
 
 export default function RootLayout({
@@ -77,7 +80,7 @@ interface LocaleLayoutProps {
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: LocaleLayoutProps) {
   const { locale } = await params;
   const messages = await getMessages();
@@ -125,7 +128,7 @@ import { HomeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center">
       <Result
         status="404"
         title="404"
@@ -135,7 +138,10 @@ export default function NotFound() {
             <Button type="primary" icon={<HomeOutlined />}>
               <Link href="/">返回首页</Link>
             </Button>
-            <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => window.history.back()}
+            >
               返回上一页
             </Button>
           </div>
@@ -174,6 +180,7 @@ export default function NotFound() {
 ## 🔄 布局渲染流程
 
 ### 访问首页 (`/` 或 `/zh`)
+
 ```
 RootLayout
 ├── RootProviders (Ant Design)
@@ -183,6 +190,7 @@ RootLayout
 ```
 
 ### 访问404页面 (`/invalid-url`)
+
 ```
 RootLayout
 ├── RootProviders (Ant Design)

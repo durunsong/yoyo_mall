@@ -12,6 +12,7 @@
 **根本原因**: 产品页面存在于 `src/app/(shop)/products/page.tsx`，但这个路径不在 `[locale]` 目录下，所以无法通过国际化路由访问。
 
 **文件结构问题**:
+
 ```
 src/app/
 ├── (shop)/
@@ -27,6 +28,7 @@ src/app/
 **根本原因**: 语言切换器的路径处理逻辑与 next-intl 的 `localePrefix: 'as-needed'` 配置不匹配。
 
 **配置说明**:
+
 - `localePrefix: 'as-needed'` 意味着默认语言（zh-CN）不显示前缀
 - 其他语言（en-US, ja-JP, ko-KR）显示前缀
 
@@ -54,7 +56,7 @@ import { useTranslations } from 'next-intl';
 export default function ProductsPage() {
   const t = useTranslations('products');
   const common = useTranslations('common');
-  
+
   // 使用翻译
   return (
     <div>
@@ -71,6 +73,7 @@ export default function ProductsPage() {
 #### 2.1 更新语言切换逻辑
 
 **修复前的问题**:
+
 ```tsx
 // ❌ 简单的路径替换，不考虑 localePrefix 配置
 if (languages.some(lang => lang.code === segments[1])) {
@@ -81,11 +84,12 @@ if (languages.some(lang => lang.code === segments[1])) {
 ```
 
 **修复后的逻辑**:
+
 ```tsx
 // ✅ 根据 localePrefix: 'as-needed' 配置处理
 const handleLanguageChange = (newLocale: string) => {
   let newPath: string;
-  
+
   if (newLocale === 'zh-CN') {
     // 切换到默认语言，移除所有语言前缀
     const segments = pathname.split('/');
@@ -96,22 +100,22 @@ const handleLanguageChange = (newLocale: string) => {
   } else {
     // 切换到非默认语言，添加或替换语言前缀
     const segments = pathname.split('/');
-    
+
     if (languages.some(lang => lang.code === segments[1])) {
       segments[1] = newLocale; // 替换现有前缀
     } else {
       segments.splice(1, 0, newLocale); // 添加新前缀
     }
-    
+
     newPath = segments.join('/');
   }
-  
+
   // 清理和标准化路径
   newPath = newPath.replace(/\/+/g, '/');
   if (!newPath.startsWith('/')) {
     newPath = '/' + newPath;
   }
-  
+
   router.push(newPath);
   setIsOpen(false);
 };
@@ -136,7 +140,7 @@ const handleLanguageChange = (newLocale: string) => {
 {
   "products": {
     "title": "商品列表",
-    "description": "浏览所有商品", 
+    "description": "浏览所有商品",
     "searchPlaceholder": "搜索商品...",
     "totalProducts": "共 {count} 个商品",
     "categories": {
@@ -149,7 +153,7 @@ const handleLanguageChange = (newLocale: string) => {
     },
     "priceRange": "价格区间",
     "minPrice": "最低价",
-    "maxPrice": "最高价", 
+    "maxPrice": "最高价",
     "apply": "应用",
     "sortBy": {
       "default": "默认排序",
@@ -182,7 +186,7 @@ const handleLanguageChange = (newLocale: string) => {
 不同语言的URL结构：
 
 - **中文 (默认)**: `http://localhost:3000/products`
-- **英文**: `http://localhost:3000/en-US/products`  
+- **英文**: `http://localhost:3000/en-US/products`
 - **日文**: `http://localhost:3000/ja-JP/products`
 - **韩文**: `http://localhost:3000/ko-KR/products`
 

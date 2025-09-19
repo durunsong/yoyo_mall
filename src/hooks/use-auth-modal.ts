@@ -38,6 +38,6 @@ export function useAuthModal(): UseAuthModalReturn {
     defaultTab,
     openModal,
     closeModal,
-    switchTab
+    switchTab,
   };
 }

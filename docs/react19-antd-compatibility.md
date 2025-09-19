@@ -26,12 +26,12 @@ pnpm add @ant-design/v5-patch-for-react-19
 // ✅ 正确: 兼容性补丁必须在最前面
 import '@ant-design/v5-patch-for-react-19';
 
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AntdHeader } from "@/components/layout/antd-header";
-import { Footer } from "@/components/layout/footer";
-import { RootProviders } from "@/components/providers/root-providers";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AntdHeader } from '@/components/layout/antd-header';
+import { Footer } from '@/components/layout/footer';
+import { RootProviders } from '@/components/providers/root-providers';
 ```
 
 #### 2.2 根提供者组件 (`src/components/providers/root-providers.tsx`)
@@ -53,8 +53,8 @@ import zhCN from 'antd/locale/zh_CN';
 
 ```tsx
 // ❌ 错误: 补丁导入太晚
-import { AntdHeader } from "@/components/layout/antd-header";
-import { Footer } from "@/components/layout/footer";
+import { AntdHeader } from '@/components/layout/antd-header';
+import { Footer } from '@/components/layout/footer';
 import '@ant-design/v5-patch-for-react-19'; // 太晚了！
 ```
 
@@ -91,12 +91,14 @@ import '@ant-design/v5-patch-for-react-19'; // 太晚了！
 ### 验证步骤
 
 1. **清理旧进程和缓存**:
+
    ```bash
    taskkill /F /IM node.exe
    Remove-Item -Recurse -Force .next
    ```
 
 2. **重新启动开发服务器**:
+
    ```bash
    pnpm dev
    ```

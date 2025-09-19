@@ -40,31 +40,41 @@ export interface UploadResult {
   originalName: string;
 }
 
-// OSS配置
-const ossConfig: OSSConfig = {
-  accessKeyId: process.env.OSS_ACCESS_KEY_ID!,
-  accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET!,
-  region: process.env.OSS_REGION!,
-  bucket: process.env.OSS_BUCKET!,
-  baseUrl: process.env.BASE_OSS_URL!,
-  folder: process.env.OSS_FOLDER || 'yoyo_mall',
-};
+// 获取OSS配置（延迟初始化）
+function getOSSConfig(): OSSConfig {
+  const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
+  const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+  const region = process.env.OSS_REGION;
+  const bucket = process.env.OSS_BUCKET;
+  const baseUrl = process.env.BASE_OSS_URL;
 
-// 验证OSS配置
-if (!ossConfig.accessKeyId || !ossConfig.accessKeySecret || !ossConfig.region || !ossConfig.bucket) {
-  throw new Error('阿里云OSS配置不完整，请检查环境变量');
+  if (!accessKeyId || !accessKeySecret || !region || !bucket || !baseUrl) {
+    throw new Error('阿里云OSS配置不完整，请检查环境变量');
+  }
+
+  return {
+    accessKeyId,
+    accessKeySecret,
+    region,
+    bucket,
+    baseUrl,
+    folder: process.env.OSS_FOLDER || 'yoyo_mall',
+  };
 }
+
+// OSS配置验证将在实际使用时进行
 
 // 创建OSS客户端
 let ossClient: OSS | null = null;
 
 function getOSSClient(): OSS {
   if (!ossClient) {
+    const config = getOSSConfig();
     ossClient = new OSS({
-      accessKeyId: ossConfig.accessKeyId,
-      accessKeySecret: ossConfig.accessKeySecret,
-      region: ossConfig.region,
-      bucket: ossConfig.bucket,
+      accessKeyId: config.accessKeyId,
+      accessKeySecret: config.accessKeySecret,
+      region: config.region,
+      bucket: config.bucket,
     });
   }
   return ossClient;
@@ -78,8 +88,9 @@ function generateFileName(originalName: string, folder?: string): string {
   const uuid = uuidv4();
   const timestamp = Date.now();
   const fileName = `${uuid}-${timestamp}.${ext}`;
-  
-  const basePath = folder ? `${ossConfig.folder}/${folder}` : ossConfig.folder;
+
+  const config = getOSSConfig();
+  const basePath = folder ? `${config.folder}/${folder}` : config.folder;
   return `${basePath}/${fileName}`;
 }
 
@@ -87,7 +98,8 @@ function generateFileName(originalName: string, folder?: string): string {
  * 获取文件的完整URL
  */
 function getFileUrl(key: string): string {
-  return `${ossConfig.baseUrl}/${key}`;
+  const config = getOSSConfig();
+  return `${config.baseUrl}/${key}`;
 }
 
 /**
@@ -100,7 +112,7 @@ async function optimizeImage(
     maxHeight?: number;
     quality?: number;
     format?: 'jpeg' | 'png' | 'webp';
-  } = {}
+  } = {},
 ): Promise<Buffer> {
   const {
     maxWidth = 1920,
@@ -113,7 +125,7 @@ async function optimizeImage(
 
   // 获取图片信息
   const metadata = await sharpInstance.metadata();
-  
+
   // 如果图片尺寸超过限制，进行缩放
   if (metadata.width && metadata.height) {
     if (metadata.width > maxWidth || metadata.height > maxHeight) {
@@ -145,7 +157,7 @@ async function generateThumbnail(
     width?: number;
     height?: number;
     quality?: number;
-  } = {}
+  } = {},
 ): Promise<Buffer> {
   const { width = 300, height = 300, quality = 80 } = options;
 
@@ -161,10 +173,18 @@ async function generateThumbnail(
 /**
  * 上传文件到OSS
  */
-export async function uploadFile(options: UploadFileOptions): Promise<UploadResult> {
+export async function uploadFile(
+  options: UploadFileOptions,
+): Promise<UploadResult> {
   try {
     const client = getOSSClient();
-    let { file, originalName, mimeType, folder, generateThumbnail: shouldGenerateThumbnail } = options;
+    let {
+      file,
+      originalName,
+      mimeType,
+      folder,
+      generateThumbnail: shouldGenerateThumbnail,
+    } = options;
 
     // 如果是图片，进行优化
     if (mimeType.startsWith('image/')) {
@@ -199,7 +219,7 @@ export async function uploadFile(options: UploadFileOptions): Promise<UploadResu
       try {
         const thumbnailBuffer = await generateThumbnail(file);
         const thumbnailKey = generateFileName(`thumb_${originalName}`, folder);
-        
+
         await client.put(thumbnailKey, thumbnailBuffer, {
           headers: {
             'Content-Type': 'image/jpeg',
@@ -224,7 +244,9 @@ export async function uploadFile(options: UploadFileOptions): Promise<UploadResu
     return uploadResult;
   } catch (error) {
     console.error('OSS文件上传失败:', error);
-    throw new Error(`文件上传失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `文件上传失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
@@ -239,7 +261,9 @@ export async function deleteFile(key: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('OSS文件删除失败:', error);
-    throw new Error(`文件删除失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `文件删除失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
@@ -253,7 +277,9 @@ export async function deleteFiles(keys: string[]): Promise<void> {
     console.log('批量删除文件成功:', result);
   } catch (error) {
     console.error('OSS批量删除文件失败:', error);
-    throw new Error(`批量删除文件失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `批量删除文件失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
@@ -277,15 +303,18 @@ export async function getFileInfo(key: string) {
   try {
     const client = getOSSClient();
     const result = await client.head(key);
+    const headers = result.res.headers as any;
     return {
-      size: parseInt(result.res.headers['content-length'] || '0'),
-      mimeType: result.res.headers['content-type'],
-      lastModified: result.res.headers['last-modified'],
-      etag: result.res.headers.etag,
+      size: parseInt(headers['content-length'] || '0'),
+      mimeType: headers['content-type'],
+      lastModified: headers['last-modified'],
+      etag: headers.etag,
     };
   } catch (error) {
     console.error('获取文件信息失败:', error);
-    throw new Error(`获取文件信息失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `获取文件信息失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
@@ -295,28 +324,38 @@ export async function getFileInfo(key: string) {
 export async function listFiles(prefix: string = '', maxKeys: number = 100) {
   try {
     const client = getOSSClient();
-    const result = await client.list({
-      prefix: `${ossConfig.folder}/${prefix}`,
-      'max-keys': maxKeys,
-    });
+    const result = await client.list(
+      {
+        prefix: `${getOSSConfig().folder}/${prefix}`,
+        'max-keys': maxKeys,
+      },
+      {},
+    );
 
-    return result.objects?.map((obj) => ({
-      key: obj.name,
-      url: getFileUrl(obj.name!),
-      size: obj.size,
-      lastModified: obj.lastModified,
-      etag: obj.etag,
-    })) || [];
+    return (
+      result.objects?.map(obj => ({
+        key: obj.name,
+        url: getFileUrl(obj.name!),
+        size: obj.size,
+        lastModified: obj.lastModified,
+        etag: obj.etag,
+      })) || []
+    );
   } catch (error) {
     console.error('列出文件失败:', error);
-    throw new Error(`列出文件失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `列出文件失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
 /**
  * 生成临时访问URL（用于私有bucket）
  */
-export async function generatePresignedUrl(key: string, expires: number = 3600): Promise<string> {
+export async function generatePresignedUrl(
+  key: string,
+  expires: number = 3600,
+): Promise<string> {
   try {
     const client = getOSSClient();
     const url = client.signatureUrl(key, {
@@ -325,20 +364,22 @@ export async function generatePresignedUrl(key: string, expires: number = 3600):
     return url;
   } catch (error) {
     console.error('生成临时URL失败:', error);
-    throw new Error(`生成临时URL失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    throw new Error(
+      `生成临时URL失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    );
   }
 }
 
 // 导出配置和工具函数
-export { ossConfig, getFileUrl };
+export { getOSSConfig, getFileUrl };
 
 // 常用文件夹常量
 export const OSS_FOLDERS = {
-  PRODUCTS: 'products',           // 商品图片
-  AVATARS: 'avatars',            // 用户头像
-  BRANDS: 'brands',              // 品牌图片
-  CATEGORIES: 'categories',       // 分类图片
-  BANNERS: 'banners',            // 轮播图
-  DOCUMENTS: 'documents',         // 文档
-  TEMP: 'temp',                  // 临时文件
+  PRODUCTS: 'products', // 商品图片
+  AVATARS: 'avatars', // 用户头像
+  BRANDS: 'brands', // 品牌图片
+  CATEGORIES: 'categories', // 分类图片
+  BANNERS: 'banners', // 轮播图
+  DOCUMENTS: 'documents', // 文档
+  TEMP: 'temp', // 临时文件
 } as const;

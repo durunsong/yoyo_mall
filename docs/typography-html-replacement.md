@@ -3,11 +3,13 @@
 ## 🐛 问题描述
 
 在 `HomePage` 组件中持续出现错误：
+
 ```
 Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
 ```
 
 即使尝试了多种 Ant Design Typography 组件的导入方式，问题仍然存在：
+
 1. 从 'antd' 中解构导入
 2. 使用 `Typography.Title` 完整路径
 3. 从 'antd/es/typography' 单独导入
@@ -19,17 +21,18 @@ Element type is invalid: expected a string (for built-in components) or a class/
 
 ### 替换映射
 
-| Ant Design 组件 | HTML 替换 | Tailwind 样式 |
-|----------------|-----------|---------------|
-| `<Title level={1}>` | `<h1>` | `text-white mb-6` |
-| `<Title level={2}>` | `<h2>` | `text-3xl font-bold text-gray-900 mb-4` |
-| `<Title level={4}>` | `<h4>` | `text-xl font-semibold text-gray-900 mb-3` |
-| `<Title level={5}>` | `<h5>` | `text-lg font-medium text-gray-900 mb-2` |
-| `<Paragraph>` | `<p>` | 根据上下文使用相应样式 |
+| Ant Design 组件     | HTML 替换 | Tailwind 样式                              |
+| ------------------- | --------- | ------------------------------------------ |
+| `<Title level={1}>` | `<h1>`    | `text-white mb-6`                          |
+| `<Title level={2}>` | `<h2>`    | `text-3xl font-bold text-gray-900 mb-4`    |
+| `<Title level={4}>` | `<h4>`    | `text-xl font-semibold text-gray-900 mb-3` |
+| `<Title level={5}>` | `<h5>`    | `text-lg font-medium text-gray-900 mb-2`   |
+| `<Paragraph>`       | `<p>`     | 根据上下文使用相应样式                     |
 
 ### 具体修改
 
 #### 1. Hero Section
+
 ```tsx
 // ❌ 修复前
 <Title level={1} className="text-white mb-6" style={{ fontSize: '3.5rem', marginBottom: '24px' }}>
@@ -49,6 +52,7 @@ Element type is invalid: expected a string (for built-in components) or a class/
 ```
 
 #### 2. Section 标题
+
 ```tsx
 // ❌ 修复前
 <Title level={2}>为什么选择我们</Title>
@@ -64,6 +68,7 @@ Element type is invalid: expected a string (for built-in components) or a class/
 ```
 
 #### 3. Card 标题
+
 ```tsx
 // ❌ 修复前
 <Title level={4}>全球直采</Title>
@@ -79,6 +84,7 @@ Element type is invalid: expected a string (for built-in components) or a class/
 ```
 
 #### 4. 分类标题
+
 ```tsx
 // ❌ 修复前
 <Title level={5} className="mb-2">{category.name}</Title>
@@ -90,6 +96,7 @@ Element type is invalid: expected a string (for built-in components) or a class/
 ```
 
 #### 5. CTA Section
+
 ```tsx
 // ❌ 修复前
 <Title level={2} className="text-white mb-4">
@@ -119,15 +126,18 @@ import Typography from 'antd/es/typography';
 ## 🎯 修复结果
 
 ✅ **彻底解决了组件渲染错误**
+
 - 不再出现 "Element type is invalid" 错误
 - 首页能正常渲染所有内容
 
 ✅ **保持了视觉效果**
+
 - 使用 Tailwind CSS 实现了相同的样式
 - 保持了原有的设计层次和视觉效果
 - 响应式设计依然正常工作
 
 ✅ **提高了性能和稳定性**
+
 - 减少了对第三方组件的依赖
 - 使用原生 HTML 元素，更加稳定
 - 避免了复杂的组件导入问题
@@ -142,6 +152,7 @@ import Typography from 'antd/es/typography';
 ## 🎨 样式对比
 
 新的 HTML + Tailwind 方案具有以下优势：
+
 - 🚀 **性能更好**: 原生 HTML 元素渲染更快
 - 🎯 **更可控**: 直接控制样式，不依赖第三方组件的内部实现
 - 🔧 **更灵活**: 可以根据需要精确调整样式

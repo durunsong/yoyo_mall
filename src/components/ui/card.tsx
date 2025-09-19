@@ -20,7 +20,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded-lg border bg-card text-card-foreground shadow-sm',
+        'bg-card text-card-foreground rounded-lg border shadow-sm',
         hoverable && 'transition-shadow hover:shadow-md',
         className,
       )}
@@ -50,7 +50,8 @@ const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 CardHeader.displayName = 'CardHeader';
 
 // CardTitle组件Props接口
-export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+export interface CardTitleProps
+  extends React.HTMLAttributes<HTMLHeadingElement> {}
 
 /**
  * CardTitle组件
@@ -59,7 +60,10 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, CardTitleProps>(
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+      className={cn(
+        'text-2xl leading-none font-semibold tracking-tight',
+        className,
+      )}
       {...props}
     />
   ),
@@ -68,25 +72,28 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, CardTitleProps>(
 CardTitle.displayName = 'CardTitle';
 
 // CardDescription组件Props接口
-export interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
+export interface CardDescriptionProps
+  extends React.HTMLAttributes<HTMLParagraphElement> {}
 
 /**
  * CardDescription组件
  */
-const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(
-  ({ className, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn('text-sm text-muted-foreground', className)}
-      {...props}
-    />
-  ),
-);
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  CardDescriptionProps
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn('text-muted-foreground text-sm', className)}
+    {...props}
+  />
+));
 
 CardDescription.displayName = 'CardDescription';
 
 // CardContent组件Props接口
-export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardContentProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
 
 /**
  * CardContent组件

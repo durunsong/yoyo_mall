@@ -3,6 +3,7 @@
 ## 🐛 问题描述
 
 用户遇到的错误：
+
 ```
 Deprecation warning: `useLocale` has returned a default from `useParams().locale` since no `NextIntlClientProvider` ancestor was found for the calling component. This behavior will be removed in the next major version. Please ensure all Client Components that use `next-intl` are wrapped in a `NextIntlClientProvider`.
 ```
@@ -55,6 +56,7 @@ Deprecation warning: `useLocale` has returned a default from `useParams().locale
 #### 1. 修改 `useLocaleStorage` Hook ✅
 
 **修复前** - 依赖 `useLocale`:
+
 ```typescript
 import { useLocale } from 'next-intl';
 
@@ -65,27 +67,28 @@ export function useLocaleStorage() {
 ```
 
 **修复后** - 使用路由解析:
+
 ```typescript
 import { useParams, usePathname } from 'next/navigation';
 
 export function useLocaleStorage() {
   const params = useParams();
   const pathname = usePathname();
-  
+
   // 从路由中检测当前语言
   const getLocaleFromPath = () => {
     const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
     const pathSegments = pathname.split('/').filter(Boolean);
     const firstSegment = pathSegments[0];
-    
+
     if (locales.includes(firstSegment)) {
       return firstSegment;
     }
-    
+
     // 如果路径中没有语言前缀，说明是默认语言
     return 'zh-CN';
   };
-  
+
   const currentLocale = getLocaleFromPath(); // ✅ 无需 Provider
   // ...
 }
@@ -94,6 +97,7 @@ export function useLocaleStorage() {
 #### 2. 修改 `LanguageSwitcher` 组件 ✅
 
 **修复前**:
+
 ```typescript
 import { useLocale } from 'next-intl';
 
@@ -105,11 +109,12 @@ export function LanguageSwitcher() {
 ```
 
 **修复后**:
+
 ```typescript
 export function LanguageSwitcher() {
   const { currentLocale, setLocale } = useLocaleStorage(); // ✅ 统一从 hook 获取
   // ...
-  
+
   // 更新所有引用
   const currentLanguage = languages.find(lang => lang.code === currentLocale);
   // currentLocale === language.code 检查等...
@@ -119,12 +124,14 @@ export function LanguageSwitcher() {
 ## ✅ 修复效果
 
 ### 修复前的问题
+
 ```
-⚠️ Deprecation warning: useLocale has returned a default from useParams().locale 
+⚠️ Deprecation warning: useLocale has returned a default from useParams().locale
    since no NextIntlClientProvider ancestor was found...
 ```
 
 ### 修复后的改进
+
 - ✅ **无弃用警告**: 不再使用需要 Provider 的 `useLocale`
 - ✅ **功能保持**: 语言切换功能完全正常
 - ✅ **性能优化**: 减少对 Provider 的依赖
@@ -133,12 +140,13 @@ export function LanguageSwitcher() {
 ## 🎯 技术优势
 
 ### 1. 路由驱动的语言检测
+
 ```typescript
 const getLocaleFromPath = () => {
   const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
   const pathSegments = pathname.split('/').filter(Boolean);
   const firstSegment = pathSegments[0];
-  
+
   // 智能检测：
   // /ja-JP/products → ja-JP
   // /products → zh-CN (默认)
@@ -147,19 +155,24 @@ const getLocaleFromPath = () => {
 ```
 
 ### 2. 无依赖语言存储
+
 ```typescript
 const setLocale = (locale: string) => {
   // 三重存储策略
   document.cookie = `preferred-locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
   localStorage.setItem('preferred-locale', locale);
-  localStorage.setItem('i18n-storage', JSON.stringify({
-    state: { locale },
-    version: 0
-  }));
+  localStorage.setItem(
+    'i18n-storage',
+    JSON.stringify({
+      state: { locale },
+      version: 0,
+    }),
+  );
 };
 ```
 
 ### 3. 兼容性保证
+
 - ✅ 支持有 Provider 的环境（页面内容）
 - ✅ 支持无 Provider 的环境（Header/Footer）
 - ✅ 与 next-intl 标准完全兼容
@@ -167,9 +180,11 @@ const setLocale = (locale: string) => {
 ## 🔄 验证方法
 
 ### 1. 检查控制台
+
 应该不再看到 `useLocale` 的弃用警告
 
 ### 2. 测试语言切换
+
 1. 打开浏览器开发者工具
 2. 点击 Header 中的语言下拉菜单
 3. 选择不同语言（如日语）
@@ -180,6 +195,7 @@ const setLocale = (locale: string) => {
    - ✅ 无控制台警告
 
 ### 3. 验证持久化
+
 1. 切换到日语
 2. 刷新页面
 3. 确认语言保持为日语
@@ -187,10 +203,12 @@ const setLocale = (locale: string) => {
 ## 📋 修改的文件
 
 ### 核心修复
+
 - ✅ `src/hooks/use-locale-storage.ts` - 移除 useLocale 依赖
 - ✅ `src/components/ui/language-switcher.tsx` - 使用统一的 currentLocale
 
 ### 保持不变
+
 - ✅ `src/app/[locale]/layout.tsx` - NextIntlClientProvider 保留
 - ✅ `src/middleware.ts` - next-intl 中间件保持简洁
 - ✅ `src/app/layout.tsx` - 根布局结构不变
@@ -200,7 +218,7 @@ const setLocale = (locale: string) => {
 通过将语言检测逻辑从 `useLocale` 改为基于路由的解析，我们：
 
 1. **解决了 Provider 依赖问题** - 无需 NextIntlClientProvider 包裹
-2. **保持了功能完整性** - 语言切换和存储功能不受影响  
+2. **保持了功能完整性** - 语言切换和存储功能不受影响
 3. **提高了代码健壮性** - 减少了对外部 Provider 的依赖
 4. **改善了开发体验** - 消除了弃用警告
 

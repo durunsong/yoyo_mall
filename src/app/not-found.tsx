@@ -17,7 +17,7 @@ export default function NotFound() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center">
       <Result
         status="404"
         title="404"

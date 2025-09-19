@@ -9,7 +9,7 @@ import { uploadFile, OSS_FOLDERS, type UploadResult } from '@/lib/oss';
 // 支持的图片格式
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
-  'image/jpg', 
+  'image/jpg',
   'image/png',
   'image/webp',
   'image/gif',
@@ -39,7 +39,7 @@ function getUploadFolder(type: string): string {
     document: OSS_FOLDERS.DOCUMENTS,
     temp: OSS_FOLDERS.TEMP,
   };
-  
+
   return folderMap[type] || OSS_FOLDERS.TEMP;
 }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     // 解析表单数据
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
-    const type = formData.get('type') as string || 'temp';
+    const type = (formData.get('type') as string) || 'temp';
     const generateThumbnail = formData.get('generateThumbnail') === 'true';
     const maxWidth = parseInt(formData.get('maxWidth') as string) || 1920;
     const maxHeight = parseInt(formData.get('maxHeight') as string) || 1080;
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (!files || files.length === 0) {
       return NextResponse.json(
         { error: '请选择要上传的文件' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -98,7 +98,9 @@ export async function POST(request: NextRequest) {
         uploadResults.push(result);
       } catch (error) {
         console.error(`上传文件 ${file.name} 失败:`, error);
-        errors.push(`文件 ${file.name}: ${error instanceof Error ? error.message : '上传失败'}`);
+        errors.push(
+          `文件 ${file.name}: ${error instanceof Error ? error.message : '上传失败'}`,
+        );
       }
     }
 
@@ -111,9 +113,10 @@ export async function POST(request: NextRequest) {
     } = {
       success: uploadResults.length > 0,
       data: uploadResults,
-      message: uploadResults.length > 0 
-        ? `成功上传 ${uploadResults.length} 个文件` 
-        : '没有文件上传成功',
+      message:
+        uploadResults.length > 0
+          ? `成功上传 ${uploadResults.length} 个文件`
+          : '没有文件上传成功',
     };
 
     if (errors.length > 0) {
@@ -124,11 +127,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('图片上传API错误:', error);
     return NextResponse.json(
-      { 
+      {
         error: '服务器错误',
-        message: error instanceof Error ? error.message : '未知错误'
+        message: error instanceof Error ? error.message : '未知错误',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

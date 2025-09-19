@@ -7,7 +7,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from '@/components/ui/card';
 
 export const metadata: Metadata = {
   title: '用户登录',
@@ -16,13 +22,13 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="flex items-center justify-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">Y</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-600">
+              <span className="text-2xl font-bold text-white">Y</span>
             </div>
             <span className="text-2xl font-bold text-gray-900">YOYO Mall</span>
           </Link>
@@ -31,7 +37,7 @@ export default function LoginPage() {
         {/* 登录表单 */}
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">欢迎回来</CardTitle>
+            <CardTitle className="text-center text-2xl">欢迎回来</CardTitle>
             <CardDescription className="text-center">
               请输入您的账户信息登录
             </CardDescription>
@@ -44,27 +50,30 @@ export default function LoginPage() {
                 placeholder="请输入您的邮箱地址"
                 required
               />
-              
+
               <Input
                 label="密码"
                 type="password"
                 placeholder="请输入您的密码"
                 required
               />
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
                     记住我
                   </label>
                 </div>
-                
+
                 <div className="text-sm">
                   <Link
                     href="/forgot-password"
@@ -74,26 +83,26 @@ export default function LoginPage() {
                   </Link>
                 </div>
               </div>
-              
+
               <Button type="submit" className="w-full">
                 登录
               </Button>
             </form>
-            
+
             {/* 分割线 */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">或者</span>
+                <span className="bg-white px-2 text-gray-500">或者</span>
               </div>
             </div>
-            
+
             {/* 社交登录 */}
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" className="w-full">
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -113,15 +122,19 @@ export default function LoginPage() {
                 </svg>
                 Google
               </Button>
-              
+
               <Button variant="outline" className="w-full">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <svg
+                  className="mr-2 h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
                 Facebook
               </Button>
             </div>
-            
+
             {/* 注册链接 */}
             <div className="text-center">
               <span className="text-sm text-gray-600">

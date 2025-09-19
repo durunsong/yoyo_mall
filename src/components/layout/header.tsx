@@ -31,10 +31,10 @@ export function Header() {
   const { isOpen, defaultTab, openModal, closeModal } = useAuthModal();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       {/* Top Bar */}
-      <div className="hidden md:block bg-gray-50 py-2">
-        <div className="container mx-auto px-4 flex justify-between items-center text-sm text-gray-600">
+      <div className="hidden bg-gray-50 py-2 md:block">
+        <div className="container mx-auto flex items-center justify-between px-4 text-sm text-gray-600">
           <div className="flex items-center space-x-4">
             <span>免费配送满$99</span>
             <span>•</span>
@@ -46,7 +46,7 @@ export function Header() {
             </Link>
             <span>•</span>
             <div className="flex items-center space-x-1">
-              <Globe className="w-4 h-4" />
+              <Globe className="h-4 w-4" />
               <span>中文</span>
             </div>
           </div>
@@ -59,21 +59,23 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-xl">Y</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
+                <span className="text-xl font-bold text-white">Y</span>
               </div>
-              <span className="hidden sm:block text-xl font-bold">YOYO Mall</span>
+              <span className="hidden text-xl font-bold sm:block">
+                YOYO Mall
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {navigation.map((item) => (
+          <nav className="hidden items-center space-x-6 md:flex">
+            {navigation.map(item => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary',
+                  'hover:text-primary text-sm font-medium transition-colors',
                   pathname === item.href
                     ? 'text-foreground'
                     : 'text-foreground/60',
@@ -85,13 +87,13 @@ export function Header() {
           </nav>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden lg:flex flex-1 max-w-sm mx-6">
+          <div className="mx-6 hidden max-w-sm flex-1 lg:flex">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
                 type="text"
                 placeholder="搜索商品..."
-                className="pl-10 pr-4"
+                className="pr-4 pl-10"
               />
             </div>
           </div>
@@ -112,14 +114,18 @@ export function Header() {
             <Button variant="ghost" size="icon" asChild>
               <Link href="/cart" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                   0
                 </span>
               </Link>
             </Button>
 
             {/* User Menu */}
-            <Button variant="ghost" size="icon" onClick={() => openModal('login')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => openModal('login')}
+            >
               <User className="h-5 w-5" />
             </Button>
 
@@ -141,13 +147,13 @@ export function Header() {
 
         {/* Mobile Search */}
         {isSearchOpen && (
-          <div className="lg:hidden py-4 border-t">
+          <div className="border-t py-4 lg:hidden">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
                 type="text"
                 placeholder="搜索商品..."
-                className="pl-10 pr-4"
+                className="pr-4 pl-10"
               />
             </div>
           </div>
@@ -155,14 +161,14 @@ export function Header() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
+          <div className="border-t py-4 md:hidden">
             <nav className="flex flex-col space-y-3">
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'text-sm font-medium transition-colors hover:text-primary px-2 py-1',
+                    'hover:text-primary px-2 py-1 text-sm font-medium transition-colors',
                     pathname === item.href
                       ? 'text-foreground bg-accent rounded-md'
                       : 'text-foreground/60',
@@ -172,9 +178,9 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
-              <div className="border-t pt-3 mt-3">
+              <div className="mt-3 border-t pt-3">
                 <button
-                  className="text-sm font-medium text-foreground/60 hover:text-primary px-2 py-1 block w-full text-left"
+                  className="text-foreground/60 hover:text-primary block w-full px-2 py-1 text-left text-sm font-medium"
                   onClick={() => {
                     setIsMenuOpen(false);
                     openModal('login');
@@ -183,7 +189,7 @@ export function Header() {
                   登录
                 </button>
                 <button
-                  className="text-sm font-medium text-foreground/60 hover:text-primary px-2 py-1 block w-full text-left"
+                  className="text-foreground/60 hover:text-primary block w-full px-2 py-1 text-left text-sm font-medium"
                   onClick={() => {
                     setIsMenuOpen(false);
                     openModal('register');
@@ -198,11 +204,7 @@ export function Header() {
       </div>
 
       {/* 认证弹窗 */}
-      <AuthModal 
-        open={isOpen}
-        onClose={closeModal}
-        defaultTab={defaultTab}
-      />
+      <AuthModal open={isOpen} onClose={closeModal} defaultTab={defaultTab} />
     </header>
   );
 }
