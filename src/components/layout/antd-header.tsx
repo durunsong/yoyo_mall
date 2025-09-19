@@ -33,30 +33,23 @@ import {
 import type { MenuProps } from 'antd';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { useAuthModal } from '@/hooks/use-auth-modal';
-import { useLocaleStorage } from '@/hooks/use-locale-storage';
 import { useRouter } from 'next/navigation';
+import { useStaticTranslations } from '@/hooks/use-translations';
 import ShoppingCartBadge from './shopping-cart-badge';
 import ProductSearch from '@/components/products/product-search';
+import LanguageSwitcher from '@/components/ui/language-switcher';
 
 const { Header } = Layout;
 // const { Search } = Input; // 不再需要，使用自定义搜索组件
 const { Text } = Typography;
 
-// 导航菜单配置
-const navItems = [
-  { key: '/', label: '首页', href: '/' },
-  { key: '/products', label: '商品', href: '/products' },
-  { key: '/categories', label: '分类', href: '/categories' },
-  { key: '/brands', label: '品牌', href: '/brands' },
-  { key: '/deals', label: '优惠', href: '/deals' },
-];
-
-// 语言选项
-const languageItems: MenuProps['items'] = [
-  { key: 'zh-CN', label: '🇨🇳 中文' },
-  { key: 'en-US', label: '🇺🇸 English' },
-  { key: 'ja-JP', label: '🇯🇵 日本語' },
-  { key: 'ko-KR', label: '🇰🇷 한국어' },
+// 导航菜单配置 - 现在使用翻译
+const getNavItems = (t: (key: string) => string) => [
+  { key: '/', label: t('home'), href: '/' },
+  { key: '/products', label: t('products'), href: '/products' },
+  { key: '/categories', label: t('categories'), href: '/categories' },
+  { key: '/brands', label: t('brands'), href: '/brands' },
+  { key: '/deals', label: t('deals'), href: '/deals' },
 ];
 
 // 用户菜单 (暂时未使用，保留供后续开发)
@@ -89,56 +82,12 @@ export function AntdHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { isOpen, defaultTab, openModal, closeModal } = useAuthModal();
-  const { setLocale } = useLocaleStorage();
+  const { t, locale } = useStaticTranslations('common');
 
   // 移除handleSearch，现在使用ProductSearch组件
-
-  // 处理语言切换
-  const handleLanguageChange: MenuProps['onClick'] = ({ key }) => {
-    const newLocale = key as string;
-    console.log('切换语言:', newLocale);
-
-    // 使用hook保存语言偏好
-    setLocale(newLocale);
-
-    // 构建新的URL
-    const currentPathname = pathname;
-    let newPath: string;
-
-    // 获取当前路径中的语言部分
-    const pathSegments = currentPathname.split('/').filter(Boolean);
-    const currentLocaleFromPath = pathSegments[0];
-
-    // 检查第一个段是否是语言代码
-    const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
-    const isCurrentPathHasLocale = locales.includes(currentLocaleFromPath);
-
-    if (newLocale === 'zh-CN') {
-      // 切换到默认语言，移除语言前缀
-      if (isCurrentPathHasLocale) {
-        newPath = '/' + pathSegments.slice(1).join('/');
-      } else {
-        newPath = currentPathname;
-      }
-    } else {
-      // 切换到非默认语言
-      if (isCurrentPathHasLocale) {
-        pathSegments[0] = newLocale;
-        newPath = '/' + pathSegments.join('/');
-      } else {
-        newPath = `/${newLocale}${currentPathname === '/' ? '' : currentPathname}`;
-      }
-    }
-
-    // 清理路径
-    newPath = newPath.replace(/\/+/g, '/');
-    if (newPath === '') newPath = '/';
-
-    console.log(`路径切换: ${currentPathname} → ${newPath}`);
-
-    // 使用window.location.href进行完整的页面重新加载
-    window.location.href = newPath;
-  };
+  
+  // 获取翻译后的导航项
+  const navItems = getNavItems(t);
 
   // 处理用户菜单点击 (暂时未使用)
   // const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
@@ -193,9 +142,9 @@ export function AntdHeader() {
       {/* 顶部通知栏 */}
       <div className="bg-blue-600 py-1 text-center text-sm text-white">
         <Space size="large">
-          <Text className="text-white">免费配送满$99</Text>
-          <Text className="text-white">7天无理由退货</Text>
-          <Text className="text-white">24小时客服支持</Text>
+          <Text className="text-white">{locale === 'zh-CN' ? '免费配送满$99' : 'Free shipping over $99'}</Text>
+          <Text className="text-white">{locale === 'zh-CN' ? '7天无理由退货' : '7-day returns'}</Text>
+          <Text className="text-white">{locale === 'zh-CN' ? '24小时客服支持' : '24/7 support'}</Text>
         </Space>
       </div>
 
@@ -233,7 +182,7 @@ export function AntdHeader() {
 
             {/* 搜索框 - 桌面端 */}
             <div className="mx-8 hidden max-w-md flex-1 lg:block">
-              <ProductSearch placeholder="搜索商品..." />
+              <ProductSearch placeholder={t('searchPlaceholder')} />
             </div>
 
             {/* 右侧操作按钮 */}
@@ -249,12 +198,7 @@ export function AntdHeader() {
               />
 
               {/* 语言切换 */}
-              <Dropdown
-                menu={{ items: languageItems, onClick: handleLanguageChange }}
-                placement="bottomRight"
-              >
-                <Button type="text" icon={<GlobalOutlined />} />
-              </Dropdown>
+              <LanguageSwitcher mode="button" />
 
               {/* 通知 */}
               <Badge count={3} size="small">
@@ -268,7 +212,7 @@ export function AntdHeader() {
               <Button type="text" onClick={() => openModal('login')}>
                 <Space>
                   <Avatar size="small" icon={<UserOutlined />} />
-                  <span className="hidden sm:inline">登录</span>
+                  <span className="hidden sm:inline">{t('login')}</span>
                 </Space>
               </Button>
 
@@ -286,7 +230,7 @@ export function AntdHeader() {
 
       {/* 移动端抽屉菜单 */}
       <Drawer
-        title="菜单"
+        title={t('menu')}
         placement="right"
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}
@@ -294,7 +238,7 @@ export function AntdHeader() {
       >
         <div className="space-y-4">
           {/* 搜索框 */}
-          <ProductSearch placeholder="搜索商品..." />
+          <ProductSearch placeholder={t('searchPlaceholder')} />
 
           {/* 导航菜单 */}
           <Menu
@@ -320,10 +264,10 @@ export function AntdHeader() {
                 openModal('login');
               }}
             >
-              <UserOutlined /> 登录/注册
+              <UserOutlined /> {t('login')}/{t('register')}
             </Button>
             <Button block type="primary">
-              <ShoppingCartOutlined /> 购物车
+              <ShoppingCartOutlined /> {t('cart')}
             </Button>
           </div>
         </div>

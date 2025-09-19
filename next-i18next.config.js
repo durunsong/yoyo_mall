@@ -1,18 +1,18 @@
 /** @type {import('next-i18next').UserConfig} */
-module.exports = {
+const config = {
   i18n: {
     defaultLocale: 'zh-CN',
     locales: ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'],
     localeDetection: false, // 禁用自动语言检测，避免URL变化
   },
-  localePath: './public/locales',
+  localePath: './src/locales',
   reloadOnPrerender: process.env.NODE_ENV === 'development',
   
   // 调试配置
   debug: process.env.NODE_ENV === 'development',
   
   // 命名空间配置
-  ns: ['common', 'navigation', 'product', 'cart', 'auth'],
+  ns: ['common', 'navigation', 'product', 'cart', 'auth', 'admin', 'error'],
   defaultNS: 'common',
   
   // 插值配置
@@ -22,7 +22,7 @@ module.exports = {
   
   // 后端选项
   backend: {
-    loadPath: './public/locales/{{lng}}/{{ns}}.json',
+    loadPath: './src/locales/{{lng}}/{{ns}}.json',
   },
   
   // 保存缺失的翻译
@@ -33,3 +33,5 @@ module.exports = {
     useSuspense: false, // 避免SSR问题
   },
 };
+
+export default config;

@@ -1,8 +1,8 @@
-const { i18n } = require('./next-i18next.config');
+import i18nextConfig from './next-i18next.config.js';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  i18n,
+  i18n: i18nextConfig.i18n,
   eslint: {
     ignoreDuringBuilds: true,
   },

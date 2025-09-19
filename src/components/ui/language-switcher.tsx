@@ -1,15 +1,13 @@
 /**
  * 语言切换器组件
- * 使用next-i18next进行多语言切换
+ * 客户端语言切换，不依赖next-i18next
  */
 
 'use client';
 
-import React from 'react';
-import { Select } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Select, Button } from 'antd';
 import { GlobalOutlined } from '@ant-design/icons';
-import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
 
 const { Option } = Select;
 
@@ -23,22 +21,55 @@ const languages = [
 
 interface LanguageSwitcherProps {
   className?: string;
+  mode?: 'select' | 'button';
 }
 
-export default function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
-  const router = useRouter();
-  const { i18n } = useTranslation();
+export default function LanguageSwitcher({ 
+  className = '', 
+  mode = 'select' 
+}: LanguageSwitcherProps) {
+  const [currentLocale, setCurrentLocale] = useState('zh-CN');
+
+  // 从localStorage获取当前语言
+  useEffect(() => {
+    const savedLocale = localStorage.getItem('locale') || 'zh-CN';
+    setCurrentLocale(savedLocale);
+  }, []);
 
   const handleLanguageChange = (locale: string) => {
-    // 使用push方法切换语言，但保持在同一个页面
-    router.push(router.asPath, router.asPath, { locale });
+    // 保存到localStorage
+    localStorage.setItem('locale', locale);
+    setCurrentLocale(locale);
+
+    // 发送自定义事件通知其他组件
+    window.dispatchEvent(new CustomEvent('localeChange', { detail: locale }));
+    
+    console.log('Language changed to:', locale);
   };
 
-  const currentLanguage = languages.find(lang => lang.code === router.locale) || languages[0];
+  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0];
+
+  if (mode === 'button') {
+    return (
+      <Button 
+        type="text" 
+        icon={<GlobalOutlined />}
+        className={className}
+        onClick={() => {
+          // 简单切换到下一个语言
+          const currentIndex = languages.findIndex(lang => lang.code === currentLocale);
+          const nextIndex = (currentIndex + 1) % languages.length;
+          handleLanguageChange(languages[nextIndex].code);
+        }}
+      >
+        {currentLanguage.flag}
+      </Button>
+    );
+  }
 
   return (
     <Select
-      value={router.locale}
+      value={currentLocale}
       onChange={handleLanguageChange}
       className={className}
       style={{ width: 120 }}
