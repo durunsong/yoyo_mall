@@ -1,78 +1,75 @@
 {
   "common": {
-    "loading": "読み込み中...",
-    "search": "検索",
-    "filter": "フィルター",
-    "save": "保存",
-    "cancel": "キャンセル",
-    "confirm": "確認",
-    "delete": "削除",
-    "edit": "編集",
-    "add": "追加",
-    "home": "ホーム",
-    "back": "戻る",
-    "next": "次へ",
-    "previous": "前へ",
-    "close": "閉じる",
-    "submit": "送信",
-    "reset": "リセット"
-  },
-  "navigation": {
+    "welcome": "ようこそ",
     "home": "ホーム",
     "products": "商品",
     "categories": "カテゴリー",
     "brands": "ブランド",
     "deals": "セール",
     "cart": "カート",
-    "account": "マイアカウント",
     "login": "ログイン",
-    "register": "新規登録",
+    "register": "登録",
     "logout": "ログアウト",
-    "admin": "管理者"
+    "search": "検索",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信"
   },
-  "header": {
-    "searchPlaceholder": "商品を検索...",
-    "freeShipping": "$99以上で送料無料",
-    "returnPolicy": "7日間返品保証",
-    "customerService": "カスタマーサービス",
-    "language": "日本語"
+  "navigation": {
+    "home": "ホーム",
+    "shop": "ショップ",
+    "about": "会社概要",
+    "contact": "お問い合わせ",
+    "profile": "プロフィール",
+    "orders": "注文履歴",
+    "wishlist": "ウィッシュリスト",
+    "settings": "設定"
   },
-  "home": {
-    "hero": {
-      "title": "YOYO Mallへようこそ",
-      "subtitle": "世界の優良商品を発見し、安全で便利な越境ECをお楽しみください",
-      "startShopping": "ショッピング開始",
-      "learnMore": "詳しく見る"
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "おかえりなさい",
-      "subtitle": "アカウント情報を入力してログインしてください",
-      "email": "メールアドレス",
-      "emailPlaceholder": "メールアドレスを入力",
-      "password": "パスワード",
-      "passwordPlaceholder": "パスワードを入力",
-      "rememberMe": "ログイン状態を保持",
-      "forgotPassword": "パスワードを忘れた方",
-      "loginButton": "ログイン",
-      "or": "または",
-      "noAccount": "アカウントをお持ちでない方",
-      "signUp": "今すぐ登録"
-    }
-  },
-  "products": {
-    "title": "商品一覧",
-    "description": "すべての商品を閲覧",
+  "product": {
+    "title": "商品",
+    "price": "価格",
+    "description": "説明",
     "addToCart": "カートに追加",
-    "outOfStock": "在庫切れ"
+    "buyNow": "今すぐ購入",
+    "outOfStock": "在庫切れ",
+    "inStock": "在庫あり",
+    "reviews": "レビュー",
+    "rating": "評価",
+    "specifications": "仕様",
+    "details": "詳細"
   },
   "cart": {
     "title": "ショッピングカート",
-    "empty": {
-      "title": "カートが空です",
-      "description": "まだ商品が追加されていません。素敵な商品を見つけてみましょう！",
-      "startShopping": "ショッピング開始"
-    }
+    "empty": "カートは空です",
+    "quantity": "数量",
+    "total": "合計",
+    "subtotal": "小計",
+    "checkout": "チェックアウト",
+    "remove": "削除",
+    "update": "更新"
+  },
+  "auth": {
+    "login": "ログイン",
+    "register": "登録",
+    "email": "メール",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "forgotPassword": "パスワードを忘れた",
+    "rememberMe": "ログイン状態を保持",
+    "loginWithGoogle": "Googleでログイン",
+    "alreadyHaveAccount": "既にアカウントをお持ちですか？",
+    "noAccountYet": "まだアカウントをお持ちでないですか？",
+    "signUp": "サインアップ",
+    "signIn": "サインイン"
   }
 }

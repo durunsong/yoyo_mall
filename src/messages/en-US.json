@@ -1,316 +1,75 @@
 {
   "common": {
-    "loading": "Loading...",
-    "search": "Search",
-    "filter": "Filter",
-    "save": "Save",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "delete": "Delete",
-    "edit": "Edit",
-    "add": "Add",
-    "home": "Home",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous",
-    "close": "Close",
-    "submit": "Submit",
-    "reset": "Reset"
-  },
-  "home": {
-    "hero": {
-      "title": "Welcome to YOYO Mall",
-      "subtitle": "Discover global quality products, enjoy safe and convenient cross-border shopping experience",
-      "shopNow": "Shop Now",
-      "learnMore": "Learn More"
-    },
-    "features": {
-      "title": "Why Choose Us",
-      "subtitle": "Professional cross-border e-commerce platform, providing you with the best shopping experience",
-      "quality": {
-        "title": "Global Quality",
-        "description": "Carefully selected global quality products, quality assurance"
-      },
-      "secure": {
-        "title": "Security Guarantee",
-        "description": "Multiple security guarantees, shop with confidence"
-      },
-      "fast": {
-        "title": "Fast Delivery",
-        "description": "Efficient logistics, fast delivery"
-      }
-    },
-    "categories": {
-      "title": "Popular Categories",
-      "electronics": "Electronics",
-      "fashion": "Fashion",
-      "home": "Home & Garden",
-      "beauty": "Beauty & Care",
-      "sports": "Sports & Outdoors",
-      "books": "Books & Stationery"
-    },
-    "stats": {
-      "users": "Global Users",
-      "orders": "Orders",
-      "products": "Product Categories",
-      "countries": "Countries Served",
-      "brands": "Partner Brands",
-      "satisfaction": "Customer Satisfaction"
-    },
-    "cta": {
-      "title": "Ready to Start Shopping?",
-      "subtitle": "Join our membership to enjoy more discounts and exclusive services",
-      "register": "Sign Up Now",
-      "browse": "Browse Products"
-    }
-  },
-  "navigation": {
+    "welcome": "Welcome",
     "home": "Home",
     "products": "Products",
     "categories": "Categories",
     "brands": "Brands",
     "deals": "Deals",
     "cart": "Cart",
-    "account": "My Account",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
-    "admin": "Admin"
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit"
   },
-  "header": {
-    "searchPlaceholder": "Search products...",
-    "freeShipping": "Free shipping over $99",
-    "returnPolicy": "7-day return policy",
-    "customerService": "Customer Service",
-    "language": "English"
+  "navigation": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About Us",
+    "contact": "Contact",
+    "profile": "Profile",
+    "orders": "My Orders",
+    "wishlist": "Wishlist",
+    "settings": "Settings"
   },
-  "footer": {
-    "company": {
-      "title": "Company",
-      "about": "About Us",
-      "contact": "Contact Us",
-      "careers": "Careers",
-      "news": "News"
-    },
-    "customer": {
-      "title": "Customer Service",
-      "help": "Help Center",
-      "shipping": "Shipping Info",
-      "returns": "Return Policy",
-      "faq": "FAQ"
-    },
-    "account": {
-      "title": "My Account",
-      "orders": "My Orders",
-      "wishlist": "My Wishlist",
-      "settings": "Account Settings",
-      "addresses": "Address Book"
-    },
-    "legal": {
-      "title": "Legal",
-      "terms": "Terms of Service",
-      "privacy": "Privacy Policy",
-      "cookies": "Cookie Policy",
-      "disclaimer": "Disclaimer"
-    },
-    "newsletter": {
-      "title": "Subscribe to our newsletter",
-      "description": "Get the latest deals and product updates",
-      "emailPlaceholder": "Enter your email address",
-      "subscribe": "Subscribe"
-    },
-    "followUs": "Follow us:",
-    "copyright": "© 2024 YOYO Mall. All rights reserved."
-  },
-  "home": {
-    "hero": {
-      "title": "Welcome to YOYO Mall",
-      "subtitle": "Discover premium global products with secure and convenient cross-border shopping",
-      "startShopping": "Start Shopping",
-      "learnMore": "Learn More"
-    },
-    "features": {
-      "title": "Why Choose Us",
-      "globalSourcing": {
-        "title": "Global Sourcing",
-        "description": "Direct partnerships with premium global suppliers ensuring quality and competitive prices"
-      },
-      "securePayment": {
-        "title": "Secure & Safe",
-        "description": "Multiple payment protection, 7-day return policy for worry-free shopping"
-      },
-      "fastShipping": {
-        "title": "Fast Shipping",
-        "description": "Partner with international logistics for fast and reliable global delivery"
-      }
-    },
-    "categories": {
-      "title": "Popular Categories",
-      "clothing": "Clothing & Accessories",
-      "electronics": "Electronics",
-      "home": "Home & Living",
-      "beauty": "Beauty & Personal Care"
-    },
-    "cta": {
-      "title": "Ready to Start Shopping?",
-      "description": "Join our membership for exclusive deals and premium services",
-      "registerNow": "Register Now",
-      "browseProducts": "Browse Products"
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "Welcome Back",
-      "subtitle": "Please enter your account information to login",
-      "email": "Email Address",
-      "emailPlaceholder": "Enter your email address",
-      "password": "Password",
-      "passwordPlaceholder": "Enter your password",
-      "rememberMe": "Remember me",
-      "forgotPassword": "Forgot password?",
-      "loginButton": "Login",
-      "or": "or",
-      "google": "Google",
-      "facebook": "Facebook",
-      "noAccount": "Don't have an account?",
-      "signUp": "Sign up now"
-    },
-    "register": {
-      "title": "Create New Account",
-      "subtitle": "Join YOYO Mall and start your shopping journey"
-    }
-  },
-  "products": {
-    "title": "Products",
-    "description": "Browse all products",
-    "searchPlaceholder": "Search products...",
-    "totalProducts": "{count} products found",
-    "categories": {
-      "all": "All",
-      "mobile": "Mobile & Digital",
-      "computer": "Computers & Office",
-      "appliances": "Home Appliances",
-      "clothing": "Clothing & Accessories",
-      "home": "Home & Living"
-    },
-    "priceRange": "Price Range",
-    "minPrice": "Min Price",
-    "maxPrice": "Max Price",
-    "apply": "Apply",
-    "sortBy": {
-      "default": "Default",
-      "priceLowToHigh": "Price: Low to High",
-      "priceHighToLow": "Price: High to Low",
-      "ratingHighest": "Highest Rated",
-      "newest": "Newest"
-    },
+  "product": {
+    "title": "Product",
+    "price": "Price",
+    "description": "Description",
     "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
     "outOfStock": "Out of Stock",
-    "sale": "Sale",
-    "reviews": "reviews"
+    "inStock": "In Stock",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "specifications": "Specifications",
+    "details": "Details"
   },
   "cart": {
     "title": "Shopping Cart",
-    "empty": {
-      "title": "Your cart is empty",
-      "description": "No items added yet. Let's find something amazing for you!",
-      "startShopping": "Start Shopping"
-    },
-    "itemCount": "{count} items",
-    "productList": "Product List",
-    "coupon": {
-      "title": "Coupon Code",
-      "placeholder": "Enter coupon code",
-      "apply": "Apply"
-    },
-    "summary": {
-      "title": "Order Summary",
-      "subtotal": "Subtotal",
-      "shipping": "Shipping",
-      "tax": "Tax",
-      "total": "Total",
-      "free": "Free",
-      "checkout": "Checkout",
-      "continueShopping": "Continue Shopping",
-      "freeShippingNote": "Free shipping over $99",
-      "returnPolicy": "7-day return policy"
-    }
+    "empty": "Cart is empty",
+    "quantity": "Quantity",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "update": "Update"
   },
-  "admin": {
-    "dashboard": {
-      "title": "Admin Dashboard",
-      "welcome": "Welcome back, Administrator",
-      "backToStore": "Back to Store",
-      "notifications": "Notifications",
-      "stats": {
-        "totalSales": "Total Sales",
-        "totalOrders": "Total Orders",
-        "totalProducts": "Total Products",
-        "totalUsers": "Total Users",
-        "comparedToLastMonth": "vs last month"
-      },
-      "quickActions": "Quick Actions",
-      "recentOrders": "Recent Orders",
-      "viewAllOrders": "View All Orders",
-      "actions": {
-        "productManagement": {
-          "title": "Product Management",
-          "description": "Add, edit and manage products"
-        },
-        "orderManagement": {
-          "title": "Order Management",
-          "description": "Process and track orders"
-        },
-        "userManagement": {
-          "title": "User Management",
-          "description": "Manage user accounts"
-        },
-        "analytics": {
-          "title": "Analytics",
-          "description": "View sales reports"
-        },
-        "settings": {
-          "title": "Settings",
-          "description": "Configure system parameters"
-        },
-        "content": {
-          "title": "Content Management",
-          "description": "Manage page content"
-        }
-      }
-    },
-    "products": {
-      "title": "Product Management",
-      "description": "Manage all product information",
-      "addProduct": "Add Product",
-      "searchPlaceholder": "Search product name or SKU...",
-      "productList": "Product List",
-      "sku": "SKU",
-      "price": "Price",
-      "stock": "Stock",
-      "status": "Status",
-      "actions": "Actions",
-      "published": "Published",
-      "draft": "Draft"
-    }
-  },
-  "errors": {
-    "pageNotFound": {
-      "title": "Page Not Found",
-      "description": "Sorry, the page you are looking for does not exist or has been removed.",
-      "goBack": "Go Back",
-      "goHome": "Go Home"
-    },
-    "serverError": {
-      "title": "Something went wrong",
-      "description": "Sorry, an unexpected error occurred. Please try refreshing the page or go back to home.",
-      "retry": "Try Again",
-      "goHome": "Go Home"
-    },
-    "networkError": {
-      "title": "Network Error",
-      "description": "Please check your internet connection and try again.",
-      "retry": "Try Again"
-    }
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password",
+    "rememberMe": "Remember Me",
+    "loginWithGoogle": "Login with Google",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccountYet": "Don't have an account yet?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In"
   }
 }
