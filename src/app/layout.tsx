@@ -3,9 +3,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ShadcnHeader } from '@/components/layout/shadcn-header';
-import { Footer } from '@/components/layout/footer';
 import { RootProviders } from '@/components/providers/root-providers';
+import { ConditionalLayout } from '@/components/layout/conditional-layout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -59,11 +58,9 @@ export default function RootLayout({
     <html suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <RootProviders>
-          <div className="relative flex min-h-screen flex-col">
-            <ShadcnHeader />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </RootProviders>
       </body>
     </html>

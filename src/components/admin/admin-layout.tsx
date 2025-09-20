@@ -17,6 +17,7 @@ import {
   User,
   Bell,
   Search,
+  Home,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -91,6 +92,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     window.open('/', '_blank');
   };
 
+  const handleGoToProfile = () => {
+    window.open('/account', '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 侧边栏 */}
@@ -149,7 +154,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             onClick={handleBackToFrontend}
             className="w-full justify-start"
           >
-            <Package className="mr-2 h-4 w-4" />
+            <Home className="mr-2 h-4 w-4" />
             返回前台
           </Button>
         </div>
@@ -222,9 +227,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => window.open('/account', '_blank')}>
+                    <DropdownMenuItem onClick={handleGoToProfile}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>个人设置</span>
+                      <span>个人中心</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBackToFrontend}>
+                      <Home className="mr-2 h-4 w-4" />
+                      <span>返回前台</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
