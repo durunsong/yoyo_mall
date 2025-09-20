@@ -1,0 +1,52 @@
+{
+  "pageTitle": "个人中心",
+  "tabs": {
+    "profile": "个人信息",
+    "security": "安全设置",
+    "activity": "活动记录"
+  },
+  "sections": {
+    "basicInfo": "基本信息",
+    "accountSecurity": "账户安全",
+    "loginRecords": "登录记录"
+  },
+  "labels": {
+    "displayName": "显示名称",
+    "phone": "手机号码",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "dateOfBirth": "出生日期",
+    "email": "邮箱地址",
+    "password": "登录密码",
+    "twoFactor": "两步验证",
+    "device": "设备",
+    "ip": "IP",
+    "location": "位置"
+  },
+  "placeholders": {
+    "displayName": "请输入显示名称",
+    "phone": "请输入手机号码",
+    "firstName": "请输入名字",
+    "lastName": "请输入姓氏"
+  },
+  "buttons": {
+    "changeAvatar": "更换头像",
+    "save": "保存更改",
+    "saving": "保存中...",
+    "changePassword": "修改密码",
+    "enable": "启用"
+  },
+  "status": {
+    "verified": "已验证",
+    "mobile": "移动端",
+    "desktop": "桌面端",
+    "noRecords": "暂无登录记录"
+  },
+  "toasts": {
+    "profileUpdated": "个人信息更新成功",
+    "avatarUpdated": "头像更新成功",
+    "updateFailed": "更新失败",
+    "networkError": "网络错误，请重试"
+  }
+}
+

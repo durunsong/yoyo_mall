@@ -1,228 +1,149 @@
 /**
- * 商品卡片组件
- * 用于在列表中展示商品信息
+ * 商品卡片组件 - shadcn/ui版本
+ * 展示商品信息的卡片
  */
 
 'use client';
 
-import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Card, Button, Tag, Rate, Badge, Spin, Typography } from 'antd';
-import { 
-  ShoppingCartOutlined, 
-  HeartOutlined, 
-  EyeOutlined,
-  FireOutlined 
-} from '@ant-design/icons';
-import { useCartApi, useIsInCart } from '@/hooks/use-cart-api';
-import type { Product } from '@/hooks/use-products';
-
-const { Text, Title } = Typography;
-const { Meta } = Card;
+import { Star, Heart, ShoppingCart } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ProductCardProps {
-  product: Product;
-  showAddToCart?: boolean;
-  showQuickView?: boolean;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    originalPrice?: number;
+    image?: string;
+    rating?: number;
+    reviews?: number;
+    inStock?: boolean;
+    featured?: boolean;
+  };
+  onAddToCart?: (productId: string) => void;
   className?: string;
 }
 
 export default function ProductCard({ 
   product, 
-  showAddToCart = true,
-  showQuickView = true,
+  onAddToCart,
   className = '' 
 }: ProductCardProps) {
-  const { addToCart } = useCartApi();
-  const isInCart = useIsInCart(product.id);
-  const [addingToCart, setAddingToCart] = useState(false);
-
-  // 处理添加到购物车
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setAddingToCart(true);
-    await addToCart(product.id, 1);
-    setAddingToCart(false);
-  };
-
-  // 计算折扣百分比
-  const discountPercentage = product.comparePrice && product.comparePrice > product.price
-    ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
-    : 0;
-
-  // 格式化价格
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: product.currency,
-    }).format(price);
-  };
-
-  // 库存状态
-  const getStockStatus = () => {
-    if (!product.inStock) return { status: 'error', text: '缺货' };
-    if (product.isLowStock) return { status: 'warning', text: '库存紧张' };
-    return { status: 'success', text: '有货' };
-  };
-
-  const stockStatus = getStockStatus();
+  const {
+    id,
+    name,
+    price,
+    originalPrice,
+    image,
+    rating = 0,
+    reviews = 0,
+    inStock = true,
+    featured = false
+  } = product;
 
   return (
-    <div className={`group relative ${className}`}>
-      <Card
-        hoverable
-        className="h-full transition-all duration-300 group-hover:shadow-lg"
-        cover={
-          <div className="relative aspect-square overflow-hidden">
-            <Link href={`/products/${product.slug}`}>
-              <Image
-                src={product.images[0]?.url || '/placeholder-product.jpg'}
-                alt={product.images[0]?.alt || product.name}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-              />
-            </Link>
-            
-            {/* 折扣标签 */}
-            {discountPercentage > 0 && (
-              <Badge.Ribbon 
-                text={`-${discountPercentage}%`} 
-                color="red"
-                className="absolute top-0 right-0"
-              />
-            )}
-
-            {/* 热销标签 */}
-            {product.reviewCount > 10 && product.averageRating > 4 && (
-              <Tag 
-                icon={<FireOutlined />} 
-                color="volcano"
-                className="absolute top-2 left-2"
-              >
-                热销
-              </Tag>
-            )}
-
-            {/* 库存状态标签 */}
-            <Tag 
-              color={stockStatus.status}
-              className="absolute bottom-2 left-2"
-            >
-              {stockStatus.text}
-            </Tag>
-
-            {/* 悬停操作按钮 */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <div className="flex gap-2">
-                {showQuickView && (
-                  <Button 
-                    type="primary" 
-                    shape="circle" 
-                    icon={<EyeOutlined />}
-                    size="large"
-                    className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-                  />
-                )}
-                <Button 
-                  shape="circle" 
-                  icon={<HeartOutlined />}
-                  size="large"
-                  className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75"
-                />
+    <Card className={`group transition-shadow hover:shadow-lg ${className}`}>
+      <CardContent className="p-0">
+        {/* 商品图片 */}
+        <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
+          {image ? (
+            <img
+              src={image}
+              alt={name}
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-300">
+                <span className="text-xs text-gray-500">商品图片</span>
               </div>
             </div>
-          </div>
-        }
-        actions={showAddToCart ? [
-          <Button
-            key="add-to-cart"
-            type={isInCart ? "default" : "primary"}
-            icon={addingToCart ? <Spin size="small" /> : <ShoppingCartOutlined />}
-            loading={addingToCart}
-            disabled={!product.inStock || addingToCart}
-            onClick={handleAddToCart}
-            className="w-full"
-          >
-            {isInCart ? '已在购物车' : addingToCart ? '添加中...' : '加入购物车'}
-          </Button>
-        ] : undefined}
-      >
-        <div className="space-y-2">
-          {/* 品牌 */}
-          {product.brand && (
-            <Text type="secondary" className="text-xs">
-              {product.brand.name}
-            </Text>
           )}
+          
+          {!inStock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <span className="font-medium text-white">暂时缺货</span>
+            </div>
+          )}
+          
+          {featured && (
+            <Badge className="absolute top-2 left-2" variant="secondary">
+              精选
+            </Badge>
+          )}
+          
+          {originalPrice && (
+            <Badge className="absolute top-2 left-2" variant="destructive">
+              特价
+            </Badge>
+          )}
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 rounded-full bg-white/80 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
+          >
+            <Heart className="h-4 w-4" />
+          </Button>
+        </div>
 
-          {/* 商品名称 */}
-          <Link href={`/products/${product.slug}`}>
-            <Title 
-              level={5} 
-              className="!mb-1 line-clamp-2 hover:text-blue-600 transition-colors"
-            >
-              {product.name}
-            </Title>
+        {/* 商品信息 */}
+        <div className="p-4">
+          <Link href={`/products/${id}`}>
+            <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900 hover:text-blue-600">
+              {name}
+            </h3>
           </Link>
 
-          {/* 简短描述 */}
-          {product.shortDesc && (
-            <Text 
-              type="secondary" 
-              className="text-sm line-clamp-2"
-            >
-              {product.shortDesc}
-            </Text>
-          )}
-
-          {/* 评分和评论数 */}
-          {product.reviewCount > 0 && (
-            <div className="flex items-center gap-2">
-              <Rate 
-                disabled 
-                defaultValue={product.averageRating} 
-                allowHalf 
-                className="text-sm"
-              />
-              <Text type="secondary" className="text-xs">
-                ({product.reviewCount})
-              </Text>
+          {/* 评分 */}
+          {rating > 0 && (
+            <div className="mb-2 flex items-center">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < Math.floor(rating)
+                        ? 'fill-current text-yellow-400'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="ml-1 text-sm text-gray-600">
+                {rating} ({reviews})
+              </span>
             </div>
           )}
 
           {/* 价格 */}
-          <div className="flex items-center gap-2">
-            <Text className="text-lg font-bold text-red-500">
-              {formatPrice(product.price)}
-            </Text>
-            {product.comparePrice && product.comparePrice > product.price && (
-              <Text delete type="secondary" className="text-sm">
-                {formatPrice(product.comparePrice)}
-              </Text>
-            )}
-          </div>
-
-          {/* 标签 */}
-          {product.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {product.tags.slice(0, 3).map((tag, index) => (
-                <Tag key={index} size="small" className="text-xs">
-                  {tag}
-                </Tag>
-              ))}
-              {product.tags.length > 3 && (
-                <Text type="secondary" className="text-xs">
-                  +{product.tags.length - 3}
-                </Text>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-bold text-blue-600">
+                ¥{price}
+              </span>
+              {originalPrice && (
+                <span className="text-sm text-gray-500 line-through">
+                  ¥{originalPrice}
+                </span>
               )}
             </div>
-          )}
+          </div>
+
+          {/* 操作按钮 */}
+          <Button 
+            className="w-full" 
+            disabled={!inStock}
+            onClick={() => onAddToCart?.(id)}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            {inStock ? '加入购物车' : '暂时缺货'}
+          </Button>
         </div>
-      </Card>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

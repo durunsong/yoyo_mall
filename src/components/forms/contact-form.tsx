@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useStaticTranslations } from '@/hooks/use-translations';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 // 表单验证schema - 使用翻译
 const getContactSchema = (t: (key: string) => string) => z.object({

@@ -14,12 +14,8 @@ const registerSchema = z.object({
     .email('请输入有效的邮箱地址'),
   password: z
     .string()
-    .min(8, '密码至少需要8个字符')
-    .max(50, '密码不能超过50个字符')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      '密码必须包含至少一个大写字母、一个小写字母和一个数字'
-    ),
+    .min(6, '密码至少需要6个字符')
+    .max(50, '密码不能超过50个字符'),
 });
 
 export async function POST(request: NextRequest) {

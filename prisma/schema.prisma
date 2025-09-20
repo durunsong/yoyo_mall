@@ -22,12 +22,13 @@ model User {
   updatedAt DateTime @updatedAt
 
   // 关联关系
-  profile   UserProfile?
-  addresses Address[]
-  orders    Order[]
-  reviews   Review[]
-  wishlist  WishlistItem[]
-  cartItems CartItem[]
+  profile      UserProfile?
+  addresses    Address[]
+  orders       Order[]
+  reviews      Review[]
+  wishlist     WishlistItem[]
+  cartItems    CartItem[]
+  loginRecords LoginRecord[]
 
   @@map("users")
 }
@@ -41,6 +42,8 @@ model UserProfile {
   phone       String?
   dateOfBirth DateTime?
   gender      Gender?
+  bio         String?   // 个人简介
+  location    String?   // 所在地
   locale      String    @default("zh-CN")
   timezone    String    @default("Asia/Shanghai")
   createdAt   DateTime  @default(now())
@@ -442,4 +445,19 @@ enum CouponType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_SHIPPING
+}
+
+// 登录记录
+model LoginRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  loginTime DateTime @default(now())
+  ipAddress String
+  userAgent String
+  location  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("login_records")
 }

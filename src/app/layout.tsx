@@ -1,10 +1,9 @@
-// 引入React 19兼容包 - 必须在所有 Ant Design 导入之前
-import '@ant-design/v5-patch-for-react-19';
+// React 19 兼容性已通过shadcn/ui处理
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AntdHeader } from '@/components/layout/antd-header';
+import { ShadcnHeader } from '@/components/layout/shadcn-header';
 import { Footer } from '@/components/layout/footer';
 import { RootProviders } from '@/components/providers/root-providers';
 
@@ -61,7 +60,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <RootProviders>
           <div className="relative flex min-h-screen flex-col">
-            <AntdHeader />
+            <ShadcnHeader />
             <main className="flex-1">{children}</main>
             <Footer />
           </div>

@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { message } from 'antd';
+import { toast } from 'sonner';
 
 // 商品类型定义
 export interface Product {

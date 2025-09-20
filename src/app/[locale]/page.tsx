@@ -1,55 +1,50 @@
 /**
- * 首页组件 - 使用Ant Design
+ * 首页组件 - shadcn/ui版本
  * 网站主页，展示特色商品、分类、优惠活动等
  */
 
 'use client';
 
 import Link from 'next/link';
-import { Row, Col, Card, Button, Space, Statistic } from 'antd';
 import {
-  ShoppingOutlined,
-  SafetyOutlined,
-  RocketOutlined,
-  CrownOutlined,
-  MobileOutlined,
-  HomeOutlined,
-  SkinOutlined,
-} from '@ant-design/icons';
-import { useStaticTranslations } from '@/hooks/use-translations';
+  ShoppingBag,
+  Shield,
+  Zap,
+  Crown,
+  Smartphone,
+  Home,
+  Palette,
+  Star
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 export default function HomePage() {
   const { t } = useStaticTranslations('common');
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-20 text-white">
         <div className="mx-auto max-w-7xl px-4">
-          <Row align="middle" justify="center">
-            <Col xs={24} lg={16} className="text-center">
-              <h1
-                className="mb-6 text-white"
-                style={{ fontSize: '3.5rem', marginBottom: '24px' }}
-              >
-                {t('heroTitle')}
-              </h1>
-              <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
-                {t('heroSubtitle')}
-              </p>
-              <Space size="large">
-                <Button
-                  type="primary"
-                  size="large"
-                  className="border-white bg-white text-blue-600 hover:bg-blue-50"
-                >
-                  <Link href="/products">{t('shopNow')}</Link>
-                </Button>
-                <Button ghost size="large">
-                  <Link href="/about">{t('learnMore')}</Link>
-                </Button>
-              </Space>
-            </Col>
-          </Row>
+          <div className="text-center">
+            <h1 className="mb-6 text-5xl font-bold text-white">
+              {t('heroTitle')}
+            </h1>
+            <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
+              {t('heroSubtitle')}
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Link href="/products">{t('shopNow')}</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Link href="/about">{t('learnMore')}</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -63,49 +58,49 @@ export default function HomePage() {
             <p className="text-lg text-gray-600">{t('features.subtitle')}</p>
           </div>
 
-          <Row gutter={[32, 32]}>
-            <Col xs={24} md={8}>
-              <Card className="h-full text-center transition-shadow hover:shadow-lg">
-                <div className="mb-4">
-                  <ShoppingOutlined className="text-5xl text-blue-500" />
+          <div className="grid gap-8 md:grid-cols-3">
+            <Card className="text-center transition-shadow hover:shadow-lg">
+              <CardHeader>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                  <ShoppingBag className="h-8 w-8 text-blue-600" />
                 </div>
-                <h4 className="mb-3 text-xl font-semibold text-gray-900">
-                  {t('features.quality.title')}
-                </h4>
-                <p className="text-gray-600">
+                <CardTitle>{t('features.quality.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
                   {t('features.quality.description')}
-                </p>
-              </Card>
-            </Col>
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-            <Col xs={24} md={8}>
-              <Card className="h-full text-center transition-shadow hover:shadow-lg">
-                <div className="mb-4">
-                  <SafetyOutlined className="text-5xl text-green-500" />
+            <Card className="text-center transition-shadow hover:shadow-lg">
+              <CardHeader>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                  <Shield className="h-8 w-8 text-green-600" />
                 </div>
-                <h4 className="mb-3 text-xl font-semibold text-gray-900">
-                  {t('features.secure.title')}
-                </h4>
-                <p className="text-gray-600">
+                <CardTitle>{t('features.secure.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
                   {t('features.secure.description')}
-                </p>
-              </Card>
-            </Col>
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-            <Col xs={24} md={8}>
-              <Card className="h-full text-center transition-shadow hover:shadow-lg">
-                <div className="mb-4">
-                  <RocketOutlined className="text-5xl text-purple-500" />
+            <Card className="text-center transition-shadow hover:shadow-lg">
+              <CardHeader>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+                  <Zap className="h-8 w-8 text-purple-600" />
                 </div>
-                <h4 className="mb-3 text-xl font-semibold text-gray-900">
-                  {t('features.fast.title')}
-                </h4>
-                <p className="text-gray-600">
+                <CardTitle>{t('features.fast.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
                   {t('features.fast.description')}
-                </p>
-              </Card>
-            </Col>
-          </Row>
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
@@ -117,112 +112,83 @@ export default function HomePage() {
               {t('categories.title')}
             </h2>
             <p className="text-lg text-gray-600">
-              精选优质商品分类，满足您的不同需求
+              {t('categories.subtitle')}
             </p>
           </div>
 
-          <Row gutter={[24, 24]}>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 name: t('categories.fashion'),
                 href: '/products?category=clothing',
-                icon: CrownOutlined,
+                icon: Crown,
                 count: 256,
               },
               {
                 name: t('categories.electronics'),
                 href: '/products?category=electronics',
-                icon: MobileOutlined,
+                icon: Smartphone,
                 count: 189,
               },
               {
                 name: t('categories.home'),
                 href: '/products?category=home',
-                icon: HomeOutlined,
+                icon: Home,
                 count: 432,
               },
               {
                 name: t('categories.beauty'),
                 href: '/products?category=beauty',
-                icon: SkinOutlined,
+                icon: Palette,
                 count: 98,
               },
             ].map(category => {
               const IconComponent = category.icon;
               return (
-                <Col xs={12} sm={6} key={category.name}>
-                  <Card
-                    className="cursor-pointer text-center transition-all hover:shadow-md"
-                    hoverable
-                  >
-                    <Link href={category.href}>
-                      <div className="mb-3 text-4xl text-blue-500">
-                        <IconComponent />
+                <Link key={category.name} href={category.href}>
+                  <Card className="cursor-pointer text-center transition-all hover:shadow-md">
+                    <CardContent className="p-6">
+                      <div className="mb-3 flex justify-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                          <IconComponent className="h-6 w-6 text-blue-600" />
+                        </div>
                       </div>
                       <h5 className="mb-2 text-lg font-medium text-gray-900">
                         {category.name}
                       </h5>
                       <p className="text-sm text-gray-500">
-                        {category.count} 件商品
+                        {t('categories.itemCount', { count: category.count })}
                       </p>
-                    </Link>
+                    </CardContent>
                   </Card>
-                </Col>
+                </Link>
               );
             })}
-          </Row>
+          </div>
         </div>
       </section>
 
       {/* Statistics Section */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <Row gutter={[32, 32]} justify="center">
-            <Col xs={12} sm={6}>
-              <div className="text-center">
-                <Statistic
-                  title={t('stats.users')}
-                  value={1200000}
-                  precision={0}
-                  valueStyle={{ color: '#3f8600', fontSize: '2rem' }}
-                  suffix="+"
-                />
-              </div>
-            </Col>
-            <Col xs={12} sm={6}>
-              <div className="text-center">
-                <Statistic
-                  title={t('stats.products')}
-                  value={50000}
-                  precision={0}
-                  valueStyle={{ color: '#cf1322', fontSize: '2rem' }}
-                  suffix="+"
-                />
-              </div>
-            </Col>
-            <Col xs={12} sm={6}>
-              <div className="text-center">
-                <Statistic
-                  title={t('stats.brands')}
-                  value={2000}
-                  precision={0}
-                  valueStyle={{ color: '#1890ff', fontSize: '2rem' }}
-                  suffix="+"
-                />
-              </div>
-            </Col>
-            <Col xs={12} sm={6}>
-              <div className="text-center">
-                <Statistic
-                  title={t('stats.satisfaction')}
-                  value={98.5}
-                  precision={1}
-                  valueStyle={{ color: '#722ed1', fontSize: '2rem' }}
-                  suffix="%"
-                />
-              </div>
-            </Col>
-          </Row>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="text-center">
+              <div className="mb-2 text-4xl font-bold text-green-600">1.2M+</div>
+              <div className="text-gray-600">{t('stats.users')}</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-4xl font-bold text-red-600">50K+</div>
+              <div className="text-gray-600">{t('stats.products')}</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-4xl font-bold text-blue-600">2K+</div>
+              <div className="text-gray-600">{t('stats.brands')}</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-4xl font-bold text-purple-600">98.5%</div>
+              <div className="text-gray-600">{t('stats.satisfaction')}</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -233,18 +199,14 @@ export default function HomePage() {
             {t('cta.title')}
           </h2>
           <p className="mb-8 text-xl text-blue-100">{t('cta.subtitle')}</p>
-          <Space size="large">
-            <Button
-              type="primary"
-              size="large"
-              className="border-white bg-white text-blue-600"
-            >
+          <div className="flex justify-center gap-4">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
               <Link href="/register">{t('cta.register')}</Link>
             </Button>
-            <Button ghost size="large">
+            <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
               <Link href="/products">{t('cta.browse')}</Link>
             </Button>
-          </Space>
+          </div>
         </div>
       </section>
     </div>

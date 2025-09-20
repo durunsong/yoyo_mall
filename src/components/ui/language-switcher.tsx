@@ -1,23 +1,20 @@
 /**
- * 语言切换器组件
- * 客户端语言切换，不依赖next-i18next
+ * 语言切换器组件 - shadcn/ui版本
+ * 客户端语言切换，使用统一的i18n系统
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Select, Button } from 'antd';
-import { GlobalOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
-
-// 语言选项
-const languages = [
-  { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
-  { code: 'en-US', name: 'English', flag: '🇺🇸' },
-  { code: 'ja-JP', name: '日本語', flag: '🇯🇵' },
-  { code: 'ko-KR', name: '한국어', flag: '🇰🇷' },
-];
+import React from 'react';
+import { Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { useI18n } from '@/hooks/use-i18n';
 
 interface LanguageSwitcherProps {
   className?: string;
@@ -28,62 +25,44 @@ export default function LanguageSwitcher({
   className = '', 
   mode = 'select' 
 }: LanguageSwitcherProps) {
-  const [currentLocale, setCurrentLocale] = useState('zh-CN');
-
-  // 从localStorage获取当前语言
-  useEffect(() => {
-    const savedLocale = localStorage.getItem('locale') || 'zh-CN';
-    setCurrentLocale(savedLocale);
-  }, []);
-
-  const handleLanguageChange = (locale: string) => {
-    // 保存到localStorage
-    localStorage.setItem('locale', locale);
-    setCurrentLocale(locale);
-
-    // 发送自定义事件通知其他组件
-    window.dispatchEvent(new CustomEvent('localeChange', { detail: locale }));
-    
-    console.log('Language changed to:', locale);
-  };
-
-  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0];
+  const { locale, language, languages, changeLocale, toggleLocale } = useI18n();
 
   if (mode === 'button') {
     return (
       <Button 
-        type="text" 
-        icon={<GlobalOutlined />}
+        variant="ghost" 
+        size="icon"
         className={className}
-        onClick={() => {
-          // 简单切换到下一个语言
-          const currentIndex = languages.findIndex(lang => lang.code === currentLocale);
-          const nextIndex = (currentIndex + 1) % languages.length;
-          handleLanguageChange(languages[nextIndex].code);
-        }}
+        onClick={toggleLocale}
+        suppressHydrationWarning
       >
-        {currentLanguage.flag}
+        <Globe className="h-4 w-4" />
+        <span className="ml-1" suppressHydrationWarning>{language.flag}</span>
       </Button>
     );
   }
 
   return (
-    <Select
-      value={currentLocale}
-      onChange={handleLanguageChange}
-      className={className}
-      style={{ width: 120 }}
-      suffixIcon={<GlobalOutlined />}
-      popupMatchSelectWidth={false}
-    >
-      {languages.map((lang) => (
-        <Option key={lang.code} value={lang.code}>
-          <span className="flex items-center gap-2">
-            <span>{lang.flag}</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className={className} suppressHydrationWarning>
+          <Globe className="h-4 w-4" />
+          <span className="ml-2" suppressHydrationWarning>{language.flag}</span>
+          <span className="ml-1" suppressHydrationWarning>{language.name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => changeLocale(lang.code)}
+            className={locale === lang.code ? 'bg-accent' : ''}
+          >
+            <span className="mr-2">{lang.flag}</span>
             <span>{lang.name}</span>
-          </span>
-        </Option>
-      ))}
-    </Select>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { message } from 'antd';
+import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 
 // 购物车项目类型
@@ -105,7 +105,7 @@ export function useCartApi() {
     variantId?: string
   ) => {
     if (!session?.user) {
-      message.warning('请先登录');
+      toast.warning('请先登录');
       return false;
     }
 
@@ -125,15 +125,15 @@ export function useCartApi() {
       const result: CartActionResponse = await response.json();
 
       if (result.success) {
-        message.success('已添加到购物车');
+        toast.success('已添加到购物车');
         fetchCart(); // 刷新购物车
         return true;
       } else {
-        message.error(result.message || '添加失败');
+        toast.error(result.message || '添加失败');
         return false;
       }
     } catch (error) {
-      message.error('网络错误，请重试');
+      toast.error('网络错误，请重试');
       return false;
     }
   }, [session, fetchCart]);
@@ -153,16 +153,16 @@ export function useCartApi() {
 
       if (result.success) {
         if (quantity === 0) {
-          message.success('已从购物车移除');
+          toast.success('已从购物车移除');
         }
         fetchCart(); // 刷新购物车
         return true;
       } else {
-        message.error(result.message || '更新失败');
+        toast.error(result.message || '更新失败');
         return false;
       }
     } catch (error) {
-      message.error('网络错误，请重试');
+      toast.error('网络错误，请重试');
       return false;
     }
   }, [fetchCart]);
@@ -177,15 +177,15 @@ export function useCartApi() {
       const result: CartActionResponse = await response.json();
 
       if (result.success) {
-        message.success('已从购物车移除');
+        toast.success('已从购物车移除');
         fetchCart(); // 刷新购物车
         return true;
       } else {
-        message.error(result.message || '删除失败');
+        toast.error(result.message || '删除失败');
         return false;
       }
     } catch (error) {
-      message.error('网络错误，请重试');
+      toast.error('网络错误，请重试');
       return false;
     }
   }, [fetchCart]);
@@ -200,15 +200,15 @@ export function useCartApi() {
       const result: CartActionResponse = await response.json();
 
       if (result.success) {
-        message.success('购物车已清空');
+        toast.success('购物车已清空');
         fetchCart(); // 刷新购物车
         return true;
       } else {
-        message.error(result.message || '清空失败');
+        toast.error(result.message || '清空失败');
         return false;
       }
     } catch (error) {
-      message.error('网络错误，请重试');
+      toast.error('网络错误，请重试');
       return false;
     }
   }, [fetchCart]);

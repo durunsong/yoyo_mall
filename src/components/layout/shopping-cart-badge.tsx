@@ -1,35 +1,39 @@
 /**
- * 购物车徽章组件
- * 显示购物车中的商品数量
+ * 购物车徽章组件 - shadcn/ui版本
+ * 显示购物车商品数量
  */
 
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { Badge, Button } from 'antd';
-import { ShoppingCartOutlined } from '@ant-design/icons';
-import { useSession } from 'next-auth/react';
-import { useCartCount } from '@/hooks/use-cart-api';
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ShoppingCartBadgeProps {
-  className?: string;
+  count?: number;
+  onClick?: () => void;
 }
 
-export default function ShoppingCartBadge({ className = '' }: ShoppingCartBadgeProps) {
-  const { data: session } = useSession();
-  const cartCount = useCartCount();
-
+export default function ShoppingCartBadge({ 
+  count = 0, 
+  onClick 
+}: ShoppingCartBadgeProps) {
   return (
-    <Link href="/cart">
-      <Badge count={session ? cartCount : 0} showZero={false} size="small">
-        <Button 
-          type="text" 
-          icon={<ShoppingCartOutlined />} 
-          className={className}
-          size="large"
-        />
-      </Badge>
-    </Link>
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="relative"
+      onClick={onClick}
+    >
+      <ShoppingCart className="h-5 w-5" />
+      {count > 0 && (
+        <Badge 
+          variant="destructive" 
+          className="absolute -top-1 -right-1 h-4 min-w-4 justify-center p-0 text-xs"
+        >
+          {count > 99 ? '99+' : count}
+        </Badge>
+      )}
+    </Button>
   );
 }

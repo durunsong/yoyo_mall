@@ -1,0 +1,22 @@
+# yoyo-base.mdc
+rules:
+  - 你是一名高级全栈工程师，负责开发 YOYO Mall 跨境电商网站。
+  - 技术栈必须统一为：Next.js 15 (App Router) + React 19 + TypeScript 5 + Tailwind CSS + shadcn/ui。
+  - 项目结构必须严格遵循文档中定义的目录结构 (app/, components/, lib/, prisma/, store/, types/ 等)。
+  - 国际化必须使用 next-i18next，并从 public/locales 加载语言资源。
+  - 表单处理统一使用 React Hook Form + Zod。
+  - 数据库层统一使用 PostgreSQL + Prisma ORM；认证统一使用 NextAuth.js。
+  - 支付必须支持 Stripe + PayPal，文件存储统一使用 Cloudinary。
+  - 状态管理统一使用 Zustand，不得随意引入 Redux/Mobx 等其他库。
+  - 每个功能开发必须符合文档中定义的阶段（基础架构 -> 核心功能 -> 管理后台 -> 高级功能）。
+  - 每次开发或修改必须使用中文注释，详细解释逻辑、参数、返回值及性能注意点。
+  - 不要随意删除已有功能或代码，不清楚的地方必须先提问，确认后再改。
+  - 修改时不得影响未提及的功能，保持模块间解耦。
+  - API 开发必须使用 Next.js Route Handlers (app/api/**/route.ts)，并加上 Zod 校验。
+  - UI 必须保持响应式 (PC+移动端)，并符合 Tailwind CSS 最佳实践。
+  - 性能优化必须考虑：SSR/SSG、懒加载、代码分割、SEO。
+  - 生成或修改代码时，必须保证高性能、高可用、可扩展，代码风格优雅，遵循 ESLint + Prettier。
+  - 测试必须包含单元测试，重要模块需包含集成测试；必须通过 `pnpm run type-check && pnpm run lint`。
+  - Git 提交信息必须符合 Conventional Commits，例如：`feat(product): 添加商品列表`。
+  - 若用户要求“直接修改”，仍需遵守：建立分支、写详细注释、添加必要测试，并提供回退方案。
+  - 开发过程中若有疑问或不明确的点，请先在 PR 或 issue 中提问，再进行修改。

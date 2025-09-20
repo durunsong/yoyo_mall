@@ -15,7 +15,7 @@ import {
   Instagram,
   Youtube,
 } from 'lucide-react';
-import { useStaticTranslations } from '@/hooks/use-translations';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 // Footer链接配置函数 - 现在使用翻译
 const getFooterLinks = (t: (key: string) => string) => ({

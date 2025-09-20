@@ -1,0 +1,52 @@
+{
+  "pageTitle": "Account Center",
+  "tabs": {
+    "profile": "Profile",
+    "security": "Security",
+    "activity": "Activity"
+  },
+  "sections": {
+    "basicInfo": "Basic Information",
+    "accountSecurity": "Account Security",
+    "loginRecords": "Login Records"
+  },
+  "labels": {
+    "displayName": "Display name",
+    "phone": "Phone",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "dateOfBirth": "Date of birth",
+    "email": "Email",
+    "password": "Password",
+    "twoFactor": "Two-factor auth",
+    "device": "Device",
+    "ip": "IP",
+    "location": "Location"
+  },
+  "placeholders": {
+    "displayName": "Enter display name",
+    "phone": "Enter phone number",
+    "firstName": "Enter first name",
+    "lastName": "Enter last name"
+  },
+  "buttons": {
+    "changeAvatar": "Change avatar",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "changePassword": "Change password",
+    "enable": "Enable"
+  },
+  "status": {
+    "verified": "Verified",
+    "mobile": "Mobile",
+    "desktop": "Desktop",
+    "noRecords": "No recent login records"
+  },
+  "toasts": {
+    "profileUpdated": "Profile updated",
+    "avatarUpdated": "Avatar updated",
+    "updateFailed": "Update failed",
+    "networkError": "Network error, please retry"
+  }
+}
+

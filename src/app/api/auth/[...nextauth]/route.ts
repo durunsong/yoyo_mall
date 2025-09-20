@@ -42,8 +42,13 @@ export const authConfig = {
             where: {
               email,
             },
-            include: {
-              profile: true,
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              avatar: true,
+              role: true,
             },
           });
 
@@ -89,10 +94,19 @@ export const authConfig = {
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user, account, trigger, session }: any) {
+      // 登录时把必要字段写入 token
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.name = user.name;
+        token.picture = user.image;
+      }
+
+      // 客户端调用 useSession().update 时，合并最新的用户字段
+      if (trigger === 'update' && session?.user) {
+        if (session.user.name) token.name = session.user.name;
+        if ((session.user as any).image) token.picture = (session.user as any).image;
       }
       
       // Google 登录时保存提供者信息
@@ -107,6 +121,8 @@ export const authConfig = {
         session.user.id = token.id;
         session.user.role = token.role;
         session.user.provider = token.provider;
+        if (token.name) session.user.name = token.name;
+        if ((token as any).picture) (session.user as any).image = (token as any).picture;
       }
       return session;
     },
