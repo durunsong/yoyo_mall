@@ -114,8 +114,9 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold text-gray-900">仪表板</h1>
         <p className="text-gray-600 mt-1">系统概览和数据统计</p>
       </div>
-        {/* 统计卡片 */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+
+      {/* 统计卡片 */}
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map(stat => {
             const Icon = stat.icon;
             return (
@@ -135,88 +136,87 @@ export default function AdminDashboard() {
               </Card>
             );
           })}
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* 快速操作 */}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold">快速操作</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {quickActions.map(action => {
+              const Icon = action.icon;
+              return (
+                <Card
+                  key={action.title}
+                  className="transition-shadow hover:shadow-md"
+                >
+                  <CardHeader>
+                    <div className="flex items-center space-x-2">
+                      <Icon className="h-5 w-5 text-blue-600" />
+                      <CardTitle className="text-base">
+                        {action.title}
+                      </CardTitle>
+                    </div>
+                    <CardDescription>{action.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild className="w-full" variant="outline">
+                      <Link href={action.href}>进入管理</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* 快速操作 */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">快速操作</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {quickActions.map(action => {
-                const Icon = action.icon;
-                return (
-                  <Card
-                    key={action.title}
-                    className="transition-shadow hover:shadow-md"
+        {/* 最近订单 */}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold">最近订单</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>订单列表</CardTitle>
+              <CardDescription>最新的订单信息</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentOrders.map(order => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
                   >
-                    <CardHeader>
-                      <div className="flex items-center space-x-2">
-                        <Icon className="h-5 w-5 text-blue-600" />
-                        <CardTitle className="text-base">
-                          {action.title}
-                        </CardTitle>
-                      </div>
-                      <CardDescription>{action.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button asChild className="w-full" variant="outline">
-                        <Link href={action.href}>进入管理</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 最近订单 */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">最近订单</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle>订单列表</CardTitle>
-                <CardDescription>最新的订单信息</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentOrders.map(order => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
-                    >
-                      <div>
-                        <p className="font-medium">{order.id}</p>
-                        <p className="text-sm text-gray-600">
-                          {order.customer}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{order.amount}</p>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs ${
-                            order.status === '已完成'
-                              ? 'bg-green-100 text-green-800'
-                              : order.status === '已发货'
-                                ? 'bg-blue-100 text-blue-800'
-                                : order.status === '处理中'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
+                    <div>
+                      <p className="font-medium">{order.id}</p>
+                      <p className="text-sm text-gray-600">
+                        {order.customer}
+                      </p>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href="/admin/orders">查看所有订单</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                    <div className="text-right">
+                      <p className="font-medium">{order.amount}</p>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs ${
+                          order.status === '已完成'
+                            ? 'bg-green-100 text-green-800'
+                            : order.status === '已发货'
+                              ? 'bg-blue-100 text-blue-800'
+                              : order.status === '处理中'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/admin/orders">查看所有订单</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AdminLayout>
