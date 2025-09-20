@@ -21,8 +21,8 @@ import {
   BarChart3,
   Settings,
   FileText,
-  Bell,
 } from 'lucide-react';
+import { AdminLayout } from '@/components/admin/admin-layout';
 
 export const metadata: Metadata = {
   title: '管理后台',
@@ -109,29 +109,11 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 管理后台头部 */}
-      <div className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">管理后台</h1>
-              <p className="text-gray-600">欢迎回来，管理员</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <Bell className="mr-2 h-4 w-4" />
-                通知
-              </Button>
-              <Button asChild>
-                <Link href="/">返回前台</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+    <AdminLayout>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">仪表板</h1>
+        <p className="text-gray-600 mt-1">系统概览和数据统计</p>
       </div>
-
-      <div className="container mx-auto px-4 py-6">
         {/* 统计卡片 */}
         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map(stat => {
@@ -237,6 +219,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

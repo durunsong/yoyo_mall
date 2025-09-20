@@ -108,14 +108,25 @@ export function ShadcnHeader() {
                       .map((item) => (
                       <NavigationMenuItem key={item.key}>
                         <NavigationMenuLink asChild>
-                          <Link 
-                            href={item.href}
-                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 ${
-                              pathname === item.href ? 'bg-accent text-accent-foreground' : 'bg-background'
-                            }`}
-                          >
-                            {item.label}
-                          </Link>
+                          {item.href === '/admin' ? (
+                            <button
+                              onClick={() => window.open('/admin', '_blank')}
+                              className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+                                pathname === item.href ? 'bg-accent text-accent-foreground' : 'bg-background'
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ) : (
+                            <Link 
+                              href={item.href}
+                              className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+                                pathname === item.href ? 'bg-accent text-accent-foreground' : 'bg-background'
+                              }`}
+                            >
+                              {item.label}
+                            </Link>
+                          )}
                         </NavigationMenuLink>
                       </NavigationMenuItem>
                     ))}
@@ -209,18 +220,33 @@ export function ShadcnHeader() {
                           const role = (session?.user as { role?: string } | undefined)?.role;
                           return item.href !== '/admin' ? true : role === 'ADMIN' || role === 'SUPER_ADMIN';
                         })
-                        .map((item) => (
-                        <Link
-                          key={item.key}
-                          href={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                            pathname === item.href ? 'bg-accent text-accent-foreground' : ''
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                        .map((item) => 
+                            item.href === '/admin' ? (
+                              <button
+                                key={item.key}
+                                onClick={() => {
+                                  setMobileMenuOpen(false);
+                                  window.open('/admin', '_blank');
+                                }}
+                                className={`block w-full text-left rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+                                  pathname === item.href ? 'bg-accent text-accent-foreground' : ''
+                                }`}
+                              >
+                                {item.label}
+                              </button>
+                            ) : (
+                              <Link
+                                key={item.key}
+                                href={item.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+                                  pathname === item.href ? 'bg-accent text-accent-foreground' : ''
+                                }`}
+                              >
+                                {item.label}
+                              </Link>
+                            )
+                      )}
                     </nav>
 
                     <Separator />
