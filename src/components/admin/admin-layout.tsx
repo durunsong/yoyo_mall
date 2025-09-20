@@ -85,7 +85,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut({ 
+      callbackUrl: typeof window !== 'undefined' ? window.location.origin : '/', 
+    });
   };
 
   const handleBackToFrontend = () => {

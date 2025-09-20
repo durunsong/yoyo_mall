@@ -7,6 +7,16 @@ import bcrypt from 'bcryptjs';
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
+  // 动态配置URL，支持线上环境
+  ...(process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL !== 'http://localhost:3000' 
+    ? {} 
+    : { 
+        pages: {
+          signIn: '/',
+          signOut: '/',
+        },
+      }
+  ),
   providers: [
     // Google OAuth 提供者
     Google({
@@ -30,7 +40,10 @@ export const authConfig = {
       },
       async authorize(credentials) {
         try {
+          console.log('开始验证用户凭据:', { email: credentials?.email });
+          
           if (!credentials?.email || !credentials?.password) {
+            console.log('缺少邮箱或密码');
             return null;
           }
 
@@ -38,6 +51,7 @@ export const authConfig = {
           const password = credentials.password as string;
 
           // 查找用户
+          console.log('查找用户:', email);
           const user = await prisma.user.findUnique({
             where: {
               email,
@@ -53,18 +67,23 @@ export const authConfig = {
           });
 
           if (!user || !user.password) {
+            console.log('用户不存在或没有密码');
             return null;
           }
 
           // 验证密码
+          console.log('验证密码');
           const isPasswordValid = await bcrypt.compare(
             password,
-            user.password
+            user.password,
           );
 
           if (!isPasswordValid) {
+            console.log('密码验证失败');
             return null;
           }
+
+          console.log('用户验证成功:', user.email);
 
           // 返回用户信息
           return {
@@ -84,14 +103,10 @@ export const authConfig = {
   session: {
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 天
+    updateAge: 24 * 60 * 60, // 24小时更新一次session
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 天
-  },
-  pages: {
-    signIn: '/login',
-    signUp: '/register',
-    error: '/auth/error',
   },
   callbacks: {
     async jwt({ token, user, account, trigger, session }: any) {

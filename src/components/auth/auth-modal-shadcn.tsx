@@ -101,18 +101,26 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      console.log('开始登录:', data.email);
       const res = await signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
+        callbackUrl: '/',
       });
-      if (res?.ok) {
+      
+      console.log('登录结果:', res);
+      
+      if (res?.ok && !res.error) {
         toast.success(t('loginSuccess'), { description: t('welcomeBack') });
         onClose();
+        // 强制刷新页面以更新session状态
+        window.location.reload();
       } else {
-        toast.error(t('loginFailed'), { description: t('invalidCredentials') });
+        toast.error(t('loginFailed'), { description: res?.error || t('invalidCredentials') });
       }
     } catch (error) {
+      console.error('登录错误:', error);
       toast.error(t('loginFailed'), { description: t('invalidCredentials') });
     } finally {
       setIsLoading(false);

@@ -186,7 +186,9 @@ export function ShadcnHeader() {
                     <DropdownMenuItem onClick={() => router.push('/account')}>{tNav('profile')}</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/orders')}>{tNav('orders')}</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>{tCommon('logout')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut({ 
+                      callbackUrl: typeof window !== 'undefined' ? window.location.origin : '/', 
+                    })}>{tCommon('logout')}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
@@ -258,7 +260,7 @@ export function ShadcnHeader() {
                           {/* 用户信息 */}
                           <div className="flex items-center gap-3 px-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={(session.user as any).image || '/avatars/default-avatar.svg'} />
+                              <AvatarImage src={(session.user as { image?: string }).image || '/avatars/default-avatar.svg'} />
                               <AvatarFallback>{(session.user?.name || 'U').slice(0, 1)}</AvatarFallback>
                             </Avatar>
                             <div className="text-sm">
@@ -286,7 +288,9 @@ export function ShadcnHeader() {
                             className="w-full justify-start"
                             onClick={() => {
                               setMobileMenuOpen(false);
-                              signOut({ callbackUrl: '/' });
+                              signOut({ 
+                                callbackUrl: typeof window !== 'undefined' ? window.location.origin : '/', 
+                              });
                             }}
                           >
                             {tCommon('logout')}
