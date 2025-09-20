@@ -23,9 +23,11 @@ export const prisma =
 // 在开发环境中保存实例到全局变量
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// 优雅关闭数据库连接
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-});
+// 在 Edge/runtime 中 process 可能不可用，避免使用 process.on
+if (typeof process !== 'undefined' && typeof (process as any).on === 'function') {
+  (process as any).on('beforeExit', async () => {
+    await prisma.$disconnect();
+  });
+}
 
 export default prisma;

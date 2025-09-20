@@ -50,6 +50,8 @@ const getNavItems = (t: (key: string) => string) => [
   { key: '/categories', label: t('categories'), href: '/categories' },
   { key: '/brands', label: t('brands'), href: '/brands' },
   { key: '/deals', label: t('deals'), href: '/deals' },
+  // Admin 链接在渲染时按权限过滤
+  { key: '/admin', label: t('admin'), href: '/admin' },
 ];
 
 export function ShadcnHeader() {
@@ -98,7 +100,12 @@ export function ShadcnHeader() {
             {/* 桌面端导航菜单 */}
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
-                    {navItems.map((item) => (
+                    {navItems
+                      .filter((item) => {
+                        const role = (session?.user as { role?: string } | undefined)?.role;
+                        return item.href !== '/admin' ? true : role === 'ADMIN' || role === 'SUPER_ADMIN';
+                      })
+                      .map((item) => (
                       <NavigationMenuItem key={item.key}>
                         <NavigationMenuLink asChild>
                           <Link 
@@ -197,7 +204,12 @@ export function ShadcnHeader() {
 
                     {/* 导航菜单 */}
                     <nav className="space-y-2">
-                      {navItems.map((item) => (
+                      {navItems
+                        .filter((item) => {
+                          const role = (session?.user as { role?: string } | undefined)?.role;
+                          return item.href !== '/admin' ? true : role === 'ADMIN' || role === 'SUPER_ADMIN';
+                        })
+                        .map((item) => (
                         <Link
                           key={item.key}
                           href={item.href}
