@@ -215,17 +215,59 @@ export function ShadcnHeader() {
 
                     {/* 其他操作 */}
                     <div className="space-y-2">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          openModal('login');
-                        }}
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        {tCommon('login')}/{tCommon('register')}
-                      </Button>
+                      {session?.user ? (
+                        <>
+                          {/* 用户信息 */}
+                          <div className="flex items-center gap-3 px-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={(session.user as any).image || '/avatars/default-avatar.svg'} />
+                              <AvatarFallback>{(session.user?.name || 'U').slice(0, 1)}</AvatarFallback>
+                            </Avatar>
+                            <div className="text-sm">
+                              <p className="font-medium leading-none">{session.user.name || session.user.email}</p>
+                              {session.user.email && (
+                                <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              router.push('/account');
+                            }}
+                          >
+                            <User className="mr-2 h-4 w-4" />
+                            {tNav('profile')}
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              signOut({ callbackUrl: '/' });
+                            }}
+                          >
+                            {tCommon('logout')}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            openModal('login');
+                          }}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          {tCommon('login')}/{tCommon('register')}
+                        </Button>
+                      )}
+
                       <Button className="w-full justify-start">
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         {tNav('cart')}

@@ -156,7 +156,7 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 text-sm text-gray-300 md:mb-0">
-              © 2024 YOYO Mall. {t('allRightsReserved')}
+              © 2025 YOYO Mall. {t('allRightsReserved')}
             </div>
 
             {/* Social Links */}
