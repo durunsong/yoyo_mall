@@ -6,13 +6,13 @@ import { prisma } from '@/lib/prisma';
 const productQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  search: z.string().optional(),
-  category: z.string().optional(),
-  sortBy: z.enum(['name', 'price', 'createdAt']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
-  minPrice: z.coerce.number().min(0).optional(),
-  maxPrice: z.coerce.number().min(0).optional(),
+  search: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  sortBy: z.enum(['name', 'price', 'createdAt']).nullable().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).nullable().default('desc'),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).nullable().optional(),
+  minPrice: z.coerce.number().min(0).nullable().optional(),
+  maxPrice: z.coerce.number().min(0).nullable().optional(),
 });
 
 // 商品创建验证

@@ -146,12 +146,12 @@ export function useProducts(query: ProductQuery = {}) {
         setPagination(result.pagination);
       } else {
         setError('获取商品列表失败');
-        message.error('获取商品列表失败');
+        toast.error('获取商品列表失败');
       }
     } catch (error) {
       const errorMessage = '网络错误，请重试';
       setError(errorMessage);
-      message.error(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -170,6 +170,7 @@ export function useProducts(query: ProductQuery = {}) {
     pagination,
     loading,
     error,
+    fetchProducts,
     refetch,
   };
 }
@@ -193,13 +194,14 @@ export function useProduct(productId: string) {
       if (result.success) {
         setProduct(result.data);
       } else {
-        setError(result.message || '获取商品详情失败');
-        message.error(result.message || '获取商品详情失败');
+        const errorMsg = '获取商品详情失败';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       const errorMessage = '网络错误，请重试';
       setError(errorMessage);
-      message.error(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

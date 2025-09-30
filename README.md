@@ -4,8 +4,13 @@
 ![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss)
+![Progress](https://img.shields.io/badge/核心功能-100%25-success?style=for-the-badge)
 
 一个功能完整的跨境电商网站开发方案，专为独立站全栈开发工程师设计，支持PC+移动端，具备完整的国际化和支付功能。
+
+## ✅ 核心功能已完成
+
+完整的购物流程已打通：**浏览商品 → 加入购物车 → 应用优惠券 → 结算支付 → 订单管理**
 
 ## 🌟 特性
 
@@ -76,6 +81,8 @@ cd yoyo-mall
 ### 2. 安装依赖
 
 ```bash
+pnpm install
+# 或
 npm install
 ```
 
@@ -86,21 +93,44 @@ cp .env.example .env.local
 # 编辑 .env.local 文件，填入必要的配置
 ```
 
+**最小配置**（用于快速测试）：
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/yoyo_mall"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
 ### 4. 初始化数据库
 
 ```bash
-npm run db:generate
-npm run db:push
-npm run db:seed
+pnpm db:generate    # 生成 Prisma Client
+pnpm db:push        # 推送数据库模型
+pnpm db:seed        # 填充测试数据
 ```
 
 ### 5. 启动开发服务器
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+
+### 🎮 快速测试流程
+
+1. **登录账户**
+   - 邮箱: `user@example.com`
+   - 密码: `password123`
+
+2. **浏览商品** → 访问首页或商品列表
+
+3. **添加到购物车** → 选择商品，点击"加入购物车"
+
+4. **应用优惠券** → 在购物车页面输入 `WELCOME10` 获得10%折扣
+
+5. **结算支付** → 使用测试卡号 `4242 4242 4242 4242`
+
+6. **查看订单** → 访问 `/account/orders` 查看订单
 
 ## 📁 项目结构
 

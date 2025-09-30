@@ -14,15 +14,21 @@ import {
   Smartphone,
   Home,
   Palette,
-  Star
+  Star,
+  TrendingUp,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useStaticTranslations } from '@/hooks/use-i18n';
+import { useProducts } from '@/hooks/use-products';
+import ProductCard from '@/components/products/product-card';
 
 export default function HomePage() {
   const { t } = useStaticTranslations('common');
+  // 直接传递参数给 hook，它会自动获取数据
+  const { products, loading } = useProducts({ limit: 8 });
 
   return (
     <div className="min-h-screen">
@@ -189,6 +195,84 @@ export default function HomePage() {
               <div className="text-gray-600">{t('stats.satisfaction')}</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Featured Products Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-12 flex items-center justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
+                <h2 className="text-3xl font-bold text-gray-900">
+                  热门商品
+                </h2>
+              </div>
+              <p className="text-lg text-gray-600">
+                精选热销商品，品质保证
+              </p>
+            </div>
+            <Link href="/products">
+              <Button variant="outline" className="gap-2">
+                查看全部
+                <Star className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {products.slice(0, 4).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* New Products Section */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-12 flex items-center justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-purple-600" />
+                <h2 className="text-3xl font-bold text-gray-900">
+                  最新上架
+                </h2>
+              </div>
+              <p className="text-lg text-gray-600">
+                新品首发，抢先体验
+              </p>
+            </div>
+            <Link href="/products?sort=newest">
+              <Button variant="outline" className="gap-2">
+                查看更多
+                <Star className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {products.slice(4, 8).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

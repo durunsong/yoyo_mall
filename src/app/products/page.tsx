@@ -1,131 +1,87 @@
 /**
- * 商品列表页面 - 新风格（shadcn/ui）
- * - 工具栏：分类筛选 + 排序
- * - 卡片：角标/评分/悬浮快捷操作/库存遮罩
+ * 商品列表页面 - 完整功能版本
+ * - 真实API数据获取
+ * - 分类筛选 + 排序
+ * - 分页功能
+ * - 搜索功能
+ * - 响应式设计
  */
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Heart, Eye, ShoppingCart, Star, Search } from 'lucide-react';
+import { Heart, Eye, ShoppingCart, Star, Search, Filter } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  inStock: boolean;
-  category: 'clothing' | 'electronics' | 'home' | 'beauty';
-}
-
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'iPhone 15 Pro',
-    price: 999,
-    originalPrice: 1099,
-    rating: 4.8,
-    reviews: 256,
-    inStock: true,
-    category: 'electronics',
-  },
-  {
-    id: '2',
-    name: 'MacBook Air M3',
-    price: 1199,
-    rating: 4.9,
-    reviews: 189,
-    inStock: true,
-    category: 'electronics',
-  },
-  {
-    id: '3',
-    name: 'AirPods Pro',
-    price: 249,
-    originalPrice: 279,
-    rating: 4.7,
-    reviews: 432,
-    inStock: false,
-    category: 'electronics',
-  },
-  {
-    id: '4',
-    name: 'Designer T-Shirt',
-    price: 69,
-    rating: 4.5,
-    reviews: 88,
-    inStock: true,
-    category: 'clothing',
-  },
-  {
-    id: '5',
-    name: 'Home Smart Lamp',
-    price: 49,
-    rating: 4.2,
-    reviews: 45,
-    inStock: true,
-    category: 'home',
-  },
-  {
-    id: '6',
-    name: 'Beauty Care Set',
-    price: 129,
-    rating: 4.6,
-    reviews: 120,
-    inStock: true,
-    category: 'beauty',
-  },
-];
+import { useProducts } from '@/hooks/use-products';
+import ProductCard from '@/components/products/product-card';
+import { Pagination } from '@/components/ui/pagination';
 
 export default function ProductsPage() {
   const { t } = useStaticTranslations('product');
   const { t: tCommon } = useStaticTranslations('common');
-
+  const searchParams = useSearchParams();
+  
+  // 状态管理
   const [keyword, setKeyword] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'all' | Product['category']>('all');
-  const [sort, setSort] = useState<'default' | 'price-asc' | 'price-desc' | 'rating-desc' | 'newest'>('default');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [sort, setSort] = useState('default');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [categories, setCategories] = useState<any[]>([]);
+  
+  // 使用产品Hook
+  const { products, loading, pagination, refetch } = useProducts();
 
-  const categories = useMemo(
-    () => ([
-      { key: 'all', label: t('allCategories') },
-      { key: 'clothing', label: t('clothingAccessories') },
-      { key: 'electronics', label: t('phoneDigital') },
-      { key: 'home', label: t('homeLiving') },
-      { key: 'beauty', label: t('beauty') || 'Beauty' },
-    ]) as { key: 'all' | Product['category']; label: string }[],
-    [t]
-  );
+  // 获取分类列表
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        const data = await response.json();
+        if (data.success) {
+          setCategories([
+            { id: 'all', name: t('allCategories') || 'All', slug: 'all' },
+            ...data.data
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, [t]);
 
-  const filtered = useMemo(() => {
-    let list = [...MOCK_PRODUCTS];
-    if (activeCategory !== 'all') {
-      list = list.filter(p => p.category === activeCategory);
-    }
+  // 获取商品列表
+  useEffect(() => {
+    const params: any = {
+      page: currentPage,
+      limit: 12,
+    };
+
     if (keyword.trim()) {
-      const k = keyword.trim().toLowerCase();
-      list = list.filter(p => p.name.toLowerCase().includes(k));
+      params.search = keyword.trim();
     }
-    switch (sort) {
-      case 'price-asc':
-        list.sort((a, b) => a.price - b.price); break;
-      case 'price-desc':
-        list.sort((a, b) => b.price - a.price); break;
-      case 'rating-desc':
-        list.sort((a, b) => b.rating - a.rating); break;
-      default:
-        break;
+
+    if (activeCategory && activeCategory !== 'all') {
+      params.category = activeCategory;
     }
-    return list;
-  }, [activeCategory, keyword, sort]);
+
+    // 排序处理
+    if (sort !== 'default') {
+      const [sortBy, sortOrder] = sort.split('-');
+      params.sortBy = sortBy;
+      params.sortOrder = sortOrder;
+    }
+
+    refetch(params);
+  }, [currentPage, keyword, activeCategory, sort, refetch]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -144,23 +100,23 @@ export default function ProductsPage() {
             <Input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder={t('searchPlaceholder')}
+              placeholder={t('searchPlaceholder') || 'Search products...'}
               className="pl-9"
             />
           </div>
 
           {/* 排序 */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t('defaultSort')}</span>
-            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+            <span className="text-sm text-muted-foreground">{t('sort') || 'Sort by'}:</span>
+            <Select value={sort} onValueChange={(v) => setSort(v)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">{t('defaultSort')}</SelectItem>
-                <SelectItem value="price-asc">{t('priceLowToHigh')}</SelectItem>
-                <SelectItem value="price-desc">{t('priceHighToLow')}</SelectItem>
-                <SelectItem value="rating-desc">{t('highestRated')}</SelectItem>
+                <SelectItem value="default">{t('defaultSort') || 'Default'}</SelectItem>
+                <SelectItem value="price-asc">{t('priceLowToHigh') || 'Price: Low to High'}</SelectItem>
+                <SelectItem value="price-desc">{t('priceHighToLow') || 'Price: High to Low'}</SelectItem>
+                <SelectItem value="createdAt-desc">{t('newest') || 'Newest'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,97 +126,85 @@ export default function ProductsPage() {
 
         {/* 分类筛选 */}
         <div className="flex flex-wrap items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
           {categories.map(c => (
             <Button
-              key={c.key}
-              variant={activeCategory === c.key ? 'default' : 'secondary'}
+              key={c.id}
+              variant={activeCategory === c.id ? 'default' : 'secondary'}
               size="sm"
-              onClick={() => setActiveCategory(c.key)}
+              onClick={() => setActiveCategory(c.id)}
               className="rounded-full"
             >
-              {c.label}
+              {c.name}
             </Button>
           ))}
         </div>
       </div>
 
       {/* 统计 */}
-      <div className="mb-4 text-sm text-muted-foreground">
-        {t('totalProducts', { count: filtered.length })}
-      </div>
+      {pagination && (
+        <div className="mb-4 text-sm text-muted-foreground">
+          {t('totalProducts', { count: pagination.total }) || `Total: ${pagination.total} products`}
+        </div>
+      )}
+
+      {/* 加载状态 */}
+      {loading && (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
+          ))}
+        </div>
+      )}
 
       {/* 商品网格 */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((product) => (
-          <Card key={product.id} className="group relative overflow-hidden transition-all hover:shadow-lg">
-            {/* 图片区 */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
-              {/* 角标：特价 */}
-              {product.originalPrice && (
-                <Badge variant="destructive" className="absolute left-3 top-3 z-10">
-                  {t('specialPrice')}
-                </Badge>
-              )}
+      {!loading && products.length > 0 && (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
 
-              {/* 悬浮操作 */}
-              <div className="pointer-events-none absolute right-3 top-3 z-10 flex translate-y-[-8px] flex-col gap-2 opacity-0 transition-all group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
-                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full">
-                  <Heart className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full">
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* 图片占位 */}
-              <div className="flex h-full w-full items-center justify-center">
-                <div className="flex h-16 w-24 items-center justify-center rounded-md bg-white/70 text-xs text-muted-foreground">
-                  {t('productImage')}
-                </div>
-              </div>
-
-              {/* 缺货遮罩 */}
-              {!product.inStock && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 text-white">
-                  <span className="text-sm font-medium">{t('outOfStock')}</span>
-                </div>
-              )}
-            </div>
-
-            <CardContent className="space-y-3 p-4">
-              {/* 标题 */}
-              <CardTitle className="line-clamp-2 text-base">{product.name}</CardTitle>
-
-              {/* 评分 */}
+          {/* 分页 */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
               <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'fill-current text-yellow-400' : 'text-gray-300'}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground">{product.rating} ({product.reviews})</span>
-              </div>
-
-              {/* 价格区 */}
-              <div className="flex items-end justify-between">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-blue-600">¥{product.price}</span>
-                  {product.originalPrice && (
-                    <span className="text-xs text-muted-foreground line-through">¥{product.originalPrice}</span>
-                  )}
-                </div>
-                <Button size="sm" disabled={!product.inStock}>
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  {product.inStock ? t('addToCart') : t('outOfStock')}
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  {tCommon('previous') || 'Previous'}
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {currentPage} / {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+                  disabled={currentPage === pagination.totalPages}
+                >
+                  {tCommon('next') || 'Next'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 空状态 */}
+      {!loading && products.length === 0 && (
+        <div className="py-16 text-center">
+          <div className="mb-4 text-4xl text-gray-300">🔍</div>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            {t('noProducts') || 'No products found'}
+          </h3>
+          <p className="text-gray-600">
+            {t('tryDifferentSearch') || 'Try adjusting your search or filters'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
