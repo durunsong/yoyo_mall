@@ -3,7 +3,7 @@
  * 封装商品API调用逻辑
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
 // 商品类型定义
@@ -125,6 +125,9 @@ export function useProducts(query: ProductQuery = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 将query转换为稳定的字符串key，避免对象引用变化导致的无限循环
+  const queryKey = useMemo(() => JSON.stringify(query), [query]);
+
   const fetchProducts = useCallback(async (searchQuery: ProductQuery = {}) => {
     setLoading(true);
     setError(null);
@@ -132,13 +135,20 @@ export function useProducts(query: ProductQuery = {}) {
     try {
       // 构建查询参数
       const params = new URLSearchParams();
-      Object.entries({ ...query, ...searchQuery }).forEach(([key, value]) => {
+      const mergedQuery = { ...JSON.parse(queryKey), ...searchQuery };
+      
+      Object.entries(mergedQuery).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           params.append(key, String(value));
         }
       });
 
       const response = await fetch(`/api/products?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result: ProductListResponse = await response.json();
 
       if (result.success) {
@@ -152,14 +162,15 @@ export function useProducts(query: ProductQuery = {}) {
       const errorMessage = '网络错误，请重试';
       setError(errorMessage);
       toast.error(errorMessage);
+      console.error('获取商品列表失败:', error);
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [queryKey]);
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+  }, [queryKey]); // 直接依赖queryKey，避免fetchProducts变化
 
   const refetch = useCallback((newQuery?: ProductQuery) => {
     fetchProducts(newQuery);

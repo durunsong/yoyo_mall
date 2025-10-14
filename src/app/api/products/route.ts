@@ -6,13 +6,13 @@ import { prisma } from '@/lib/prisma';
 const productQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  search: z.string().nullable().optional(),
-  category: z.string().nullable().optional(),
-  sortBy: z.enum(['name', 'price', 'createdAt']).nullable().default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).nullable().default('desc'),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).nullable().optional(),
-  minPrice: z.coerce.number().min(0).nullable().optional(),
-  maxPrice: z.coerce.number().min(0).nullable().optional(),
+  search: z.string().optional(),
+  category: z.string().optional(),
+  sortBy: z.enum(['name', 'price', 'createdAt']).optional().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
 });
 
 // 商品创建验证
@@ -41,17 +41,21 @@ const createProductSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = productQuerySchema.parse({
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
-      search: searchParams.get('search'),
-      category: searchParams.get('category'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
-      status: searchParams.get('status'),
-      minPrice: searchParams.get('minPrice'),
-      maxPrice: searchParams.get('maxPrice'),
-    });
+    
+    // 构建查询对象，只包含存在的参数
+    const rawQuery: any = {};
+    
+    if (searchParams.has('page')) rawQuery.page = searchParams.get('page');
+    if (searchParams.has('limit')) rawQuery.limit = searchParams.get('limit');
+    if (searchParams.has('search')) rawQuery.search = searchParams.get('search');
+    if (searchParams.has('category')) rawQuery.category = searchParams.get('category');
+    if (searchParams.has('sortBy')) rawQuery.sortBy = searchParams.get('sortBy');
+    if (searchParams.has('sortOrder')) rawQuery.sortOrder = searchParams.get('sortOrder');
+    if (searchParams.has('status')) rawQuery.status = searchParams.get('status');
+    if (searchParams.has('minPrice')) rawQuery.minPrice = searchParams.get('minPrice');
+    if (searchParams.has('maxPrice')) rawQuery.maxPrice = searchParams.get('maxPrice');
+    
+    const query = productQuerySchema.parse(rawQuery);
 
     // 构建查询条件
     const where: any = {
