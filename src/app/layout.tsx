@@ -1,15 +1,14 @@
 // React 19 兼容性已通过shadcn/ui处理
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { RootProviders } from '@/components/providers/root-providers';
 import { ConditionalLayout } from '@/components/layout/conditional-layout';
 
-const inter = Inter({
-  subsets: ['latin'],
+// 使用系统字体栈，避免Google Fonts网络问题
+const fontSans = {
   variable: '--font-sans',
-});
+};
 
 export const metadata: Metadata = {
   title: {
@@ -56,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${fontSans.variable} font-sans antialiased`}>
         <RootProviders>
           <ConditionalLayout>
             {children}
