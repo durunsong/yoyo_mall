@@ -31,6 +31,7 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from 'sonner';
 import ProductCard from '@/components/products/product-card';
+import { ProductReviews } from '@/components/products/product-reviews';
 
 interface Product {
   id: string;
@@ -435,13 +436,7 @@ export default function ProductDetailPage() {
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <p className="text-center text-gray-600">
-                    {t('noReviews') || 'No reviews yet. Be the first to review!'}
-                  </p>
-                </CardContent>
-              </Card>
+              <ProductReviews productId={product.id} />
             </TabsContent>
           </Tabs>
         </div>
