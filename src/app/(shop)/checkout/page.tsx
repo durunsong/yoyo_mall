@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { t } = useStaticTranslations('cart');
   const { t: tCommon } = useStaticTranslations('common');
-  const { items, fetchCart } = useCartStore();
+  const { items } = useCartStore();
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.SHIPPING);
   const [clientSecret, setClientSecret] = useState('');
@@ -61,14 +61,9 @@ export default function CheckoutPage() {
     country: 'US',
   });
 
-  // 获取购物车
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-
   // 计算总价
   const subtotal = items.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   const shipping = 10;
@@ -369,19 +364,19 @@ export default function CheckoutPage() {
                       <div key={item.id} className="flex gap-3">
                         <div className="relative h-16 w-16 overflow-hidden rounded-md bg-gray-100">
                           <Image
-                            src={item.product.images?.[0]?.url || 'https://via.placeholder.com/64'}
-                            alt={item.product.name}
+                            src={item.image || 'https://via.placeholder.com/64'}
+                            alt={item.name}
                             fill
                             className="object-cover"
                           />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                            {item.product.name}
+                            {item.name}
                           </p>
                           <p className="text-sm text-gray-600">数量: {item.quantity}</p>
                           <p className="text-sm font-medium">
-                            ${(Number(item.product.price) * item.quantity).toFixed(2)}
+                            ¥{(item.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
                       </div>

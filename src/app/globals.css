@@ -111,6 +111,23 @@ body {
   color: hsl(var(--primary-foreground));
 }
 
+/* 确保输入框可以选择文本 */
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* 输入框文本选择高亮 */
+input::selection,
+textarea::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
 /* 焦点样式 */
 .focus-visible {
   outline: 2px solid hsl(var(--ring));

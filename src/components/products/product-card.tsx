@@ -10,6 +10,7 @@ import { Star, Heart, ShoppingCart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 interface ProductCardProps {
   product: {
@@ -23,15 +24,23 @@ interface ProductCardProps {
     inStock?: boolean;
     featured?: boolean;
   };
-  onAddToCart?: (productId: string) => void;
+  onAddToCart?: (product: {
+    id: string;
+    name: string;
+    price: number;
+    image?: string;
+  }) => void;
+  onAddToWishlist?: (productId: string) => void;
   className?: string;
 }
 
 export default function ProductCard({ 
   product, 
   onAddToCart,
+  onAddToWishlist,
   className = '' 
 }: ProductCardProps) {
+  const { t } = useStaticTranslations('common');
   const {
     id,
     name,
@@ -43,6 +52,15 @@ export default function ProductCard({
     inStock = true,
     featured = false
   } = product;
+
+  // 处理收藏
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault(); // 阻止Link导航
+    e.stopPropagation();
+    if (onAddToWishlist) {
+      onAddToWishlist(id);
+    }
+  };
 
   return (
     <Card className={`group transition-shadow hover:shadow-lg ${className}`}>
@@ -65,19 +83,19 @@ export default function ProductCard({
           
           {!inStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <span className="font-medium text-white">暂时缺货</span>
+              <span className="font-medium text-white">{t('outOfStock')}</span>
             </div>
           )}
           
           {featured && (
             <Badge className="absolute top-2 left-2" variant="secondary">
-              精选
+              {t('featured')}
             </Badge>
           )}
           
           {originalPrice && (
             <Badge className="absolute top-2 left-2" variant="destructive">
-              特价
+              {t('specialOffer')}
             </Badge>
           )}
           
@@ -85,6 +103,7 @@ export default function ProductCard({
             variant="ghost"
             size="icon"
             className="absolute top-2 right-2 rounded-full bg-white/80 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
+            onClick={handleWishlist}
           >
             <Heart className="h-4 w-4" />
           </Button>
@@ -137,10 +156,10 @@ export default function ProductCard({
           <Button 
             className="w-full" 
             disabled={!inStock}
-            onClick={() => onAddToCart?.(id)}
+            onClick={() => onAddToCart?.({ id, name, price, image })}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            {inStock ? '加入购物车' : '暂时缺货'}
+            {inStock ? t('addToCart') : t('outOfStock')}
           </Button>
         </div>
       </CardContent>

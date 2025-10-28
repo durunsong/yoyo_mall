@@ -133,9 +133,13 @@ export default function WishlistPage() {
         return;
       }
 
-      await addItem({
+      // 构造完整的购物车项目
+      addItem({
         productId: item.product.id,
         quantity: 1,
+        price: parseFloat(item.product.price.toString()),
+        name: item.product.name,
+        image: item.product.images?.[0]?.url || '/placeholder.png',
       });
 
       toast.success('已添加到购物车');

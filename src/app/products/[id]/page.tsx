@@ -116,9 +116,17 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     try {
-      await addItem(product.id, quantity);
+      // 构造完整的购物车项目
+      addItem({
+        productId: product.id,
+        quantity: quantity,
+        price: product.price,
+        name: product.name,
+        image: product.images[0]?.url || '/placeholder.png',
+      });
       toast.success(t('addedToCart') || 'Added to cart successfully!');
     } catch (error) {
+      console.error('Failed to add to cart:', error);
       toast.error(t('addToCartFailed') || 'Failed to add to cart');
     }
   };

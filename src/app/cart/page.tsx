@@ -33,19 +33,14 @@ export default function CartPage() {
   const { t } = useStaticTranslations('cart');
   const { t: tCommon } = useStaticTranslations('common');
   
-  const { items, loading, fetchCart, updateQuantity, removeItem } = useCartStore();
+  const { items, updateQuantity, removeItem } = useCartStore();
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  // 获取购物车数据
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-
   // 计算总价
   const subtotal = items.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   const shipping = subtotal >= 99 ? 0 : 10; // 满99免运费
@@ -86,19 +81,19 @@ export default function CartPage() {
   };
 
   // 更新数量
-  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      await updateQuantity(itemId, newQuantity);
+      updateQuantity(itemId, newQuantity);
     } catch (error) {
       toast.error(t('updateFailed') || 'Failed to update quantity');
     }
   };
 
   // 删除商品
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = (itemId: string) => {
     try {
-      await removeItem(itemId);
+      removeItem(itemId);
       toast.success(t('itemRemoved') || 'Item removed from cart');
     } catch (error) {
       toast.error(t('removeFailed') || 'Failed to remove item');
@@ -115,7 +110,7 @@ export default function CartPage() {
   };
 
   // 空购物车状态
-  if (!loading && items.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-16">
@@ -161,83 +156,72 @@ export default function CartPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardContent className="p-6">
-                {loading ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="flex gap-4">
-                        <div className="h-24 w-24 animate-pulse rounded-lg bg-gray-200" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
-                          <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {items.map((item) => (
-                      <div key={item.id}>
-                        <div className="flex gap-4">
-                          {/* 商品图片 */}
-                          <Link
-                            href={`/products/${item.product.id}`}
-                            className="relative h-24 w-24 overflow-hidden rounded-lg bg-gray-100"
-                          >
-                            <Image
-                              src={item.product.images?.[0]?.url || 'https://via.placeholder.com/96'}
-                              alt={item.product.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </Link>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id}>
+                      <div className="flex gap-4">
+                        {/* 商品图片 */}
+                        <Link
+                          href={`/products/${item.productId}`}
+                          className="relative h-24 w-24 overflow-hidden rounded-lg bg-gray-100"
+                        >
+                          <Image
+                            src={item.image || 'https://via.placeholder.com/96'}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </Link>
 
-                          {/* 商品信息 */}
-                          <div className="flex flex-1 flex-col justify-between">
-                            <div>
-                              <Link
-                                href={`/products/${item.product.id}`}
-                                className="font-medium text-gray-900 hover:text-blue-600"
-                              >
-                                {item.product.name}
-                              </Link>
+                        {/* 商品信息 */}
+                        <div className="flex flex-1 flex-col justify-between">
+                          <div>
+                            <Link
+                              href={`/products/${item.productId}`}
+                              className="font-medium text-gray-900 hover:text-blue-600"
+                            >
+                              {item.name}
+                            </Link>
+                            {item.attributes && item.attributes.length > 0 && (
                               <p className="mt-1 text-sm text-gray-600">
-                                SKU: {item.product.sku}
+                                {item.attributes.map(attr => `${attr.name}: ${attr.value}`).join(', ')}
                               </p>
+                            )}
+                          </div>
+
+                          {/* 价格和数量 */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() =>
+                                  handleUpdateQuantity(item.id, item.quantity - 1)
+                                }
+                                disabled={item.quantity <= 1}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="w-8 text-center font-medium">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() =>
+                                  handleUpdateQuantity(item.id, item.quantity + 1)
+                                }
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
                             </div>
 
-                            {/* 价格和数量 */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() =>
-                                    handleUpdateQuantity(item.id, item.quantity - 1)
-                                  }
-                                  disabled={item.quantity <= 1}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="w-8 text-center font-medium">
-                                  {item.quantity}
-                                </span>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() =>
-                                    handleUpdateQuantity(item.id, item.quantity + 1)
-                                  }
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
-
-                              <div className="flex items-center gap-4">
-                                <span className="text-lg font-bold text-blue-600">
-                                  ${(Number(item.product.price) * item.quantity).toFixed(2)}
-                                </span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-lg font-bold text-blue-600">
+                                ¥{(item.price * item.quantity).toFixed(2)}
+                              </span>
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -254,7 +238,6 @@ export default function CartPage() {
                       </div>
                     ))}
                   </div>
-                )}
               </CardContent>
             </Card>
 

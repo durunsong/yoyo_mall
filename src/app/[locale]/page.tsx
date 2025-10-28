@@ -24,11 +24,76 @@ import { Badge } from '@/components/ui/badge';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useProducts } from '@/hooks/use-products';
 import ProductCard from '@/components/products/product-card';
+import { useCartStore } from '@/store/cart-store';
+import { toast } from 'sonner';
 
 export default function HomePage() {
   const { t } = useStaticTranslations('common');
   // 直接传递参数给 hook，它会自动获取数据
   const { products, loading } = useProducts({ limit: 8 });
+  const { addItem } = useCartStore();
+
+  // 添加到购物车
+  const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
+    // 添加到本地购物车（Zustand store）
+    addItem({
+      productId: product.id,
+      quantity: 1,
+      price: product.price,
+      name: product.name,
+      image: product.image || '/placeholder.png',
+    });
+    
+    // 如果用户已登录，同步到服务器
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+        }),
+      });
+      
+      if (response.ok) {
+        toast.success('已添加到购物车');
+      } else {
+        // 如果是未登录，只显示本地添加成功
+        const data = await response.json();
+        if (data.error === 'UNAUTHORIZED') {
+          toast.success('已添加到购物车（未同步）');
+        } else {
+          toast.success('已添加到购物车');
+        }
+      }
+    } catch (error) {
+      // 网络错误，但本地已添加
+      console.error('Sync cart failed:', error);
+      toast.success('已添加到购物车');
+    }
+  };
+
+  // 添加到心愿单
+  const handleAddToWishlist = async (productId: string) => {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('已添加到心愿单');
+      } else {
+        toast.error(data.message || '添加失败');
+      }
+    } catch (error) {
+      console.error('Add to wishlist failed:', error);
+      toast.error('添加失败，请重试');
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -206,16 +271,16 @@ export default function HomePage() {
               <div className="mb-2 flex items-center gap-2">
                 <TrendingUp className="h-6 w-6 text-blue-600" />
                 <h2 className="text-3xl font-bold text-gray-900">
-                  热门商品
+                  {t('featuredProducts')}
                 </h2>
               </div>
               <p className="text-lg text-gray-600">
-                精选热销商品，品质保证
+                {t('qualityProducts')}, {t('qualityAssurance')}
               </p>
             </div>
             <Link href="/products">
               <Button variant="outline" className="gap-2">
-                查看全部
+                {t('viewAll')}
                 <Star className="h-4 w-4" />
               </Button>
             </Link>
@@ -230,7 +295,12 @@ export default function HomePage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {products.slice(0, 4).map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  onAddToCart={handleAddToCart}
+                  onAddToWishlist={handleAddToWishlist}
+                />
               ))}
             </div>
           )}
@@ -245,16 +315,16 @@ export default function HomePage() {
               <div className="mb-2 flex items-center gap-2">
                 <Sparkles className="h-6 w-6 text-purple-600" />
                 <h2 className="text-3xl font-bold text-gray-900">
-                  最新上架
+                  {t('newArrivals')}
                 </h2>
               </div>
               <p className="text-lg text-gray-600">
-                新品首发，抢先体验
+                {t('newReleases')}, {t('exclusiveExperience')}
               </p>
             </div>
             <Link href="/products?sort=newest">
               <Button variant="outline" className="gap-2">
-                查看更多
+                {t('viewMore')}
                 <Star className="h-4 w-4" />
               </Button>
             </Link>
@@ -269,7 +339,12 @@ export default function HomePage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {products.slice(4, 8).map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  onAddToCart={handleAddToCart}
+                  onAddToWishlist={handleAddToWishlist}
+                />
               ))}
             </div>
           )}

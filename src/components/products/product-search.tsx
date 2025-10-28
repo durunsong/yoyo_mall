@@ -6,6 +6,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,11 +22,21 @@ export default function ProductSearch({
   onSearch,
   className = '' 
 }: ProductSearchProps) {
+  const router = useRouter();
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearch = () => {
+    // 如果有自定义回调，优先使用
     if (onSearch) {
       onSearch(searchValue);
+      return;
+    }
+
+    // 默认行为：跳转到商品列表页并传递搜索关键词
+    if (searchValue.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchValue.trim())}`);
+    } else {
+      router.push('/products');
     }
   };
 

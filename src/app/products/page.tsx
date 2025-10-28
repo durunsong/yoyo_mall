@@ -23,14 +23,19 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useProducts } from '@/hooks/use-products';
 import ProductCard from '@/components/products/product-card';
 import { Pagination } from '@/components/ui/pagination';
+import { useCartStore } from '@/store/cart-store';
+import { toast } from 'sonner';
 
 function ProductsPageContent() {
   const { t } = useStaticTranslations('product');
   const { t: tCommon } = useStaticTranslations('common');
   const searchParams = useSearchParams();
   
+  // 从URL参数初始化搜索关键词
+  const initialSearch = searchParams.get('search') || '';
+  
   // 状态管理
-  const [keyword, setKeyword] = useState('');
+  const [keyword, setKeyword] = useState(initialSearch);
   const [activeCategory, setActiveCategory] = useState('all');
   const [sort, setSort] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +43,49 @@ function ProductsPageContent() {
   
   // 使用产品Hook
   const { products, loading, pagination, refetch } = useProducts();
+  const { addItem } = useCartStore();
+
+  // 添加到购物车
+  const handleAddToCart = (product: { id: string; name: string; price: number; image?: string }) => {
+    addItem({
+      productId: product.id,
+      quantity: 1,
+      price: product.price,
+      name: product.name,
+      image: product.image || '/placeholder.png',
+    });
+    toast.success('已添加到购物车');
+  };
+
+  // 添加到心愿单
+  const handleAddToWishlist = async (productId: string) => {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('已添加到心愿单');
+      } else {
+        toast.error(data.message || '添加失败');
+      }
+    } catch (error) {
+      console.error('Add to wishlist failed:', error);
+      toast.error('添加失败，请重试');
+    }
+  };
+
+  // 监听URL参数变化，更新搜索关键词
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam && searchParam !== keyword) {
+      setKeyword(searchParam);
+    }
+  }, [searchParams]);
 
   // 获取分类列表
   useEffect(() => {
@@ -162,7 +210,12 @@ function ProductsPageContent() {
         <>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+              />
             ))}
           </div>
 

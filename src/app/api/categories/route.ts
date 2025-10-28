@@ -5,10 +5,10 @@ import { prisma } from '@/lib/prisma';
 // 分类查询参数验证
 const categoryQuerySchema = z.object({
   includeProducts: z.coerce.boolean().default(false),
-  parentId: z.string().optional(),
+  parentId: z.string().nullable().optional(),
   isActive: z.coerce.boolean().optional(),
-  sortBy: z.enum(['name', 'sortOrder', 'createdAt']).default('sortOrder'),
-  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  sortBy: z.enum(['name', 'sortOrder', 'createdAt']).nullable().default('sortOrder'),
+  sortOrder: z.enum(['asc', 'desc']).nullable().default('asc'),
 });
 
 // 分类创建验证
@@ -29,13 +29,22 @@ const updateCategorySchema = createCategorySchema.partial();
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = categoryQuerySchema.parse({
-      includeProducts: searchParams.get('includeProducts'),
-      parentId: searchParams.get('parentId'),
-      isActive: searchParams.get('isActive'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
-    });
+    
+    // 只传递存在的参数给schema
+    const params: any = {};
+    const includeProducts = searchParams.get('includeProducts');
+    const parentId = searchParams.get('parentId');
+    const isActive = searchParams.get('isActive');
+    const sortBy = searchParams.get('sortBy');
+    const sortOrder = searchParams.get('sortOrder');
+    
+    if (includeProducts !== null) params.includeProducts = includeProducts;
+    if (parentId !== null) params.parentId = parentId;
+    if (isActive !== null) params.isActive = isActive;
+    if (sortBy !== null) params.sortBy = sortBy;
+    if (sortOrder !== null) params.sortOrder = sortOrder;
+    
+    const query = categoryQuerySchema.parse(params);
 
     // 构建查询条件
     const where: any = {};
