@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 验证文件大小 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // 验证文件大小 (10MB，GIF 动图更大些)
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { success: false, error: '图片大小不能超过 5MB' },
+        { success: false, error: '图片大小不能超过 10MB' },
         { status: 400 },
       );
     }
@@ -56,16 +56,19 @@ export async function POST(request: NextRequest) {
     // 转换 File 为 Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
+    // 是否为 GIF（保留动图，禁用压缩/转码）
+    const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+
     // 上传到 OSS
     const uploadResult = await oss.upload({
       file: buffer,
       filename: file.name,
       folder: OSS_FOLDERS.AVATARS,
-      compress: true, // 压缩图片
-      generateThumbnail: true, // 生成缩略图
+      compress: !isGif, // GIF 不压缩以保留动图
+      generateThumbnail: true, // 生成缩略图（静态，用于小图展示）
       thumbnailSize: { width: 200, height: 200 },
       quality: 85,
-      maxSize: 5 * 1024 * 1024,
+      maxSize: 10 * 1024 * 1024,
     });
 
     console.log('头像上传成功:', uploadResult);

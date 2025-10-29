@@ -97,9 +97,9 @@ export default function AccountSettingsPage() {
       return;
     }
 
-    // 验证文件大小 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('图片大小不能超过 5MB');
+    // 验证文件大小 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('图片大小不能超过 10MB');
       return;
     }
 
@@ -321,7 +321,7 @@ export default function AccountSettingsPage() {
                         disabled={uploadingAvatar}
                       />
                       <p className="mt-2 text-sm text-gray-500">
-                        支持 JPG、PNG 格式，最大 5MB
+                        支持 JPG、PNG、GIF 格式，最大 10MB
                       </p>
                     </div>
                   </div>
