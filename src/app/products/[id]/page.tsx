@@ -274,11 +274,11 @@ export default function ProductDetailPage() {
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-blue-600">
-                  ${product.price.toFixed(2)}
+                  ${Number(product.price).toFixed(2)}
                 </span>
                 {product.comparePrice && (
                   <span className="text-xl text-gray-400 line-through">
-                    ${product.comparePrice.toFixed(2)}
+                    ${Number(product.comparePrice).toFixed(2)}
                   </span>
                 )}
               </div>

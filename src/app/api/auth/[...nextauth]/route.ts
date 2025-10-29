@@ -115,13 +115,14 @@ export const authConfig = {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
-        token.picture = user.image;
+        token.avatar = user.image || user.avatar; // 支持两种字段名
       }
 
       // 客户端调用 useSession().update 时，合并最新的用户字段
       if (trigger === 'update' && session?.user) {
         if (session.user.name) token.name = session.user.name;
-        if ((session.user as any).image) token.picture = (session.user as any).image;
+        if ((session.user as any).avatar) token.avatar = (session.user as any).avatar;
+        if ((session.user as any).image) token.avatar = (session.user as any).image;
       }
       
       // Google 登录时保存提供者信息
@@ -137,7 +138,11 @@ export const authConfig = {
         session.user.role = token.role;
         session.user.provider = token.provider;
         if (token.name) session.user.name = token.name;
-        if ((token as any).picture) (session.user as any).image = (token as any).picture;
+        // 同时设置 avatar 和 image 字段,确保兼容性
+        if (token.avatar) {
+          (session.user as any).avatar = token.avatar;
+          (session.user as any).image = token.avatar;
+        }
       }
       return session;
     },
