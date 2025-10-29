@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, ShoppingCart, User, Menu, Bell } from 'lucide-react';
+import { Search, User, Menu, Bell } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
@@ -40,15 +40,8 @@ import { AuthModalShadcn } from '@/components/auth/auth-modal-shadcn';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useSession, signOut } from 'next-auth/react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
-import ShoppingCartBadge from './shopping-cart-badge';
 import ProductSearch from '@/components/products/product-search';
 import LanguageSwitcher from '@/components/ui/language-switcher';
-import { useCartStore } from '@/store/cart-store';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
 
 // 导航菜单配置（去掉 Home，Logo 已可回到首页）
 const getNavItems = (t: (key: string) => string) => [
@@ -69,7 +62,6 @@ export function ShadcnHeader() {
   // 使用 navigation 命名空间渲染导航文案，使用 common 渲染通用文案
   const { t: tNav } = useStaticTranslations('navigation');
   const { t: tCommon } = useStaticTranslations('common');
-  const { items, itemCount } = useCartStore();
 
   // 获取翻译后的导航项
   const navItems = getNavItems(tNav);
@@ -169,60 +161,6 @@ export function ShadcnHeader() {
                   3
                 </Badge>
               </Button>
-
-              {/* 购物车 */}
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <div>
-                    <ShoppingCartBadge 
-                      count={itemCount} 
-                      onClick={() => router.push('/cart')}
-                    />
-                  </div>
-                </HoverCardTrigger>
-                <HoverCardContent className="w-80" align="end">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">购物车 ({itemCount} 件商品)</h4>
-                    {items.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">购物车是空的</p>
-                    ) : (
-                      <>
-                        <div className="max-h-60 space-y-3 overflow-y-auto">
-                          {items.slice(0, 3).map((item) => (
-                            <div key={item.id} className="flex gap-3">
-                              <img 
-                                src={item.image} 
-                                alt={item.name} 
-                                className="h-16 w-16 rounded object-cover"
-                              />
-                              <div className="flex-1">
-                                <p className="text-sm font-medium line-clamp-1">{item.name}</p>
-                                <p className="text-xs text-muted-foreground">数量: {item.quantity}</p>
-                                <p className="text-sm font-semibold text-primary">¥{item.price}</p>
-                              </div>
-                            </div>
-                          ))}
-                          {items.length > 3 && (
-                            <p className="text-xs text-center text-muted-foreground">
-                              还有 {items.length - 3} 件商品...
-                            </p>
-                          )}
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">小计:</span>
-                          <span className="font-bold text-primary">
-                            ¥{items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-                          </span>
-                        </div>
-                        <Button className="w-full" onClick={() => router.push('/cart')}>
-                          查看购物车
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
 
               {/* 用户菜单 */}
               {session?.user ? (

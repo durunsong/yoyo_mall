@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { ShoppingCart, Heart, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
+import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 
@@ -20,13 +21,18 @@ export function FloatingToolbar() {
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
   const [cartAnimation, setCartAnimation] = useState(false);
+  const [wishlistAnimation, setWishlistAnimation] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null); // 初始为 null
   const [isClient, setIsClient] = useState(false); // 客户端标记
   const [showScrollTop, setShowScrollTop] = useState(false); // 是否显示返回顶部
   const { items } = useCartStore();
+  const wishlistItems = useWishlistStore(state => state.items);
 
   // 购物车数量
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+  
+  // 心愿单数量
+  const wishlistCount = wishlistItems.length;
 
   // 客户端挂载后才初始化时间
   useEffect(() => {
@@ -63,6 +69,15 @@ export function FloatingToolbar() {
       return () => clearTimeout(timer);
     }
   }, [cartCount]);
+
+  // 监听心愿单变化触发动画
+  useEffect(() => {
+    if (wishlistCount > 0) {
+      setWishlistAnimation(true);
+      const timer = setTimeout(() => setWishlistAnimation(false), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [wishlistCount]);
 
   // 跳转到购物车
   const handleCartClick = () => {
@@ -172,18 +187,31 @@ export function FloatingToolbar() {
       </div>
 
       {/* 心愿单按钮 */}
-      <div className="w-16">
+      <div className="relative w-16">
         <button
           onClick={handleWishlistClick}
-          className="flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50"
+          className={cn(
+            'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
+            wishlistAnimation && 'animate-bounce'
+          )}
         >
           <Heart className="h-5 w-5 text-gray-700" />
+          {wishlistCount > 0 && (
+            <span
+              className={cn(
+                'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white',
+                wishlistAnimation && 'animate-pulse'
+              )}
+            >
+              {wishlistCount > 9 ? '9+' : wishlistCount}
+            </span>
+          )}
         </button>
       </div>
 
       {/* 返回顶部按钮 - 仅在滚动时显示 */}
       {showScrollTop && (
-        <div className="mt-1 w-16">
+        <div className="mt-1 w-16 mb-1">
           <button
             onClick={scrollToTop}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-white shadow-md transition-all hover:bg-gray-50 hover:scale-105 animate-fade-in"
