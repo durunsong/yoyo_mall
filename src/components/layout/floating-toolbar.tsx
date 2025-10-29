@@ -223,7 +223,7 @@ export function FloatingToolbar() {
       )}
 
       {/* Discord 按钮 - 底部 */}
-      <div className={cn("w-16 bg-white shadow-md", !showScrollTop && "rounded-b-xl")}>
+      <div className={cn("w-16 bg-white shadow-md rounded-lg", !showScrollTop && "rounded-b-xl")}>
         <button
           onClick={() => toast.info('Discord 功能即将上线')}
           className={cn(
