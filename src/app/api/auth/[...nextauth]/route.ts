@@ -118,31 +118,14 @@ export const authConfig = {
         token.avatar = user.image || user.avatar; // 支持两种字段名
       }
 
-      // 客户端调用 useSession().update 时，合并最新的用户字段
-      if (trigger === 'update' && session?.user) {
-        if (session.user.name) token.name = session.user.name;
-        if ((session.user as any).avatar) token.avatar = (session.user as any).avatar;
-        if ((session.user as any).image) token.avatar = (session.user as any).image;
-      }
-      
-      // ⚡ 关键修复: 每次session请求时,从数据库刷新avatar
-      // 这样可以确保头像更新后立即生效
-      if (token.id && !user) {
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: { avatar: true, name: true, role: true },
-          });
-          
-          if (dbUser) {
-            // 更新token中的字段
-            token.avatar = dbUser.avatar;
-            token.name = dbUser.name;
-            token.role = dbUser.role;
-          }
-        } catch (error) {
-          console.error('刷新token失败:', error);
-          // 失败时保持原有token不变
+      // 客户端调用 useSession().update 时，合并最新字段
+      if (trigger === 'update') {
+        // 兼容两种形态: { user: { ... } } 和 { avatar, image, name }
+        const updatedUser = (session && (session as any).user) ? (session as any).user : session;
+        if (updatedUser) {
+          if (updatedUser.name) token.name = updatedUser.name;
+          if (updatedUser.avatar) token.avatar = updatedUser.avatar;
+          if (updatedUser.image) token.avatar = updatedUser.image;
         }
       }
       

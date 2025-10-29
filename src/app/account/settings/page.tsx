@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -117,16 +117,24 @@ export default function AccountSettingsPage() {
       const data = await response.json();
 
       if (data.success) {
-        console.log('✅ 头像上传成功:', data.avatarUrl);
+        // 立即更新表单显示
+        setProfileForm({ ...profileForm, avatar: data.avatarUrl });
         
-        // 立即显示成功提示
-        toast.success('头像上传成功,正在刷新...');
+        // 强制更新 session - 关键! 使用 user 字段确保 next-auth v5 正确合并
+        await updateSession({
+          user: {
+            avatar: data.avatarUrl,
+            image: data.avatarUrl, // 同时更新 image 字段
+          },
+        });
         
-        // 立即刷新页面 - 最可靠的方式
-        // 刷新后NextAuth会自动从数据库加载最新的avatar
-        window.location.reload();
+        // 短暂延迟后刷新页面,确保 session 已更新
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+        
+        toast.success('头像上传成功,页面即将刷新');
       } else {
-        console.error('❌ 头像上传失败:', data.error);
         toast.error(data.error || '头像上传失败');
       }
     } catch (error) {
@@ -159,8 +167,8 @@ export default function AccountSettingsPage() {
       const data = await response.json();
 
       if (data.success) {
-        // 更新 session
-        await updateSession({ name: profileForm.name });
+        // 更新 session，使用 user 字段
+        await updateSession({ user: { name: profileForm.name } });
         toast.success('个人资料更新成功');
         
         // 短暂延迟后刷新页面,确保昵称在导航栏更新

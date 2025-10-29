@@ -169,8 +169,8 @@ export function ShadcnHeader() {
                     <Button variant="ghost" size="sm" className="hidden sm:flex">
                       <Avatar className="mr-2 h-6 w-6">
                         <AvatarImage
-                          key={(session.user as any).avatar || Date.now()}
-                          src={(session.user as any).avatar || '/avatars/default-avatar.svg'}
+                          key={(session.user as any).avatar || (session.user as any).image || Date.now()}
+                          src={(session.user as any).avatar || (session.user as any).image || '/avatars/default-avatar.svg'}
                           alt={session.user.name || 'User Avatar'}
                         />
                         <AvatarFallback>{(session.user?.name || 'U').slice(0, 1)}</AvatarFallback>
@@ -257,8 +257,8 @@ export function ShadcnHeader() {
                           <div className="flex items-center gap-3 px-3">
                             <Avatar className="h-8 w-8">
                               <AvatarImage 
-                                key={(session.user as any).avatar || Date.now()}
-                                src={(session.user as any).avatar || '/avatars/default-avatar.svg'} 
+                                key={(session.user as any).avatar || (session.user as any).image || Date.now()}
+                                src={(session.user as any).avatar || (session.user as any).image || '/avatars/default-avatar.svg'} 
                               />
                               <AvatarFallback>{(session.user?.name || 'U').slice(0, 1)}</AvatarFallback>
                             </Avatar>
