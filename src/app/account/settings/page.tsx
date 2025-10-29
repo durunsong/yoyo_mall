@@ -1,0 +1,410 @@
+/**
+ * 账户设置页面
+ * 用户可以编辑个人资料、修改密码、设置偏好等
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { Loader2, User, Lock, Bell, Globe } from 'lucide-react';
+
+export default function AccountSettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  // 个人资料表单
+  const [profileForm, setProfileForm] = useState({
+    name: session?.user?.name || '',
+    email: session?.user?.email || '',
+    phone: '',
+  });
+
+  // 密码表单
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  // 如果未登录,跳转到登录页
+  if (status === 'unauthenticated') {
+    router.push('/');
+    return null;
+  }
+
+  // 更新个人资料
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileForm),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('个人资料更新成功');
+      } else {
+        toast.error(data.error || '更新失败');
+      }
+    } catch (error) {
+      console.error('Update profile error:', error);
+      toast.error('更新个人资料失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 修改密码
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('两次输入的密码不一致');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      toast.error('密码长度至少为6位');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/user/password', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('密码修改成功');
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+      } else {
+        toast.error(data.error || '修改失败');
+      }
+    } catch (error) {
+      console.error('Change password error:', error);
+      toast.error('修改密码失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl">
+        {/* 页面标题 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">账户设置</h1>
+          <p className="text-gray-600 mt-2">管理您的个人信息和偏好设置</p>
+        </div>
+
+        {/* 设置选项卡 */}
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">个人资料</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">安全设置</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">通知设置</span>
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">偏好设置</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 个人资料 */}
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>个人资料</CardTitle>
+                <CardDescription>更新您的个人信息</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">姓名</Label>
+                    <Input
+                      id="name"
+                      value={profileForm.name}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, name: e.target.value })
+                      }
+                      placeholder="请输入姓名"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">邮箱</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, email: e.target.value })
+                      }
+                      placeholder="请输入邮箱"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">手机号</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={profileForm.phone}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, phone: e.target.value })
+                      }
+                      placeholder="请输入手机号"
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.push('/account')}
+                    >
+                      取消
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      保存更改
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 安全设置 */}
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle>安全设置</CardTitle>
+                <CardDescription>修改密码和安全选项</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">当前密码</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          currentPassword: e.target.value,
+                        })
+                      }
+                      placeholder="请输入当前密码"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">新密码</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          newPassword: e.target.value,
+                        })
+                      }
+                      placeholder="请输入新密码(至少6位)"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">确认新密码</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                      placeholder="请再次输入新密码"
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setPasswordForm({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmPassword: '',
+                        })
+                      }
+                    >
+                      重置
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      修改密码
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 通知设置 */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>通知设置</CardTitle>
+                <CardDescription>管理您接收的通知类型</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">订单通知</p>
+                      <p className="text-sm text-gray-500">接收订单状态更新通知</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      开启
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">促销通知</p>
+                      <p className="text-sm text-gray-500">接收优惠活动和促销信息</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      开启
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">邮件通知</p>
+                      <p className="text-sm text-gray-500">通过邮件接收重要通知</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      开启
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 偏好设置 */}
+          <TabsContent value="preferences">
+            <Card>
+              <CardHeader>
+                <CardTitle>偏好设置</CardTitle>
+                <CardDescription>自定义您的使用体验</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">语言</p>
+                      <p className="text-sm text-gray-500">选择界面显示语言</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      中文
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">货币</p>
+                      <p className="text-sm text-gray-500">选择价格显示货币</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      CNY ¥
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">主题</p>
+                      <p className="text-sm text-gray-500">选择界面主题</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      浅色
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
