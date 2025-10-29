@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
         success: false, 
         error: 'SEED_FAILED', 
         message: '数据库初始化失败',
-        details: error instanceof Error ? error.message : '未知错误'
+        details: error instanceof Error ? error.message : '未知错误',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(
       { success: false, error: 'NOT_ALLOWED', message: '仅开发环境可用' },
-      { status: 403 }
+      { status: 403 },
     );
   }
 

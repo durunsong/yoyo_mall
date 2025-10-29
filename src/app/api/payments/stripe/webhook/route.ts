@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       console.error('缺少Stripe签名');
       return NextResponse.json(
         { error: 'Missing signature' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       console.error('缺少STRIPE_WEBHOOK_SECRET环境变量');
       return NextResponse.json(
         { error: 'Webhook secret not configured' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       console.error('Webhook签名验证失败:', verificationResult.error);
       return NextResponse.json(
         { error: 'Invalid signature' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     console.error('Webhook处理失败:', error);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

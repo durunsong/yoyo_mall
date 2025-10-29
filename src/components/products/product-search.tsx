@@ -20,7 +20,7 @@ interface ProductSearchProps {
 export default function ProductSearch({ 
   placeholder = '搜索商品...', 
   onSearch,
-  className = '' 
+  className = '', 
 }: ProductSearchProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState('');

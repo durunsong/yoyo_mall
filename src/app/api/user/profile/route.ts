@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: '未授权访问' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'USER_NOT_FOUND', message: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     console.error('获取用户信息错误:', error);
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: '未授权访问' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -135,13 +135,13 @@ export async function PUT(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

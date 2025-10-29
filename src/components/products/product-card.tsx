@@ -38,7 +38,7 @@ export default function ProductCard({
   product, 
   onAddToCart,
   onAddToWishlist,
-  className = '' 
+  className = '', 
 }: ProductCardProps) {
   const { t } = useStaticTranslations('common');
   const {
@@ -50,7 +50,7 @@ export default function ProductCard({
     rating = 0,
     reviews = 0,
     inStock = true,
-    featured = false
+    featured = false,
   } = product;
 
   // 处理收藏

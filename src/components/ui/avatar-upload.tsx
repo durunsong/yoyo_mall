@@ -29,7 +29,7 @@ export function AvatarUpload({
   value,
   onChange,
   size = 'md',
-  className = ''
+  className = '',
 }: AvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
   const { t: tAccount } = useStaticTranslations('account');

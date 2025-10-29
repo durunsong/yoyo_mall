@@ -305,7 +305,7 @@ export function ShadcnHeader() {
                               >
                                 {item.label}
                               </Link>
-                            )
+                            ),
                       )}
                     </nav>
 

@@ -11,7 +11,7 @@ const updateCartItemSchema = z.object({
 // 更新购物车项目
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ itemId: string }> }
+  { params }: { params: Promise<{ itemId: string }> },
 ) {
   try {
     const session = await auth();
@@ -19,7 +19,7 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function PUT(
     if (!cartItem) {
       return NextResponse.json(
         { success: false, error: 'CART_ITEM_NOT_FOUND', message: '购物车项目不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -90,9 +90,9 @@ export async function PUT(
           success: false, 
           error: 'INSUFFICIENT_STOCK', 
           message: `库存不足，仅剩 ${availableQuantity} 件`,
-          availableQuantity 
+          availableQuantity, 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -168,13 +168,13 @@ export async function PUT(
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -182,7 +182,7 @@ export async function PUT(
 // 删除购物车项目
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ itemId: string }> }
+  { params }: { params: Promise<{ itemId: string }> },
 ) {
   try {
     const session = await auth();
@@ -190,7 +190,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -207,7 +207,7 @@ export async function DELETE(
     if (!cartItem) {
       return NextResponse.json(
         { success: false, error: 'CART_ITEM_NOT_FOUND', message: '购物车项目不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -229,7 +229,7 @@ export async function DELETE(
     console.error('删除购物车项目失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

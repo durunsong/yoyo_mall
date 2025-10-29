@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     if (user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -149,13 +149,13 @@ export async function GET(request: NextRequest) {
           message: '请求参数无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: '获取用户列表失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     if (user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     if (!email || !name || !password) {
       return NextResponse.json(
         { success: false, error: '邮箱、姓名和密码不能为空' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { success: false, error: '该邮箱已被注册' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -249,8 +249,9 @@ export async function POST(request: NextRequest) {
     console.error('创建用户失败:', error);
     return NextResponse.json(
       { success: false, error: '创建用户失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

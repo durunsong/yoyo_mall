@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     console.error('获取购物车失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -147,14 +147,14 @@ export async function POST(request: NextRequest) {
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'PRODUCT_NOT_FOUND', message: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (product.status !== 'PUBLISHED') {
       return NextResponse.json(
         { success: false, error: 'PRODUCT_NOT_AVAILABLE', message: '商品暂不可购买' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
       if (!variant || !variant.isActive) {
         return NextResponse.json(
           { success: false, error: 'VARIANT_NOT_FOUND', message: '商品变体不存在或不可用' },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -190,9 +190,9 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'INSUFFICIENT_STOCK', 
           message: `库存不足，仅剩 ${availableQuantity} 件`,
-          availableQuantity 
+          availableQuantity, 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -219,9 +219,9 @@ export async function POST(request: NextRequest) {
             error: 'INSUFFICIENT_STOCK', 
             message: `库存不足，您已有 ${existingCartItem.quantity} 件在购物车中，仅剩 ${availableQuantity} 件`,
             availableQuantity,
-            currentQuantity: existingCartItem.quantity
+            currentQuantity: existingCartItem.quantity,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -265,13 +265,13 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -284,7 +284,7 @@ export async function DELETE(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -302,7 +302,7 @@ export async function DELETE(request: NextRequest) {
     console.error('清空购物车失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

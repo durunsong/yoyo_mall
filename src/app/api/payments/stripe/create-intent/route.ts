@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'ORDER_NOT_FOUND', message: '订单不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: 'INVALID_ORDER_STATUS', 
-          message: `订单状态为 ${order.status}，无法支付` 
+          message: `订单状态为 ${order.status}，无法支付`, 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: 'CUSTOMER_CREATION_FAILED', 
-          message: '创建支付客户失败' 
+          message: '创建支付客户失败', 
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -121,9 +121,9 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'PAYMENT_INTENT_FAILED', 
           message: '创建支付意图失败',
-          details: paymentIntentResult.error 
+          details: paymentIntentResult.error, 
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -188,13 +188,13 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

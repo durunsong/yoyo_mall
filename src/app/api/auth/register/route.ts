@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: 'EMAIL_EXISTS', message: '该邮箱已被注册' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         message: '注册成功',
         user,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('注册错误:', error);
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       if (error.message.includes('Unique constraint')) {
         return NextResponse.json(
           { error: 'EMAIL_EXISTS', message: '该邮箱已被注册' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     // 服务器内部错误
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

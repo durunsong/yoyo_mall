@@ -16,7 +16,7 @@ interface ShoppingCartBadgeProps {
 
 export default function ShoppingCartBadge({ 
   count = 0, 
-  onClick 
+  onClick, 
 }: ShoppingCartBadgeProps) {
   return (
     <Button 

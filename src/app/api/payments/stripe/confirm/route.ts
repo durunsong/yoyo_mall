@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (!payment) {
       return NextResponse.json(
         { success: false, error: 'PAYMENT_NOT_FOUND', message: '支付记录不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     if (payment.order.userId !== session.user.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '无权限访问此支付记录' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'STRIPE_ERROR', 
           message: '获取支付状态失败',
-          details: stripeResult.error 
+          details: stripeResult.error, 
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -199,13 +199,13 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

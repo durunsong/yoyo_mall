@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // 获取单个订单详情
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -83,7 +83,7 @@ export async function GET(
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'ORDER_NOT_FOUND', message: '订单不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -106,7 +106,7 @@ export async function GET(
     console.error('获取订单详情失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -114,7 +114,7 @@ export async function GET(
 // 更新订单状态（仅管理员）
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -122,7 +122,7 @@ export async function PUT(
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -135,7 +135,7 @@ export async function PUT(
     if (status && !validStatuses.includes(status)) {
       return NextResponse.json(
         { success: false, error: 'INVALID_STATUS', message: '无效的订单状态' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -176,7 +176,7 @@ export async function PUT(
     console.error('更新订单状态失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

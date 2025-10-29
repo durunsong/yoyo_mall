@@ -119,7 +119,7 @@ export default function OrdersPage() {
     const matchesSearch =
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.items.some((item) =>
-        item.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+        item.product.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;

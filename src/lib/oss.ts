@@ -99,7 +99,7 @@ export class OSSManager {
       quality?: number;
       maxWidth?: number;
       maxHeight?: number;
-    } = {}
+    } = {},
   ): Promise<Buffer> {
     const { quality = 80, maxWidth = 1920, maxHeight = 1080 } = options;
 

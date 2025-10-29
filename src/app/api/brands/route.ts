@@ -36,8 +36,9 @@ export async function GET(request: NextRequest) {
         error: 'INTERNAL_ERROR',
         message: '获取品牌列表失败',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

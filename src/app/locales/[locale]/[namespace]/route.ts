@@ -10,7 +10,7 @@ import { existsSync } from 'fs';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ locale: string; namespace: string }> }
+  { params }: { params: Promise<{ locale: string; namespace: string }> },
 ) {
   try {
     // Next.js 15 要求await params
@@ -43,7 +43,7 @@ export async function GET(
         error: 'Translation file not found', 
         path: filePath,
         locale,
-        namespace
+        namespace,
       }, { status: 404 });
     }
     
@@ -63,7 +63,7 @@ export async function GET(
     console.error('💥 Error loading translation file:', error);
     return NextResponse.json({ 
       error: 'Failed to load translation file', 
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
   }
 }

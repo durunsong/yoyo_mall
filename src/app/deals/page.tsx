@@ -153,7 +153,7 @@ export default function DealsPage() {
                       products
                         .filter(p => p.comparePrice && p.comparePrice > p.price)
                         .reduce((sum, p) => sum + ((p.comparePrice! - p.price) / p.comparePrice!) * 100, 0) /
-                        products.filter(p => p.comparePrice && p.comparePrice > p.price).length
+                        products.filter(p => p.comparePrice && p.comparePrice > p.price).length,
                     )
                   : 0}%
               </div>
@@ -170,7 +170,7 @@ export default function DealsPage() {
                   ? Math.max(
                       ...products
                         .filter(p => p.comparePrice && p.comparePrice > p.price)
-                        .map(p => Math.round(((p.comparePrice! - p.price) / p.comparePrice!) * 100))
+                        .map(p => Math.round(((p.comparePrice! - p.price) / p.comparePrice!) * 100)),
                     )
                   : 0}%
               </div>

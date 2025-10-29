@@ -167,15 +167,15 @@ export async function GET(request: NextRequest) {
           success: false, 
           error: 'VALIDATION_ERROR', 
           message: '请求参数无效',
-          details: error.errors 
+          details: error.errors, 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     if (existingProduct) {
       return NextResponse.json(
         { success: false, error: 'SKU_EXISTS', message: 'SKU已存在' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     if (!category) {
       return NextResponse.json(
         { success: false, error: 'CATEGORY_NOT_FOUND', message: '分类不存在' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
       if (!brand) {
         return NextResponse.json(
           { success: false, error: 'BRAND_NOT_FOUND', message: '品牌不存在' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -277,13 +277,13 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

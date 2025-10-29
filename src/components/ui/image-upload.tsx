@@ -41,7 +41,7 @@ export function ImageUpload({
   maxHeight = 600,
   quality = 80,
   listType = 'picture-card',
-  className = ''
+  className = '',
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
 

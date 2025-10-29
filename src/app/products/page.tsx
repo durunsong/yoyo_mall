@@ -96,7 +96,7 @@ function ProductsPageContent() {
         if (data.success) {
           setCategories([
             { id: 'all', name: t('allCategories') || 'All', slug: 'all' },
-            ...data.data
+            ...data.data,
           ]);
         }
       } catch (error) {

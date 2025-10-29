@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     console.error('获取心愿单失败:', error);
     return NextResponse.json(
       { success: false, error: '获取心愿单失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     if (!productId) {
       return NextResponse.json(
         { success: false, error: '商品ID不能为空' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     if (!product) {
       return NextResponse.json(
         { success: false, error: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       return NextResponse.json(
         { success: false, error: '商品已在心愿单中' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -173,8 +173,9 @@ export async function POST(request: NextRequest) {
     console.error('添加到心愿单失败:', error);
     return NextResponse.json(
       { success: false, error: '添加到心愿单失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

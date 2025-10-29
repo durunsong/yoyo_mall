@@ -1,6 +1,7 @@
 /**
  * 数据分析页面
  * 展示销售趋势、用户增长、热门商品等统计数据
+ * 使用 ECharts 进行数据可视化
  */
 
 'use client';
@@ -43,6 +44,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { LineChart, BarChart, PieChart } from '@/components/admin/charts';
 
 // 数据类型定义
 interface AnalyticsData {
@@ -280,44 +282,69 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* 销售趋势图表（简化版条形图） */}
+        {/* 销售趋势图表 - 使用 ECharts 折线图 */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>订单趋势</CardTitle>
+              <CardDescription>最近{period}天的订单数量变化</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LineChart
+                data={{
+                  xAxis: data.charts.orders.map(item => formatDate(item.date)),
+                  series: [
+                    {
+                      name: '订单数量',
+                      data: data.charts.orders.map(item => item.count),
+                      color: '#3b82f6',
+                    },
+                  ],
+                }}
+                height={300}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>营收趋势</CardTitle>
+              <CardDescription>最近{period}天的营收变化</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LineChart
+                data={{
+                  xAxis: data.charts.orders.map(item => formatDate(item.date)),
+                  series: [
+                    {
+                      name: '营收金额',
+                      data: data.charts.orders.map(item => item.revenue),
+                      color: '#10b981',
+                    },
+                  ],
+                }}
+                height={300}
+                yAxisFormatter={(value) => formatCurrency(value)}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 订单状态分布 - 使用 ECharts 饼图 */}
         <Card>
           <CardHeader>
-            <CardTitle>销售趋势</CardTitle>
-            <CardDescription>最近{period}天的订单和营收趋势</CardDescription>
+            <CardTitle>订单状态分布</CardTitle>
+            <CardDescription>当前各状态订单的占比情况</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* 订单趋势 */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">订单数量</h4>
-                <div className="space-y-2">
-                  {data.charts.orders.slice(-7).map((item, index) => {
-                    const maxCount = Math.max(...data.charts.orders.map(o => o.count));
-                    const width = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                    return (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-20 text-xs text-gray-500">
-                          {formatDate(item.date)}
-                        </div>
-                        <div className="flex-1 relative h-8">
-                          <div
-                            className="absolute left-0 top-0 h-full bg-blue-500 rounded"
-                            style={{ width: `${width}%` }}
-                          />
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white font-medium">
-                            {item.count} 单
-                          </span>
-                        </div>
-                        <div className="w-24 text-xs text-right text-gray-500">
-                          {formatCurrency(item.revenue)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <PieChart
+              data={[
+                { name: '待处理', value: data.overview.pendingOrders },
+                { name: '处理中', value: data.overview.processingOrders },
+                { name: '已完成', value: data.overview.completedOrders },
+              ]}
+              height={350}
+            />
           </CardContent>
         </Card>
 
@@ -400,37 +427,28 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* 用户增长趋势 */}
-      <Card>
-        <CardHeader>
-            <CardTitle>用户增长</CardTitle>
-            <CardDescription>新注册用户趋势</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="space-y-2">
-              {data.charts.users.slice(-7).map((item, index) => {
-                const maxCount = Math.max(...data.charts.users.map(u => u.count));
-                const width = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                return (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="w-20 text-xs text-gray-500">
-                      {formatDate(item.date)}
-                    </div>
-                    <div className="flex-1 relative h-6">
-                      <div
-                        className="absolute left-0 top-0 h-full bg-green-500 rounded"
-                        style={{ width: `${width}%` }}
-                      />
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white font-medium">
-                        {item.count} 用户
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </CardContent>
-      </Card>
+        {/* 用户增长趋势 - 使用 ECharts 柱状图 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>用户增长趋势</CardTitle>
+            <CardDescription>最近{period}天的新注册用户数量</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BarChart
+              data={{
+                xAxis: data.charts.users.map(item => formatDate(item.date)),
+                series: [
+                  {
+                    name: '新增用户',
+                    data: data.charts.users.map(item => item.count),
+                    color: '#8b5cf6',
+                  },
+                ],
+              }}
+              height={300}
+            />
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

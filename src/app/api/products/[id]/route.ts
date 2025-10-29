@@ -27,7 +27,7 @@ const updateProductSchema = z.object({
 // 获取单个商品详情
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -75,7 +75,7 @@ export async function GET(
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'PRODUCT_NOT_FOUND', message: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -108,7 +108,7 @@ export async function GET(
     console.error('获取商品详情失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -116,7 +116,7 @@ export async function GET(
 // 更新商品
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -131,7 +131,7 @@ export async function PUT(
     if (!existingProduct) {
       return NextResponse.json(
         { success: false, error: 'PRODUCT_NOT_FOUND', message: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -144,7 +144,7 @@ export async function PUT(
       if (skuExists) {
         return NextResponse.json(
           { success: false, error: 'SKU_EXISTS', message: 'SKU已存在' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -158,7 +158,7 @@ export async function PUT(
       if (!category) {
         return NextResponse.json(
           { success: false, error: 'CATEGORY_NOT_FOUND', message: '分类不存在' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -172,7 +172,7 @@ export async function PUT(
       if (!brand) {
         return NextResponse.json(
           { success: false, error: 'BRAND_NOT_FOUND', message: '品牌不存在' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -225,13 +225,13 @@ export async function PUT(
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -239,7 +239,7 @@ export async function PUT(
 // 删除商品
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -257,7 +257,7 @@ export async function DELETE(
     if (!existingProduct) {
       return NextResponse.json(
         { success: false, error: 'PRODUCT_NOT_FOUND', message: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -267,9 +267,9 @@ export async function DELETE(
         { 
           success: false, 
           error: 'PRODUCT_HAS_ORDERS', 
-          message: '该商品存在相关订单，无法删除。建议将商品状态设为归档。' 
+          message: '该商品存在相关订单，无法删除。建议将商品状态设为归档。', 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -315,7 +315,7 @@ export async function DELETE(
     console.error('删除商品失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

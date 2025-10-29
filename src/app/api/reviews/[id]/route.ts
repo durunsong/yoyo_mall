@@ -23,7 +23,7 @@ const updateReviewSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证用户登录
@@ -31,7 +31,7 @@ export async function PATCH(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function PATCH(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -56,7 +56,7 @@ export async function PATCH(
     if (!review) {
       return NextResponse.json(
         { success: false, error: '评价不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -64,7 +64,7 @@ export async function PATCH(
     if (review.userId !== user.id && user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '无权限修改该评价' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -114,13 +114,13 @@ export async function PATCH(
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: '更新评价失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -130,7 +130,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证用户登录
@@ -138,7 +138,7 @@ export async function DELETE(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -151,7 +151,7 @@ export async function DELETE(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -163,7 +163,7 @@ export async function DELETE(
     if (!review) {
       return NextResponse.json(
         { success: false, error: '评价不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -171,7 +171,7 @@ export async function DELETE(
     if (review.userId !== user.id && user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '无权限删除该评价' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -193,8 +193,9 @@ export async function DELETE(
     console.error('删除评价失败:', error);
     return NextResponse.json(
       { success: false, error: '删除评价失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

@@ -12,7 +12,7 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger, 
 } from '@/components/ui/dropdown-menu';
 import { useI18n } from '@/hooks/use-i18n';
 
@@ -23,7 +23,7 @@ interface LanguageSwitcherProps {
 
 export default function LanguageSwitcher({ 
   className = '', 
-  mode = 'select' 
+  mode = 'select', 
 }: LanguageSwitcherProps) {
   const { locale, language, languages, changeLocale, toggleLocale } = useI18n();
 

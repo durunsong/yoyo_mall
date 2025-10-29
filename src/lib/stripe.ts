@@ -196,7 +196,7 @@ export async function getOrCreateStripeCustomer({
 export function verifyWebhookSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ) {
   try {
     const event = stripe.webhooks.constructEvent(payload, signature, secret);

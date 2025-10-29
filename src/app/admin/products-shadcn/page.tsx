@@ -98,7 +98,7 @@ export default function ProductsShadcnPage() {
   // 过滤商品
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+    product.brand.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // 处理表单提交
@@ -109,8 +109,8 @@ export default function ProductsShadcnPage() {
         prev.map(p =>
           p.id === editingProduct.id
             ? { ...p, ...data }
-            : p
-        )
+            : p,
+        ),
       );
     } else {
       // 添加新商品

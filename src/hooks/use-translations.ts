@@ -78,7 +78,7 @@ export function useTranslations(namespace: string = 'common') {
       Object.entries(params).forEach(([paramKey, value]) => {
         translation = translation.replace(
           new RegExp(`{{${paramKey}}}`, 'g'),
-          String(value)
+          String(value),
         );
       });
     }
@@ -94,7 +94,7 @@ export function useTranslations(namespace: string = 'common') {
       localStorage.setItem('locale', newLocale);
       setLocale(newLocale);
       window.dispatchEvent(new CustomEvent('localeChange', { detail: newLocale }));
-    }
+    },
   };
 }
 
@@ -123,7 +123,7 @@ const staticTranslations: Record<Locale, Record<string, any>> = {
       about: '关于我们',
       contact: '联系我们',
       profile: '个人中心',
-    }
+    },
   },
   'en-US': {
     common: {
@@ -148,7 +148,7 @@ const staticTranslations: Record<Locale, Record<string, any>> = {
       about: 'About Us',
       contact: 'Contact Us',
       profile: 'Profile',
-    }
+    },
   },
   'ja-JP': {
     common: {
@@ -173,7 +173,7 @@ const staticTranslations: Record<Locale, Record<string, any>> = {
       about: '会社概要',
       contact: 'お問い合わせ',
       profile: 'プロフィール',
-    }
+    },
   },
   'ko-KR': {
     common: {
@@ -198,8 +198,8 @@ const staticTranslations: Record<Locale, Record<string, any>> = {
       about: '회사소개',
       contact: '문의하기',
       profile: '프로필',
-    }
-  }
+    },
+  },
 };
 
 // 备用翻译函数

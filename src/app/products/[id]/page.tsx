@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
   const fetchRelatedProducts = async (categoryId: string, productId: string) => {
     try {
       const response = await fetch(
-        `/api/products?category=${categoryId}&limit=4`
+        `/api/products?category=${categoryId}&limit=4`,
       );
       const data = await response.json();
       if (data.success) {

@@ -53,7 +53,7 @@ export function reportWebVitals(metric: any) {
  */
 export function measurePerformance<T>(
   name: string,
-  fn: () => T
+  fn: () => T,
 ): T {
   const start = performance.now();
   const result = fn();
@@ -72,7 +72,7 @@ export function measurePerformance<T>(
  */
 export async function measureAsyncPerformance<T>(
   name: string,
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
 ): Promise<T> {
   const start = performance.now();
   const result = await fn();
@@ -106,7 +106,7 @@ export function lazyLoadImage(img: HTMLImageElement) {
     },
     {
       rootMargin: '50px',
-    }
+    },
   );
 
   observer.observe(img);
@@ -195,7 +195,7 @@ export class APIPerformanceMonitor {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null;
 
@@ -217,7 +217,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
 
@@ -261,4 +261,5 @@ export function onPageVisibilityChange(callback: (isVisible: boolean) => void) {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
 }
+
 

@@ -64,7 +64,7 @@ export default function CheckoutPage() {
   // 计算总价
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const shipping = 10;
   const tax = subtotal * 0.08;

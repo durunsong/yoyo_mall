@@ -102,7 +102,7 @@ export function useCartApi() {
   const addToCart = useCallback(async (
     productId: string,
     quantity: number = 1,
-    variantId?: string
+    variantId?: string,
   ) => {
     if (!session?.user) {
       toast.warning('请先登录');
@@ -244,7 +244,7 @@ export function useIsInCart(productId: string, variantId?: string) {
   
   return cart.items.some(item => 
     item.productId === productId && 
-    (variantId ? item.variantId === variantId : !item.variantId)
+    (variantId ? item.variantId === variantId : !item.variantId),
   );
 }
 
@@ -256,7 +256,7 @@ export function useCartItemQuantity(productId: string, variantId?: string) {
   
   const item = cart.items.find(item => 
     item.productId === productId && 
-    (variantId ? item.variantId === variantId : !item.variantId)
+    (variantId ? item.variantId === variantId : !item.variantId),
   );
   
   return item?.quantity || 0;

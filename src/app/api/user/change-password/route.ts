@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
         { success: false, error: '请填写所有字段' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (newPassword.length < 6) {
       return NextResponse.json(
         { success: false, error: '新密码长度至少6位' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!user || !user.password) {
       return NextResponse.json(
         { success: false, error: '用户不存在或使用第三方登录' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     if (!isPasswordValid) {
       return NextResponse.json(
         { success: false, error: '当前密码不正确' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     console.error('Error changing password:', error);
     return NextResponse.json(
       { success: false, error: '修改密码失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

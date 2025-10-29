@@ -386,7 +386,7 @@ export default function ProductsPage() {
               <div className="text-2xl font-bold">
                 {
                   products.filter(
-                    (p) => (p.inventory?.quantity || 0) <= 10 && (p.inventory?.quantity || 0) > 0
+                    (p) => (p.inventory?.quantity || 0) <= 10 && (p.inventory?.quantity || 0) > 0,
                   ).length
                 }
               </div>
@@ -501,11 +501,11 @@ export default function ProductsPage() {
                         <TableCell>
                           <div>
                             <div className="font-medium">
-                              ${product.price.toFixed(2)}
+                              ${Number(product.price).toFixed(2)}
                             </div>
                             {product.comparePrice && (
                               <div className="text-sm text-gray-400 line-through">
-                                ${product.comparePrice.toFixed(2)}
+                                ${Number(product.comparePrice).toFixed(2)}
                               </div>
                             )}
                           </div>

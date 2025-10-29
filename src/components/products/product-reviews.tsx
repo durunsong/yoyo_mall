@@ -113,7 +113,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       }
 
       const response = await fetch(
-        `/api/products/${productId}/reviews?${params}`
+        `/api/products/${productId}/reviews?${params}`,
       );
       const data = await response.json();
 
@@ -510,4 +510,5 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     </div>
   );
 }
+
 

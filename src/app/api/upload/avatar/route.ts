@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, message: '未授权访问' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!file) {
       return NextResponse.json(
         { success: false, message: '未找到文件' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (!file.type.startsWith('image/')) {
       return NextResponse.json(
         { success: false, message: '只支持图片文件' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
         { success: false, message: '文件大小不能超过5MB' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { success: false, message: result.error || '上传失败' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error instanceof Error ? error.message : '上传失败，请重试' 
+        message: error instanceof Error ? error.message : '上传失败，请重试', 
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

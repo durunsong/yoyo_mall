@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证用户登录
@@ -20,7 +20,7 @@ export async function DELETE(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function DELETE(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function DELETE(
     if (!wishlistItem) {
       return NextResponse.json(
         { success: false, error: '心愿单项不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -53,7 +53,7 @@ export async function DELETE(
     if (wishlistItem.userId !== user.id) {
       return NextResponse.json(
         { success: false, error: '无权限操作' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -75,8 +75,9 @@ export async function DELETE(
     console.error('从心愿单移除失败:', error);
     return NextResponse.json(
       { success: false, error: '操作失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

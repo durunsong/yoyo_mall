@@ -23,7 +23,7 @@ const createReviewSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const productId = params.id;
@@ -130,7 +130,7 @@ export async function GET(
     console.error('获取评价列表失败:', error);
     return NextResponse.json(
       { success: false, error: '获取评价列表失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -140,7 +140,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const productId = params.id;
@@ -150,7 +150,7 @@ export async function POST(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -163,7 +163,7 @@ export async function POST(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -175,7 +175,7 @@ export async function POST(
     if (!product) {
       return NextResponse.json(
         { success: false, error: '商品不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -192,7 +192,7 @@ export async function POST(
     if (existingReview) {
       return NextResponse.json(
         { success: false, error: '您已经评价过该商品' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -258,14 +258,15 @@ export async function POST(
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: '创建评价失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching addresses:', error);
     return NextResponse.json(
       { success: false, error: '获取地址列表失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (!firstName || !lastName || !addressLine1 || !city || !state || !postalCode || !country) {
       return NextResponse.json(
         { success: false, error: '请填写所有必填字段' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     console.error('Error creating address:', error);
     return NextResponse.json(
       { success: false, error: '添加地址失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

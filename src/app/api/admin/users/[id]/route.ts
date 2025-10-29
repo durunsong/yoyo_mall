@@ -22,7 +22,7 @@ const updateUserSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证管理员权限
@@ -30,7 +30,7 @@ export async function GET(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function GET(
     if (currentUser?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -102,7 +102,7 @@ export async function GET(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -114,7 +114,7 @@ export async function GET(
     console.error('获取用户详情失败:', error);
     return NextResponse.json(
       { success: false, error: '获取用户详情失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -124,7 +124,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证管理员权限
@@ -132,7 +132,7 @@ export async function PATCH(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -144,7 +144,7 @@ export async function PATCH(
     if (currentUser?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -160,7 +160,7 @@ export async function PATCH(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -205,13 +205,13 @@ export async function PATCH(
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: '更新用户信息失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -222,7 +222,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     // 验证管理员权限
@@ -230,7 +230,7 @@ export async function DELETE(
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -242,7 +242,7 @@ export async function DELETE(
     if (currentUser?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -250,7 +250,7 @@ export async function DELETE(
     if (currentUser.id === params.id) {
       return NextResponse.json(
         { success: false, error: '不能删除自己的账户' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -269,7 +269,7 @@ export async function DELETE(
     if (!user) {
       return NextResponse.json(
         { success: false, error: '用户不存在' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -280,7 +280,7 @@ export async function DELETE(
           success: false,
           error: '该用户有关联订单，无法删除。请考虑禁用用户账户。',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -303,8 +303,9 @@ export async function DELETE(
     console.error('删除用户失败:', error);
     return NextResponse.json(
       { success: false, error: '删除用户失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

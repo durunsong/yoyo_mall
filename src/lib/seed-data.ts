@@ -146,7 +146,7 @@ export async function seedDatabase() {
           update: brand,
           create: brand,
         });
-      })
+      }),
     );
     console.log(`创建了 ${createdBrands.length} 个品牌`);
 
@@ -171,7 +171,7 @@ export async function seedDatabase() {
               update: { ...child, parentId: parentCategory.id },
               create: { ...child, parentId: parentCategory.id, isActive: true, description: '' },
             });
-          })
+          }),
         );
       }
     }
@@ -196,7 +196,7 @@ export async function seedDatabase() {
       for (const product of products) {
         // 找到对应的品牌
         const brandName = product.tags.find(tag => 
-          createdBrands.some(brand => brand.name.toLowerCase() === tag.toLowerCase())
+          createdBrands.some(brand => brand.name.toLowerCase() === tag.toLowerCase()),
         );
         const brand = brandName ? createdBrands.find(b => b.name.toLowerCase() === brandName.toLowerCase()) : null;
 

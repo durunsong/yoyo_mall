@@ -11,7 +11,7 @@ import prisma from '@/lib/prisma';
 // 更新地址
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await auth();
@@ -82,7 +82,7 @@ export async function PATCH(
     console.error('Error updating address:', error);
     return NextResponse.json(
       { success: false, error: '更新地址失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -90,7 +90,7 @@ export async function PATCH(
 // 删除地址
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await auth();
@@ -149,7 +149,7 @@ export async function DELETE(
     console.error('Error deleting address:', error);
     return NextResponse.json(
       { success: false, error: '删除地址失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

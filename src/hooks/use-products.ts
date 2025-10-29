@@ -254,7 +254,7 @@ export function useProductSearch() {
         search: searchTerm,
         limit: '20',
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null)
+          Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null),
         ),
       });
 

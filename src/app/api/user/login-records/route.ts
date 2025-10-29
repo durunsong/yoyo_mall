@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: '未授权访问' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     console.error('获取登录记录错误:', error);
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: '未授权访问' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     console.error('创建登录记录错误:', error);
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -142,7 +142,7 @@ function getNestedTranslation(source: Record<string, any>, keyPath: string): unk
 // Hook: 基础语言管理
 export function useI18n() {
   const [locale, setLocale] = useState<Locale>(() => 
-    I18nManager.getInstance().getCurrentLocale()
+    I18nManager.getInstance().getCurrentLocale(),
   );
 
   useEffect(() => {
@@ -204,7 +204,7 @@ export function useTranslations(namespace: string = 'common') {
 
   // 翻译函数
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
-    let resolved = getNestedTranslation(translations, key);
+    const resolved = getNestedTranslation(translations, key);
     // 若未命中，则回退为key
     if (resolved === undefined || resolved === null) return key;
     // 若为对象（非字符串），避免将对象渲染到视图，回退为key
@@ -216,7 +216,7 @@ export function useTranslations(namespace: string = 'common') {
       Object.entries(params).forEach(([paramKey, value]) => {
         translation = translation.replace(
           new RegExp(`{{${paramKey}}}`, 'g'),
-          String(value)
+          String(value),
         );
       });
     }
@@ -263,7 +263,7 @@ export function useStaticTranslations(namespace: string = 'common') {
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     if (loading) return key;
-    let resolved = getNestedTranslation(translations, key);
+    const resolved = getNestedTranslation(translations, key);
     if (resolved === undefined || resolved === null) return key;
     if (typeof resolved !== 'string' && typeof resolved !== 'number') return key;
 
@@ -272,7 +272,7 @@ export function useStaticTranslations(namespace: string = 'common') {
       Object.entries(params).forEach(([paramKey, value]) => {
         translation = translation.replace(
           new RegExp(`{{${paramKey}}}`, 'g'),
-          String(value)
+          String(value),
         );
       });
     }
