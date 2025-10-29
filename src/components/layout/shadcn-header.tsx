@@ -305,11 +305,6 @@ export function ShadcnHeader() {
                           {tCommon('login')}/{tCommon('register')}
                         </Button>
                       )}
-
-                      <Button className="w-full justify-start">
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        {tNav('cart')}
-                      </Button>
                     </div>
                   </div>
                 </SheetContent>
