@@ -43,14 +43,39 @@ class I18nManager {
   }
 
   private initializeLocale() {
+    const normalize = (val?: string | null): Locale | undefined => {
+      if (!val) return undefined;
+      const v = val.toLowerCase().replace('_', '-');
+      if (v.startsWith('en')) return 'en-US';
+      if (v.startsWith('zh')) return 'zh-CN';
+      return undefined;
+    };
+
     if (typeof window !== 'undefined') {
       try {
-        const savedLocale = localStorage.getItem('locale') as Locale;
-        if (savedLocale && LANGUAGES.some(lang => lang.code === savedLocale)) {
-          this.currentLocale = savedLocale;
+        // 1) URL 前缀优先，如 /en-US 或 /en
+        const seg = window.location.pathname.split('/')[1];
+        const fromPath = normalize(seg);
+        if (fromPath) {
+          this.currentLocale = fromPath;
+          localStorage.setItem('locale', fromPath);
+          return;
         }
+
+        // 2) 本地存储
+        const savedLocale = normalize(localStorage.getItem('locale'));
+        if (savedLocale) {
+          this.currentLocale = savedLocale;
+          return;
+        }
+
+        // 3) 浏览器首选语言
+        const fromNavigator = normalize(navigator.language || (navigator as any).userLanguage);
+        this.currentLocale = fromNavigator || 'zh-CN';
+        localStorage.setItem('locale', this.currentLocale);
       } catch (error) {
-        console.warn('Failed to read locale from localStorage:', error);
+        console.warn('Failed to initialize locale, fallback to zh-CN:', error);
+        this.currentLocale = 'zh-CN';
       }
     }
   }
