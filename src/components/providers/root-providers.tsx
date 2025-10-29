@@ -9,6 +9,7 @@ import React from 'react';
 import { AuthProvider } from './auth-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { CartSync } from '@/components/cart/cart-sync';
+import { TawkToWidget } from '@/components/chat/tawk-to-widget';
 
 interface RootProvidersProps {
   children: React.ReactNode;
@@ -21,6 +22,8 @@ export function RootProviders({ children }: RootProvidersProps) {
       <Toaster position="top-right" richColors closeButton />
       {/* 购物车数据同步 */}
       <CartSync />
+      {/* Tawk.to 在线客服 */}
+      <TawkToWidget />
     </AuthProvider>
   );
 }
