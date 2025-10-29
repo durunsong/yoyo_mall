@@ -8,13 +8,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 
 export function FloatingToolbar() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { openModal } = useAuthModal();
   const [cartAnimation, setCartAnimation] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { items } = useCartStore();
@@ -42,11 +46,18 @@ export function FloatingToolbar() {
 
   // 跳转到购物车
   const handleCartClick = () => {
+    // 购物车不需要登录,游客也可以使用
     router.push('/cart');
   };
 
   // 跳转到心愿单
   const handleWishlistClick = () => {
+    // 心愿单需要登录
+    if (!session) {
+      toast.error('请先登录后再查看心愿单');
+      openModal('login');
+      return;
+    }
     router.push('/account/wishlist');
   };
 

@@ -8,6 +8,7 @@
 import React from 'react';
 import { AuthProvider } from './auth-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { CartSync } from '@/components/cart/cart-sync';
 
 interface RootProvidersProps {
   children: React.ReactNode;
@@ -18,6 +19,8 @@ export function RootProviders({ children }: RootProvidersProps) {
     <AuthProvider>
       {children}
       <Toaster position="top-right" richColors closeButton />
+      {/* 购物车数据同步 */}
+      <CartSync />
     </AuthProvider>
   );
 }
