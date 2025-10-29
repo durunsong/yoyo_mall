@@ -15,6 +15,14 @@ import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export function FloatingToolbar() {
   const router = useRouter();
@@ -163,28 +171,98 @@ export function FloatingToolbar() {
         </div>
       </div>
 
-      {/* 购物车按钮 */}
-      <div className="relative w-16">
-        <button
-          onClick={handleCartClick}
-          className={cn(
-            'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
-            cartAnimation && 'animate-bounce'
-          )}
-        >
-          <ShoppingCart className="h-5 w-5 text-gray-700" />
-          {cartCount > 0 && (
-            <span
+      {/* 购物车按钮 - 带悬停卡片 */}
+      <HoverCard openDelay={200}>
+        <HoverCardTrigger asChild>
+          <div className="relative w-16">
+            <button
+              onClick={handleCartClick}
               className={cn(
-                'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white',
-                cartAnimation && 'animate-pulse'
+                'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
+                cartAnimation && 'animate-bounce'
               )}
             >
-              {cartCount > 9 ? '9+' : cartCount}
-            </span>
-          )}
-        </button>
-      </div>
+              <ShoppingCart className="h-5 w-5 text-gray-700" />
+              {cartCount > 0 && (
+                <span
+                  className={cn(
+                    'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white',
+                    cartAnimation && 'animate-pulse'
+                  )}
+                >
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </HoverCardTrigger>
+        <HoverCardContent 
+          side="left" 
+          align="start" 
+          className="w-80 p-0"
+          sideOffset={8}
+        >
+          <div className="p-4">
+            <h3 className="mb-3 text-lg font-semibold">Cart({cartCount})</h3>
+            
+            {items.length === 0 ? (
+              <div className="py-8 text-center">
+                <div className="mb-2 text-4xl">🛒</div>
+                <p className="text-sm text-gray-500">Your cart is currently empty.</p>
+                <p className="mt-1 text-xs text-gray-400">Reward yourself by going shopping.</p>
+              </div>
+            ) : (
+              <>
+                <div className="max-h-64 space-y-3 overflow-y-auto">
+                  {items.slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex gap-3">
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded border">
+                        <Image
+                          src={item.image || '/placeholder.png'}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate text-sm font-medium">{item.name}</p>
+                        <div className="mt-1 flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
+                          <span className="text-sm font-semibold text-blue-600">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {items.length > 3 && (
+                    <p className="text-center text-xs text-gray-400">
+                      +{items.length - 3} more items
+                    </p>
+                  )}
+                </div>
+                
+                <Separator className="my-3" />
+                
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium">Total:</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    ${items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+                  </span>
+                </div>
+                
+                <Button 
+                  className="w-full" 
+                  onClick={handleCartClick}
+                >
+                  Check out cart
+                </Button>
+              </>
+            )}
+          </div>
+        </HoverCardContent>
+      </HoverCard>
 
       {/* 心愿单按钮 */}
       <div className="relative w-16">
@@ -243,4 +321,5 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
