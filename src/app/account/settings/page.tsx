@@ -117,10 +117,21 @@ export default function AccountSettingsPage() {
       const data = await response.json();
 
       if (data.success) {
+        // 立即更新表单显示
         setProfileForm({ ...profileForm, avatar: data.avatarUrl });
-        // 更新 session
-        await updateSession({ avatar: data.avatarUrl });
-        toast.success('头像上传成功');
+        
+        // 强制更新 session - 关键!
+        await updateSession({ 
+          avatar: data.avatarUrl,
+          image: data.avatarUrl, // 同时更新 image 字段
+        });
+        
+        // 短暂延迟后刷新页面,确保 session 已更新
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+        
+        toast.success('头像上传成功,页面即将刷新');
       } else {
         toast.error(data.error || '头像上传失败');
       }
@@ -157,6 +168,11 @@ export default function AccountSettingsPage() {
         // 更新 session
         await updateSession({ name: profileForm.name });
         toast.success('个人资料更新成功');
+        
+        // 短暂延迟后刷新页面,确保昵称在导航栏更新
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } else {
         toast.error(data.error || '更新失败');
       }
@@ -305,6 +321,25 @@ export default function AccountSettingsPage() {
                       <p className="mt-2 text-sm text-gray-500">
                         支持 JPG、PNG 格式，最大 5MB
                       </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* 账户信息展示 */}
+                  <div className="rounded-lg bg-blue-50 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">账户角色</p>
+                        <p className="font-medium text-blue-600">
+                          {(session?.user as any)?.role === 'ADMIN' && '管理员'}
+                          {(session?.user as any)?.role === 'SUPER_ADMIN' && '超级管理员'}
+                          {(session?.user as any)?.role === 'CUSTOMER' && '普通用户'}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
