@@ -121,7 +121,8 @@ export class OSSService {
       region: env.OSS_REGION!,
       bucket: env.OSS_BUCKET!,
       endpoint: env.OSS_ENDPOINT,
-      folder: env.OSS_FOLDER || 'uploads',
+      // 默认不加根前缀，直接使用各业务文件夹，如 avatars/、products/
+      folder: (env.OSS_FOLDER === 'root' || env.OSS_FOLDER === '/' ? '' : (env.OSS_FOLDER || '')),
     };
 
     return this.config;
@@ -154,8 +155,16 @@ export class OSSService {
     const timestamp = Date.now();
     const fileName = `${uuid}_${timestamp}.${ext}`;
 
-    const folderPath = folder ? `${config.folder}/${folder}` : config.folder;
-    return `${folderPath}/${fileName}`;
+    // 规范化前缀，若传入的 folder 属于系统内置业务目录（avatars/products/...），则不强制附加根前缀
+    const builtinFolders = new Set<string>([
+      'avatars', 'products', 'brands', 'categories', 'banners', 'documents', 'temp',
+    ]);
+    const base = (folder && builtinFolders.has(folder)) ? '' : (config.folder || '');
+
+    const segments = [base, folder].filter(Boolean).map(s => String(s).replace(/^\/+|\/+$|\s+/g, ''));
+    const folderPath = segments.join('/');
+
+    return folderPath ? `${folderPath}/${fileName}` : fileName;
   }
 
   /**
@@ -166,7 +175,9 @@ export class OSSService {
     if (config.endpoint) {
       return `https://${config.bucket}.${config.endpoint}/${key}`;
     }
-    return `https://${config.bucket}.oss-${config.region}.aliyuncs.com/${key}`;
+    // 兼容传入的 region 既可能是 "oss-cn-hangzhou" 也可能是 "cn-hangzhou"
+    const region = config.region.startsWith('oss-') ? config.region : `oss-${config.region}`;
+    return `https://${config.bucket}.${region}.aliyuncs.com/${key}`;
   }
 
   /**

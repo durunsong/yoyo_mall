@@ -32,6 +32,11 @@ const nextConfig = {
         hostname: '**.cloudinary.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.aliyuncs.com',
+        pathname: '/**',
+      },
     ],
     // 图片格式优化
     formats: ['image/avif', 'image/webp'],
