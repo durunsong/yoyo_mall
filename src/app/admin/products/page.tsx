@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
   Search,
@@ -52,9 +53,13 @@ import {
   Package,
   AlertCircle,
   Loader2,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { ImageUpload } from '@/components/admin/image-upload';
+import { BulkActions } from '@/components/admin/bulk-actions';
 
 // 商品接口定义
 interface Product {
@@ -103,6 +108,8 @@ export default function ProductsPage() {
     categoryId: '',
     status: 'PUBLISHED' as Product['status'],
   });
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   // 加载商品列表
@@ -165,6 +172,7 @@ export default function ProductsPage() {
       categoryId: '',
       status: 'PUBLISHED',
     });
+    setImageUrls([]);
   };
 
   // 打开添加对话框
@@ -186,6 +194,7 @@ export default function ProductsPage() {
       categoryId: product.categoryId,
       status: product.status,
     });
+    setImageUrls(product.images?.map(img => img.url) || []);
     setIsEditDialogOpen(true);
   };
 
@@ -221,6 +230,11 @@ export default function ProductsPage() {
             : null,
           categoryId: formData.categoryId,
           status: formData.status,
+          images: imageUrls.map((url, index) => ({
+            url,
+            alt: formData.name,
+            sortOrder: index,
+          })),
         }),
       });
 
@@ -307,6 +321,110 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Failed to delete product:', error);
       toast.error('删除商品失败');
+    }
+  };
+
+  // 切换商品选择
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedProducts.length === filteredProducts.length) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(filteredProducts.map((p) => p.id));
+    }
+  };
+
+  // 批量操作处理
+  const handleBulkAction = async (action: string) => {
+    if (selectedProducts.length === 0) {
+      toast.error('请先选择商品');
+      return;
+    }
+
+    try {
+      let successCount = 0;
+      
+      switch (action) {
+        case 'publish':
+          // 批量发布
+          for (const productId of selectedProducts) {
+            const response = await fetch(`/api/products/${productId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'PUBLISHED' }),
+            });
+            if (response.ok) successCount++;
+          }
+          toast.success(`成功发布 ${successCount} 个商品`);
+          break;
+          
+        case 'unpublish':
+          // 批量下架
+          for (const productId of selectedProducts) {
+            const response = await fetch(`/api/products/${productId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'DRAFT' }),
+            });
+            if (response.ok) successCount++;
+          }
+          toast.success(`成功下架 ${successCount} 个商品`);
+          break;
+          
+        case 'delete':
+          // 批量删除
+          if (!confirm(`确定要删除选中的 ${selectedProducts.length} 个商品吗?此操作不可撤销。`)) {
+            return;
+          }
+          for (const productId of selectedProducts) {
+            const response = await fetch(`/api/products/${productId}`, {
+              method: 'DELETE',
+            });
+            if (response.ok) successCount++;
+          }
+          toast.success(`成功删除 ${successCount} 个商品`);
+          break;
+      }
+      
+      setSelectedProducts([]);
+      fetchProducts();
+    } catch (error) {
+      console.error('Bulk action failed:', error);
+      toast.error('批量操作失败');
+    }
+  };
+
+  // 快速切换商品状态
+  const toggleProductStatus = async (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    const newStatus = product.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        toast.success(`商品已${newStatus === 'PUBLISHED' ? '发布' : '下架'}`);
+        fetchProducts();
+      } else {
+        toast.error('状态切换失败');
+      }
+    } catch (error) {
+      console.error('Toggle status failed:', error);
+      toast.error('状态切换失败');
     }
   };
 
@@ -442,6 +560,21 @@ export default function ProductsPage() {
               </Select>
             </div>
 
+            {/* 批量操作 */}
+            {selectedProducts.length > 0 && (
+              <div className="flex items-center gap-2">
+                <BulkActions
+                  selectedIds={selectedProducts}
+                  actions={[
+                    { label: '批量发布', value: 'publish', icon: CheckCircle },
+                    { label: '批量下架', value: 'unpublish', icon: XCircle },
+                    { label: '批量删除', value: 'delete', icon: Trash2, variant: 'destructive' },
+                  ]}
+                  onAction={handleBulkAction}
+                />
+              </div>
+            )}
+
             {/* 商品表格 */}
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -457,6 +590,12 @@ export default function ProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedProducts.length === filteredProducts.length}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>商品</TableHead>
                       <TableHead>SKU</TableHead>
                       <TableHead>价格</TableHead>
@@ -469,6 +608,12 @@ export default function ProductsPage() {
                   <TableBody>
                     {filteredProducts.map((product) => (
                       <TableRow key={product.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedProducts.includes(product.id)}
+                            onCheckedChange={() => toggleProductSelection(product.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="relative h-12 w-12 overflow-hidden rounded border">
@@ -525,9 +670,19 @@ export default function ProductsPage() {
                         </TableCell>
                         <TableCell>{product.category?.name || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeVariant(product.status)}>
-                            {getStatusText(product.status)}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getStatusBadgeVariant(product.status)}>
+                              {getStatusText(product.status)}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant={product.status === 'PUBLISHED' ? 'outline' : 'default'}
+                              onClick={() => toggleProductStatus(product.id)}
+                              className="h-6 px-2 text-xs"
+                            >
+                              {product.status === 'PUBLISHED' ? '下架' : '发布'}
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -659,6 +814,15 @@ export default function ProductsPage() {
                   placeholder="0.00"
                 />
               </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>商品图片</Label>
+              <ImageUpload
+                value={imageUrls}
+                onChange={setImageUrls}
+                maxFiles={5}
+                disabled={submitting}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="status">状态</Label>
@@ -803,6 +967,15 @@ export default function ProductsPage() {
                   placeholder="0.00"
                 />
               </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>商品图片</Label>
+              <ImageUpload
+                value={imageUrls}
+                onChange={setImageUrls}
+                maxFiles={5}
+                disabled={submitting}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">状态</Label>
