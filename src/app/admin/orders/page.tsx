@@ -56,6 +56,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActions } from '@/components/admin/bulk-actions';
+import { ExportButton } from '@/components/admin/export-button';
+import { useRouter } from 'next/navigation';
 
 // 订单接口定义
 interface Order {
@@ -95,11 +99,13 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isUpdateStatusDialogOpen, setIsUpdateStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<Order['status']>('PENDING');
@@ -176,6 +182,76 @@ export default function OrdersPage() {
       toast.error('更新订单状态失败');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // 切换订单选择
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrders((prev) =>
+      prev.includes(orderId)
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedOrders.length === filteredOrders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(filteredOrders.map((o) => o.id));
+    }
+  };
+
+  // 批量操作处理
+  const handleBulkAction = async (action: string) => {
+    if (selectedOrders.length === 0) {
+      toast.error('请先选择订单');
+      return;
+    }
+
+    try {
+      let successCount = 0;
+      let newStatus: Order['status'] | null = null;
+
+      switch (action) {
+        case 'confirm':
+          newStatus = 'CONFIRMED';
+          break;
+        case 'process':
+          newStatus = 'PROCESSING';
+          break;
+        case 'ship':
+          newStatus = 'SHIPPED';
+          break;
+        case 'deliver':
+          newStatus = 'DELIVERED';
+          break;
+        case 'cancel':
+          if (!confirm(`确定要取消选中的 ${selectedOrders.length} 个订单吗?`)) {
+            return;
+          }
+          newStatus = 'CANCELLED';
+          break;
+      }
+
+      if (newStatus) {
+        for (const orderId of selectedOrders) {
+          const response = await fetch(`/api/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          });
+          if (response.ok) successCount++;
+        }
+        toast.success(`成功处理 ${successCount} 个订单`);
+      }
+
+      setSelectedOrders([]);
+      fetchOrders();
+    } catch (error) {
+      console.error('Bulk action failed:', error);
+      toast.error('批量操作失败');
     }
   };
 
@@ -309,6 +385,38 @@ export default function OrdersPage() {
               </Select>
             </div>
 
+            {/* 批量操作和导出 */}
+            {selectedOrders.length > 0 || filteredOrders.length > 0 ? (
+              <div className="mb-4 flex items-center gap-2">
+                {selectedOrders.length > 0 && (
+                  <BulkActions
+                    selectedIds={selectedOrders}
+                    actions={[
+                      { label: '批量确认', value: 'confirm', icon: CheckCircle },
+                      { label: '批量发货', value: 'ship', icon: Truck },
+                      { label: '批量完成', value: 'deliver', icon: CheckCircle },
+                      { label: '批量取消', value: 'cancel', icon: XCircle, variant: 'destructive' },
+                    ]}
+                    onAction={handleBulkAction}
+                  />
+                )}
+                {filteredOrders.length > 0 && (
+                  <ExportButton
+                    data={filteredOrders}
+                    filename="orders"
+                    fields={[
+                      { key: 'orderNumber', label: '订单号' },
+                      { key: 'user.name', label: '客户姓名' },
+                      { key: 'user.email', label: '客户邮箱' },
+                      { key: 'totalAmount', label: '订单金额' },
+                      { key: 'status', label: '订单状态' },
+                      { key: 'createdAt', label: '下单时间' },
+                    ]}
+                  />
+                )}
+              </div>
+            ) : null}
+
             {/* 订单表格 */}
             {loading ? (
               <div className="flex items-center justify-center py-12">
@@ -324,6 +432,12 @@ export default function OrdersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedOrders.length === filteredOrders.length}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>订单号</TableHead>
                       <TableHead>客户</TableHead>
                       <TableHead>金额</TableHead>
@@ -338,6 +452,12 @@ export default function OrdersPage() {
                       const StatusIcon = statusConfig.icon;
                       return (
                         <TableRow key={order.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedOrders.includes(order.id)}
+                              onCheckedChange={() => toggleOrderSelection(order.id)}
+                            />
+                          </TableCell>
                           <TableCell className="font-mono text-sm">
                             {order.orderNumber}
                           </TableCell>
@@ -375,7 +495,7 @@ export default function OrdersPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleViewOrder(order)}
+                                onClick={() => router.push(`/admin/orders/${order.id}`)}
                               >
                                 <Eye className="mr-1 h-4 w-4" />
                                 详情
