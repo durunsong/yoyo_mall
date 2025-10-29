@@ -128,12 +128,8 @@ export default function AccountSettingsPage() {
           },
         });
         
-        // 短暂延迟后刷新页面,确保 session 已更新
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-        
-        toast.success('头像上传成功,页面即将刷新');
+        // 不再强刷页面，依赖 updateSession 触发全局重渲染
+        toast.success('头像上传成功');
       } else {
         toast.error(data.error || '头像上传失败');
       }
@@ -171,10 +167,7 @@ export default function AccountSettingsPage() {
         await updateSession({ user: { name: profileForm.name } });
         toast.success('个人资料更新成功');
         
-        // 短暂延迟后刷新页面,确保昵称在导航栏更新
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // 不再强刷页面，由 next-auth 的 update 触发 Header 与页面重渲染
       } else {
         toast.error(data.error || '更新失败');
       }

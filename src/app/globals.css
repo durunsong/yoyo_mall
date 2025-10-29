@@ -84,6 +84,11 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
+  /* 允许全站文本被选择（组件内若需要可单独使用 select-none 覆盖） */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* 自定义滚动条样式 */
