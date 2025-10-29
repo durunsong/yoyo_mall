@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: '未授权' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     if (user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -75,16 +75,14 @@ export async function GET(request: NextRequest) {
           status: 'DELIVERED',
         },
         _sum: {
-          total: true,
+          totalAmount: true,
         },
       }),
       
-      // 总用户数
+      // 总用户数（排除管理员）
       prisma.user.count({
         where: {
-          role: {
-            in: ['CUSTOMER', 'GUEST'],
-          },
+          role: 'CUSTOMER',
         },
       }),
       
@@ -123,7 +121,7 @@ export async function GET(request: NextRequest) {
         },
         select: {
           id: true,
-          total: true,
+          totalAmount: true,
           status: true,
           createdAt: true,
         },
@@ -138,9 +136,7 @@ export async function GET(request: NextRequest) {
           createdAt: {
             gte: startDate,
           },
-          role: {
-            in: ['CUSTOMER', 'GUEST'],
-          },
+          role: 'CUSTOMER',
         },
         select: {
           id: true,
@@ -175,7 +171,7 @@ export async function GET(request: NextRequest) {
           id: true,
           orderNumber: true,
           status: true,
-          total: true,
+          totalAmount: true,
           createdAt: true,
           user: {
             select: {
@@ -206,7 +202,7 @@ export async function GET(request: NextRequest) {
       if (ordersChart[dateKey]) {
         ordersChart[dateKey].count++;
         if (order.status === 'DELIVERED') {
-          ordersChart[dateKey].revenue += Number(order.total);
+          ordersChart[dateKey].revenue += Number(order.totalAmount);
         }
       }
     });
@@ -288,9 +284,7 @@ export async function GET(request: NextRequest) {
             gte: previousPeriodStart,
             lt: startDate,
           },
-          role: {
-            in: ['CUSTOMER', 'GUEST'],
-          },
+          role: 'CUSTOMER',
         },
       }),
       prisma.order.aggregate({
@@ -302,7 +296,7 @@ export async function GET(request: NextRequest) {
           status: 'DELIVERED',
         },
         _sum: {
-          total: true,
+          totalAmount: true,
         },
       }),
     ]);
@@ -312,7 +306,7 @@ export async function GET(request: NextRequest) {
     const currentPeriodUsers = recentUsers.length;
     const currentPeriodRevenue = recentOrders
       .filter((o) => o.status === 'DELIVERED')
-      .reduce((sum, o) => sum + Number(o.total), 0);
+      .reduce((sum, o) => sum + Number(o.totalAmount), 0);
 
     const ordersGrowth = previousOrders > 0 
       ? ((currentPeriodOrders - previousOrders) / previousOrders) * 100 
@@ -320,8 +314,8 @@ export async function GET(request: NextRequest) {
     const usersGrowth = previousUsers > 0 
       ? ((currentPeriodUsers - previousUsers) / previousUsers) * 100 
       : 0;
-    const revenueGrowth = previousRevenue._sum.total 
-      ? ((currentPeriodRevenue - Number(previousRevenue._sum.total)) / Number(previousRevenue._sum.total)) * 100 
+    const revenueGrowth = previousRevenue._sum.totalAmount 
+      ? ((currentPeriodRevenue - Number(previousRevenue._sum.totalAmount)) / Number(previousRevenue._sum.totalAmount)) * 100 
       : 0;
 
     // 返回统计数据
@@ -330,7 +324,7 @@ export async function GET(request: NextRequest) {
       data: {
         overview: {
           totalOrders,
-          totalRevenue: Number(totalRevenue._sum.total || 0),
+          totalRevenue: Number(totalRevenue._sum.totalAmount || 0),
           totalUsers,
           totalProducts,
           pendingOrders,
@@ -350,10 +344,16 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('获取数据分析失败:', error);
+    const errorMessage = error instanceof Error ? error.message : '获取数据分析失败';
     return NextResponse.json(
-      { success: false, error: '获取数据分析失败' },
-      { status: 500 }
+      { 
+        success: false, 
+        error: '获取数据分析失败',
+        details: errorMessage, 
+      },
+      { status: 500 },
     );
   }
 }
+
 

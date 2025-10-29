@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -41,7 +41,7 @@ export default function CartPage() {
   // 计算总价
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const shipping = subtotal >= 99 ? 0 : 10; // 满99免运费
   const tax = subtotal * 0.08; // 8%税率
@@ -337,7 +337,7 @@ export default function CartPage() {
                     className="w-full"
                     size="lg"
                     onClick={handleCheckout}
-                    disabled={loading || items.length === 0}
+                    disabled={items.length === 0}
                   >
                     {t('proceedToCheckout') || 'Proceed to Checkout'}
                     <ArrowRight className="ml-2 h-5 w-5" />

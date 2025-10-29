@@ -5,11 +5,11 @@ import { prisma } from '@/lib/prisma';
 
 // 订单查询参数验证
 const orderQuerySchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
-  status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']).optional(),
-  sortBy: z.enum(['createdAt', 'totalAmount', 'status']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  page: z.coerce.number().min(1).optional().default(1),
+  limit: z.coerce.number().min(1).max(100).optional().default(20),
+  status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']).optional().nullable(),
+  sortBy: z.enum(['createdAt', 'totalAmount', 'status']).optional().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
 // 创建订单验证
@@ -42,17 +42,17 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const { searchParams } = new URL(request.url);
     const query = orderQuerySchema.parse({
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
-      status: searchParams.get('status'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
+      page: searchParams.get('page') || undefined,
+      limit: searchParams.get('limit') || undefined,
+      status: searchParams.get('status') || undefined,
+      sortBy: searchParams.get('sortBy') || undefined,
+      sortOrder: searchParams.get('sortOrder') || undefined,
     });
 
     // 构建查询条件
@@ -148,15 +148,15 @@ export async function GET(request: NextRequest) {
           success: false, 
           error: 'VALIDATION_ERROR', 
           message: '请求参数无效',
-          details: error.errors 
+          details: error.errors, 
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
     if (!shippingAddress) {
       return NextResponse.json(
         { success: false, error: 'ADDRESS_NOT_FOUND', message: '配送地址不存在' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
       if (!billingAddress) {
         return NextResponse.json(
           { success: false, error: 'BILLING_ADDRESS_NOT_FOUND', message: '账单地址不存在' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       if (!product || product.status !== 'PUBLISHED') {
         return NextResponse.json(
           { success: false, error: 'PRODUCT_NOT_AVAILABLE', message: `商品 ${item.productId} 不可用` },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
       if (Math.abs(actualPrice - item.unitPrice) > 0.01) {
         return NextResponse.json(
           { success: false, error: 'PRICE_MISMATCH', message: '商品价格已变更，请重新确认' },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -256,9 +256,9 @@ export async function POST(request: NextRequest) {
             error: 'INSUFFICIENT_STOCK', 
             message: `商品 ${product.name} 库存不足，仅剩 ${availableQuantity} 件`,
             productName: product.name,
-            availableQuantity 
+            availableQuantity, 
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -306,7 +306,7 @@ export async function POST(request: NextRequest) {
       if (!coupon) {
         return NextResponse.json(
           { success: false, error: 'INVALID_COUPON', message: '优惠券无效或已过期' },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -430,13 +430,13 @@ export async function POST(request: NextRequest) {
           message: '请求数据无效',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
