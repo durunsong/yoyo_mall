@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -20,19 +20,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { Loader2, User, Lock, Bell, Globe } from 'lucide-react';
+import { Loader2, User, Lock, Bell, Globe, Upload, Camera } from 'lucide-react';
 
 export default function AccountSettingsPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // 个人资料表单
   const [profileForm, setProfileForm] = useState({
-    name: session?.user?.name || '',
-    email: session?.user?.email || '',
+    name: '',
+    email: '',
     phone: '',
+    gender: '',
+    country: '',
+    dateOfBirth: '',
+    bio: '',
+    avatar: '',
   });
 
   // 密码表单
@@ -42,11 +51,86 @@ export default function AccountSettingsPage() {
     confirmPassword: '',
   });
 
+  // 获取用户资料
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (status === 'authenticated' && session?.user?.id) {
+        try {
+          const response = await fetch('/api/user/profile');
+          const data = await response.json();
+          
+          if (data && !data.error) {
+            setProfileForm({
+              name: data.name || '',
+              email: data.email || '',
+              phone: data.profile?.phone || '',
+              gender: data.profile?.gender || '',
+              country: data.profile?.location || '',
+              dateOfBirth: data.profile?.dateOfBirth ? new Date(data.profile.dateOfBirth).toISOString().split('T')[0] : '',
+              bio: data.profile?.bio || '',
+              avatar: data.avatar || '',
+            });
+          }
+        } catch (error) {
+          console.error('获取用户资料失败:', error);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [status, session]);
+
   // 如果未登录,跳转到登录页
   if (status === 'unauthenticated') {
     router.push('/');
     return null;
   }
+
+  // 头像上传
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    // 验证文件大小 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过 5MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/user/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setProfileForm({ ...profileForm, avatar: data.avatarUrl });
+        // 更新 session
+        await updateSession({ avatar: data.avatarUrl });
+        toast.success('头像上传成功');
+      } else {
+        toast.error(data.error || '头像上传失败');
+      }
+    } catch (error) {
+      console.error('头像上传错误:', error);
+      toast.error('头像上传失败');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   // 更新个人资料
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -55,14 +139,23 @@ export default function AccountSettingsPage() {
 
     try {
       const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileForm),
+        body: JSON.stringify({
+          name: profileForm.name,
+          phone: profileForm.phone,
+          gender: profileForm.gender,
+          location: profileForm.country,
+          dateOfBirth: profileForm.dateOfBirth,
+          bio: profileForm.bio,
+        }),
       });
 
       const data = await response.json();
 
       if (data.success) {
+        // 更新 session
+        await updateSession({ name: profileForm.name });
         toast.success('个人资料更新成功');
       } else {
         toast.error(data.error || '更新失败');
@@ -167,43 +260,156 @@ export default function AccountSettingsPage() {
                 <CardDescription>更新您的个人信息</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">姓名</Label>
-                    <Input
-                      id="name"
-                      value={profileForm.name}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, name: e.target.value })
-                      }
-                      placeholder="请输入姓名"
-                    />
+                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  {/* 头像上传 */}
+                  <div className="flex items-center gap-6">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={profileForm.avatar} alt={profileForm.name} />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-2xl text-white">
+                        {profileForm.name?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Label htmlFor="avatar-upload" className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingAvatar}
+                            asChild
+                          >
+                            <span>
+                              {uploadingAvatar ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  上传中...
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="mr-2 h-4 w-4" />
+                                  更换头像
+                                </>
+                              )}
+                            </span>
+                          </Button>
+                        </div>
+                      </Label>
+                      <Input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                        disabled={uploadingAvatar}
+                      />
+                      <p className="mt-2 text-sm text-gray-500">
+                        支持 JPG、PNG 格式，最大 5MB
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">邮箱</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileForm.email}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, email: e.target.value })
-                      }
-                      placeholder="请输入邮箱"
-                    />
+                  <Separator />
+
+                  {/* 基本信息 */}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">昵称 *</Label>
+                      <Input
+                        id="name"
+                        value={profileForm.name}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, name: e.target.value })
+                        }
+                        placeholder="请输入昵称"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">邮箱</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profileForm.email}
+                        disabled
+                        className="bg-gray-50"
+                      />
+                      <p className="text-xs text-gray-500">邮箱不可修改</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">手机号</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={profileForm.phone}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, phone: e.target.value })
+                        }
+                        placeholder="请输入手机号"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">性别</Label>
+                      <Select
+                        value={profileForm.gender}
+                        onValueChange={(value) =>
+                          setProfileForm({ ...profileForm, gender: value })
+                        }
+                      >
+                        <SelectTrigger id="gender">
+                          <SelectValue placeholder="选择性别" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">男</SelectItem>
+                          <SelectItem value="FEMALE">女</SelectItem>
+                          <SelectItem value="OTHER">其他</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="country">国家/地区</Label>
+                      <Input
+                        id="country"
+                        value={profileForm.country}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, country: e.target.value })
+                        }
+                        placeholder="例如: 中国"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dateOfBirth">生日</Label>
+                      <Input
+                        id="dateOfBirth"
+                        type="date"
+                        value={profileForm.dateOfBirth}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, dateOfBirth: e.target.value })
+                        }
+                      />
+                    </div>
                   </div>
 
+                  {/* 个人简介 */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone">手机号</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={profileForm.phone}
+                    <Label htmlFor="bio">个人简介</Label>
+                    <Textarea
+                      id="bio"
+                      value={profileForm.bio}
                       onChange={(e) =>
-                        setProfileForm({ ...profileForm, phone: e.target.value })
+                        setProfileForm({ ...profileForm, bio: e.target.value })
                       }
-                      placeholder="请输入手机号"
+                      placeholder="介绍一下自己..."
+                      rows={4}
+                      maxLength={500}
                     />
+                    <p className="text-xs text-gray-500">
+                      {profileForm.bio.length}/500 字符
+                    </p>
                   </div>
 
                   <Separator />

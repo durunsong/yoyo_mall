@@ -9,6 +9,7 @@ const updateProfileSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
   dateOfBirth: z.string().optional(),
   bio: z.string().max(500, '个人简介不能超过500个字符').optional(),
   location: z.string().max(100, '位置信息不能超过100个字符').optional(),
@@ -41,7 +42,10 @@ export async function GET(request: NextRequest) {
             firstName: true,
             lastName: true,
             phone: true,
+            gender: true,
             dateOfBirth: true,
+            bio: true,
+            location: true,
             locale: true,
             timezone: true,
           },
@@ -91,15 +95,15 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // 更新或创建用户详细信息（暂时只更新现有字段）
+    // 更新或创建用户详细信息
     const profileData = {
       firstName: validatedData.firstName || '',
       lastName: validatedData.lastName || '',
       phone: validatedData.phone || '',
+      gender: validatedData.gender || null,
       dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
-      // bio 和 location 字段需要数据库迁移后才能使用
-      // bio: validatedData.bio || '',
-      // location: validatedData.location || '',
+      bio: validatedData.bio || '',
+      location: validatedData.location || '',
     };
 
     await prisma.userProfile.upsert({
