@@ -55,10 +55,17 @@ export const useCartStore = create<CartState>()(
       // 添加商品到购物车
       addItem: newItem =>
         set(state => {
+          // 确保price是数字类型
+          const normalizedItem = {
+            ...newItem,
+            price: Number(newItem.price || 0),
+            quantity: Number(newItem.quantity || 1),
+          };
+
           const existingItem = state.items.find(
             item =>
-              item.productId === newItem.productId &&
-              item.variantId === newItem.variantId,
+              item.productId === normalizedItem.productId &&
+              item.variantId === normalizedItem.variantId,
           );
 
           if (existingItem) {
@@ -66,14 +73,14 @@ export const useCartStore = create<CartState>()(
             return {
               items: state.items.map(item =>
                 item.id === existingItem.id
-                  ? { ...item, quantity: item.quantity + newItem.quantity }
+                  ? { ...item, quantity: item.quantity + normalizedItem.quantity }
                   : item,
               ),
             };
           } else {
             // 添加新商品
             return {
-              items: [...state.items, { ...newItem, id: generateId() }],
+              items: [...state.items, { ...normalizedItem, id: generateId() }],
             };
           }
         }),
@@ -131,6 +138,17 @@ export const useCartStore = create<CartState>()(
       partialize: state => ({
         items: state.items,
       }),
+      // 从localStorage恢复时，确保数据格式正确
+      onRehydrateStorage: () => (state) => {
+        if (state?.items) {
+          // 确保所有price和quantity都是数字类型
+          state.items = state.items.map(item => ({
+            ...item,
+            price: Number(item.price || 0),
+            quantity: Number(item.quantity || 1),
+          }));
+        }
+      },
     },
   ),
 );

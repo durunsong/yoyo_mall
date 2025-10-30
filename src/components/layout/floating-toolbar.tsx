@@ -253,10 +253,10 @@ export function FloatingToolbar() {
                           </div>
                           <div className="text-right">
                             <div className="text-xs text-gray-500 line-through">
-                              ${item.price.toFixed(2)}
+                              ${Number(item.price || 0).toFixed(2)}
                             </div>
                             <div className="text-sm font-bold text-blue-600">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              ${(Number(item.price || 0) * item.quantity).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -280,7 +280,7 @@ export function FloatingToolbar() {
                   <div className="flex items-center justify-between">
                     <span className="text-base font-semibold text-gray-800">总计:</span>
                     <span className="text-xl font-bold text-blue-600">
-                      ${items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+                      ${items.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -364,6 +364,7 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
 
 

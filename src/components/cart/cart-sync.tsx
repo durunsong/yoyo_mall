@@ -34,15 +34,15 @@ export function CartSync() {
           // 先清空本地购物车
           clearCart();
 
-          // 从服务端恢复
+          // 从服务端恢复，确保数据类型正确
           data.data.forEach((item: any) => {
             if (item.product) {
               addItem({
                 productId: item.product.id,
                 name: item.product.name,
-                price: item.product.price,
+                price: Number(item.product.price || 0), // 确保是数字类型
                 image: item.product.images?.[0]?.url || '',
-                quantity: item.quantity,
+                quantity: Number(item.quantity || 1), // 确保是数字类型
                 variantId: item.variantId || null,
               });
             }
