@@ -28,6 +28,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 验证所有商品是否在数据库中存在
+    const productIds = items.map((item: any) => item.id || item.productId);
+    const existingProducts = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const existingProductIds = new Set(existingProducts.map(p => p.id));
+    
+    // 过滤出存在的商品
+    const validItems = items.filter((item: any) => {
+      const productId = item.id || item.productId;
+      const isValid = existingProductIds.has(productId);
+      if (!isValid) {
+        console.warn(`⚠️ 商品 ${productId} 不存在,跳过同步`);
+      }
+      return isValid;
+    });
+
+    if (validItems.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: '没有有效的商品需要同步',
+      });
+    }
+
     // 获取用户现有的购物车商品
     const existingCartItems = await prisma.cartItem.findMany({
       where: {
@@ -35,10 +67,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 如果用户购物车为空,直接创建所有商品
+    // 如果用户购物车为空,直接创建所有有效商品
     if (existingCartItems.length === 0) {
       await prisma.cartItem.createMany({
-        data: items.map((item: any) => ({
+        data: validItems.map((item: any) => ({
           userId: session.user.id,
           productId: item.id || item.productId,
           variantId: item.variantId || null,
@@ -48,12 +80,12 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: '购物车数据已同步',
+        message: `购物车数据已同步 (${validItems.length}件商品)`,
       });
     }
 
     // 合并本地购物车和服务器购物车
-    for (const localItem of items) {
+    for (const localItem of validItems) {
       const productId = localItem.id || localItem.productId;
       const variantId = localItem.variantId || null;
       

@@ -287,14 +287,14 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(0, 4).map((product) => (
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {products.slice(0, 5).map((product) => (
                 <ProductCard 
                   key={product.id} 
                   product={product} 
@@ -331,14 +331,14 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(4, 8).map((product) => (
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {products.slice(4, 9).map((product) => (
                 <ProductCard 
                   key={product.id} 
                   product={product} 

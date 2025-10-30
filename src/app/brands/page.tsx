@@ -71,7 +71,7 @@ export default function BrandsPage() {
 
         {/* 品牌网格 */}
         {brands.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {brands.map((brand) => (
               <Link key={brand.id} href={`/products?brand=${brand.id}`}>
                 <Card className="group transition-shadow hover:shadow-lg">

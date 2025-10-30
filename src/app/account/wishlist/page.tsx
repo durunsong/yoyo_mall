@@ -209,7 +209,7 @@ export default function WishlistPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {wishlistItems.map((item) => {
             const inStock = item.product.inventory && item.product.inventory.quantity > 0;
             const discount = getDiscount(item.product.price, item.product.comparePrice);
