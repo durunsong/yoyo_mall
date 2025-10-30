@@ -74,7 +74,12 @@ export function UserNotifications() {
     const saved = localStorage.getItem('user-notifications');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // 将字符串日期转换为Date对象
+        return parsed.map((n: any) => ({
+          ...n,
+          createdAt: new Date(n.createdAt),
+        }));
       } catch {
         return [];
       }
@@ -94,7 +99,13 @@ export function UserNotifications() {
       const saved = localStorage.getItem('user-notifications');
       if (saved) {
         try {
-          setNotifications(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          // 将字符串日期转换为Date对象
+          const withDates = parsed.map((n: any) => ({
+            ...n,
+            createdAt: new Date(n.createdAt),
+          }));
+          setNotifications(withDates);
           return;
         } catch {
           // 解析失败，使用默认数据
@@ -174,9 +185,11 @@ export function UserNotifications() {
   };
 
   // 格式化时间
-  const formatTime = (date: Date) => {
+  const formatTime = (date: Date | string) => {
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    // 确保date是Date对象
+    const dateObj = date instanceof Date ? date : new Date(date);
+    const diff = now.getTime() - dateObj.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -184,7 +197,7 @@ export function UserNotifications() {
     if (minutes < 60) return `${minutes}分钟前`;
     if (hours < 24) return `${hours}小时前`;
     if (days < 7) return `${days}天前`;
-    return date.toLocaleDateString();
+    return dateObj.toLocaleDateString();
   };
 
   // 未登录时不显示
