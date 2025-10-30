@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -15,7 +16,15 @@ declare global {
 }
 
 export function TawkToWidget() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    // 在后台管理页面不加载客服组件
+    if (pathname?.startsWith('/admin')) {
+      console.log('后台页面,跳过客服加载');
+      return;
+    }
+
     // 从环境变量获取配置
     const widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID;
     const apiKey = process.env.NEXT_PUBLIC_TAWK_API_KEY;
@@ -142,4 +151,6 @@ export const TawkToAPI = {
     }
   },
 };
+
+
 

@@ -41,6 +41,9 @@ export function FloatingToolbar() {
   
   // 心愿单数量
   const wishlistCount = wishlistItems.length;
+  
+  // 上一次的心愿单数量
+  const [prevWishlistCount, setPrevWishlistCount] = useState(wishlistCount);
 
   // 客户端挂载后才初始化时间
   useEffect(() => {
@@ -80,12 +83,18 @@ export function FloatingToolbar() {
 
   // 监听心愿单变化触发动画
   useEffect(() => {
-    if (wishlistCount > 0) {
+    if (wishlistCount > prevWishlistCount) {
+      // 只有增加时才触发动画
       setWishlistAnimation(true);
-      const timer = setTimeout(() => setWishlistAnimation(false), 600);
+      const timer = setTimeout(() => {
+        setWishlistAnimation(false);
+        setPrevWishlistCount(wishlistCount);
+      }, 600);
       return () => clearTimeout(timer);
+    } else {
+      setPrevWishlistCount(wishlistCount);
     }
-  }, [wishlistCount]);
+  }, [wishlistCount, prevWishlistCount]);
 
   // 跳转到购物车
   const handleCartClick = () => {
@@ -264,25 +273,35 @@ export function FloatingToolbar() {
         </HoverCardContent>
       </HoverCard>
 
-      {/* 心愿单按钮 */}
+      {/* 心愿单按钮 - 带动画效果 */}
       <div className="relative w-16">
         <button
           onClick={handleWishlistClick}
           className={cn(
-            'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
+            'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-pink-50',
             wishlistAnimation && 'animate-bounce'
           )}
         >
-          <Heart className="h-5 w-5 text-gray-700" />
+          <Heart 
+            className={cn(
+              'h-5 w-5 transition-all duration-300',
+              wishlistCount > 0 ? 'text-red-500 fill-red-500' : 'text-gray-700',
+              wishlistAnimation && 'scale-125'
+            )}
+          />
           {wishlistCount > 0 && (
             <span
               className={cn(
-                'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white',
-                wishlistAnimation && 'animate-pulse'
+                'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-[10px] font-bold text-white shadow-lg',
+                wishlistAnimation && 'animate-ping'
               )}
             >
               {wishlistCount > 9 ? '9+' : wishlistCount}
             </span>
+          )}
+          {/* 添加成功的涟漪效果 */}
+          {wishlistAnimation && (
+            <span className="absolute inset-0 rounded-full bg-red-500 opacity-75 animate-ping" />
           )}
         </button>
       </div>
@@ -321,5 +340,6 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
 

@@ -28,31 +28,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取用户现有的购物车
-    const existingCart = await prisma.cart.findUnique({
+    // 获取用户现有的购物车商品
+    const existingCartItems = await prisma.cartItem.findMany({
       where: {
         userId: session.user.id,
       },
-      include: {
-        items: true,
-      },
     });
 
-    // 如果用户没有购物车,创建一个
-    if (!existingCart) {
-      await prisma.cart.create({
-        data: {
+    // 如果用户购物车为空,直接创建所有商品
+    if (existingCartItems.length === 0) {
+      await prisma.cartItem.createMany({
+        data: items.map((item: any) => ({
           userId: session.user.id,
-          items: {
-            create: items.map((item: any) => ({
-              productId: item.productId,
-              variantId: item.variantId,
-              quantity: item.quantity,
-              unitPrice: item.price,
-              totalPrice: item.price * item.quantity,
-            })),
-          },
-        },
+          productId: item.id || item.productId,
+          variantId: item.variantId || null,
+          quantity: item.quantity,
+        })),
       });
 
       return NextResponse.json({
@@ -63,10 +54,13 @@ export async function POST(request: NextRequest) {
 
     // 合并本地购物车和服务器购物车
     for (const localItem of items) {
-      const existingItem = existingCart.items.find(
+      const productId = localItem.id || localItem.productId;
+      const variantId = localItem.variantId || null;
+      
+      const existingItem = existingCartItems.find(
         (item) =>
-          item.productId === localItem.productId &&
-          item.variantId === localItem.variantId,
+          item.productId === productId &&
+          item.variantId === variantId,
       );
 
       if (existingItem) {
@@ -77,19 +71,16 @@ export async function POST(request: NextRequest) {
           },
           data: {
             quantity: existingItem.quantity + localItem.quantity,
-            totalPrice: (existingItem.quantity + localItem.quantity) * localItem.price,
           },
         });
       } else {
         // 如果商品不存在,添加新商品
         await prisma.cartItem.create({
           data: {
-            cartId: existingCart.id,
-            productId: localItem.productId,
-            variantId: localItem.variantId,
+            userId: session.user.id,
+            productId: productId,
+            variantId: variantId,
             quantity: localItem.quantity,
-            unitPrice: localItem.price,
-            totalPrice: localItem.price * localItem.quantity,
           },
         });
       }
@@ -111,4 +102,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
 

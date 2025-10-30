@@ -42,6 +42,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import ProductSearch from '@/components/products/product-search';
 import LanguageSwitcher from '@/components/ui/language-switcher';
+import { UserNotifications } from '@/components/layout/user-notifications';
 
 // 导航菜单配置（去掉 Home，Logo 已可回到首页）
 const getNavItems = (t: (key: string) => string) => [
@@ -154,13 +155,8 @@ export function ShadcnHeader() {
               {/* 语言切换 */}
               <LanguageSwitcher mode="select" />
 
-              {/* 通知 */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-4 w-4" />
-                <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs">
-                  3
-                </Badge>
-              </Button>
+              {/* 通知 - 仅登录用户显示 */}
+              <UserNotifications />
 
               {/* 用户菜单 */}
               {session?.user ? (

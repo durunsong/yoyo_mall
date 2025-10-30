@@ -24,12 +24,14 @@ import { useProducts } from '@/hooks/use-products';
 import ProductCard from '@/components/products/product-card';
 import { Pagination } from '@/components/ui/pagination';
 import { useCartStore } from '@/store/cart-store';
+import { useWishlistStore } from '@/store/wishlist-store';
 import { toast } from 'sonner';
 
 function ProductsPageContent() {
   const { t } = useStaticTranslations('product');
   const { t: tCommon } = useStaticTranslations('common');
   const searchParams = useSearchParams();
+  const wishlistStore = useWishlistStore();
   
   // 从URL参数初始化搜索关键词
   const initialSearch = searchParams.get('search') || '';
@@ -68,10 +70,20 @@ function ProductsPageContent() {
       
       const data = await response.json();
       
-      if (data.success) {
-        toast.success('已添加到心愿单');
+      if (response.ok && data.success) {
+        // 找到对应的商品添加到本地store
+        const product = products.find(p => p.id === productId);
+        if (product) {
+          wishlistStore.addItem({
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.images?.[0]?.url || product.image || '/placeholder.png',
+          });
+        }
+        toast.success('✨ 已添加到心愿单');
       } else {
-        toast.error(data.message || '添加失败');
+        toast.error(data.error || data.message || '添加失败');
       }
     } catch (error) {
       console.error('Add to wishlist failed:', error);
@@ -196,19 +208,19 @@ function ProductsPageContent() {
         </div>
       )}
 
-      {/* 加载状态 */}
+      {/* 加载状态 - 5列骨架屏 */}
       {loading && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(12)].map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {[...Array(15)].map((_, i) => (
             <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
           ))}
         </div>
       )}
 
-      {/* 商品网格 */}
+      {/* 商品网格 - 5列布局 */}
       {!loading && products.length > 0 && (
         <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (
               <ProductCard 
                 key={product.id} 

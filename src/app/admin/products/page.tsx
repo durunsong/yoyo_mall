@@ -97,6 +97,9 @@ export default function ProductsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // 删除确认对话框
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false); // 批量删除确认对话框
+  const [productToDelete, setProductToDelete] = useState<string | null>(null); // 待删除的商品ID
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -260,6 +263,24 @@ export default function ProductsPage() {
   const handleUpdateProduct = async () => {
     if (!selectedProduct) return;
 
+    // 验证必填字段
+    if (!formData.name?.trim()) {
+      toast.error('请输入商品名称');
+      return;
+    }
+    if (!formData.sku?.trim()) {
+      toast.error('请输入SKU');
+      return;
+    }
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast.error('请输入有效的价格');
+      return;
+    }
+    if (!formData.categoryId) {
+      toast.error('请选择分类');
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -268,8 +289,8 @@ export default function ProductsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          shortDesc: formData.shortDesc,
-          description: formData.description,
+          shortDesc: formData.shortDesc || '',
+          description: formData.description || '',
           sku: formData.sku,
           price: parseFloat(formData.price),
           comparePrice: formData.comparePrice
@@ -282,31 +303,46 @@ export default function ProductsPage() {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success || response.ok) {
         toast.success('商品更新成功');
         setIsEditDialogOpen(false);
         setSelectedProduct(null);
         resetForm();
         fetchProducts();
       } else {
-        toast.error(data.error || '更新商品失败');
+        // 详细显示错误信息
+        if (data.details && Array.isArray(data.details)) {
+          // 显示验证错误详情
+          const errorMessages = data.details.map((err: any) => 
+            `${err.path}: ${err.message}`
+          ).join('\n');
+          toast.error(`更新失败:\n${errorMessages}`);
+          console.error('验证错误详情:', data.details);
+        } else {
+          toast.error(data.message || data.error || '更新商品失败');
+        }
+        console.error('Update error:', data);
       }
     } catch (error) {
       console.error('Failed to update product:', error);
-      toast.error('更新商品失败');
+      toast.error(error instanceof Error ? error.message : '更新商品失败');
     } finally {
       setSubmitting(false);
     }
   };
 
+  // 打开删除确认对话框
+  const openDeleteDialog = (id: string) => {
+    setProductToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
   // 删除商品
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm('确定要删除这个商品吗?此操作不可撤销。')) {
-      return;
-    }
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
 
     try {
-      const response = await fetch(`/api/products/${id}`, {
+      const response = await fetch(`/api/products/${productToDelete}`, {
         method: 'DELETE',
       });
 
@@ -314,9 +350,11 @@ export default function ProductsPage() {
 
       if (data.success) {
         toast.success('商品删除成功');
+        setIsDeleteDialogOpen(false);
+        setProductToDelete(null);
         fetchProducts();
       } else {
-        toast.error(data.error || '删除商品失败');
+        toast.error(data.message || data.error || '删除商品失败');
       }
     } catch (error) {
       console.error('Failed to delete product:', error);
@@ -380,18 +418,9 @@ export default function ProductsPage() {
           break;
           
         case 'delete':
-          // 批量删除
-          if (!confirm(`确定要删除选中的 ${selectedProducts.length} 个商品吗?此操作不可撤销。`)) {
-            return;
-          }
-          for (const productId of selectedProducts) {
-            const response = await fetch(`/api/products/${productId}`, {
-              method: 'DELETE',
-            });
-            if (response.ok) successCount++;
-          }
-          toast.success(`成功删除 ${successCount} 个商品`);
-          break;
+          // 批量删除 - 打开确认对话框
+          setIsBulkDeleteDialogOpen(true);
+          return;
       }
       
       setSelectedProducts([]);
@@ -399,6 +428,26 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Bulk action failed:', error);
       toast.error('批量操作失败');
+    }
+  };
+
+  // 批量删除商品
+  const handleBulkDeleteProducts = async () => {
+    try {
+      let successCount = 0;
+      for (const productId of selectedProducts) {
+        const response = await fetch(`/api/products/${productId}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) successCount++;
+      }
+      toast.success(`成功删除 ${successCount} 个商品`);
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedProducts([]);
+      fetchProducts();
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      toast.error('批量删除失败');
     }
   };
 
@@ -696,7 +745,7 @@ export default function ProductsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteProduct(product.id)}
+                              onClick={() => openDeleteDialog(product.id)}
                             >
                               <Trash2 className="h-4 w-4 text-red-600" />
                             </Button>
@@ -1013,6 +1062,79 @@ export default function ProductsPage() {
               ) : (
                 '更新商品'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              确认删除
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              您确定要删除这个商品吗?
+              <br />
+              <span className="text-red-500 font-medium">
+                此操作不可撤销,商品的所有相关数据将被永久删除。
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setProductToDelete(null);
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteProduct}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量删除确认对话框 */}
+      <Dialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              批量删除确认
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              您确定要删除选中的 <span className="font-bold text-red-600">{selectedProducts.length}</span> 个商品吗?
+              <br />
+              <span className="text-red-500 font-medium mt-2 block">
+                此操作不可撤销,所有选中商品的相关数据将被永久删除。
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkDeleteDialogOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDeleteProducts}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              确认删除 ({selectedProducts.length})
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -59,7 +59,8 @@ export function ImageUpload({
       // 上传所有文件
       const uploadPromises = validFiles.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('files', file);
+        formData.append('folder', 'products');
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -69,15 +70,22 @@ export function ImageUpload({
         const data = await response.json();
 
         if (!data.success) {
-          throw new Error(data.error || '上传失败');
+          throw new Error(data.error || data.message || '上传失败');
         }
 
-        return data.data.url;
+        // 兼容不同的响应格式
+        const url = data.urls?.[0] || data.data?.[0]?.url || '';
+        if (!url || !url.trim()) {
+          throw new Error('未返回有效的图片URL');
+        }
+        return url;
       });
 
       const urls = await Promise.all(uploadPromises);
-      onChange([...value, ...urls]);
-      toast.success(`成功上传 ${urls.length} 张图片`);
+      // 过滤掉空字符串
+      const validUrls = urls.filter(url => url && url.trim());
+      onChange([...value, ...validUrls]);
+      toast.success(`成功上传 ${validUrls.length} 张图片`);
     } catch (error) {
       console.error('Upload failed:', error);
       toast.error('图片上传失败');
@@ -107,27 +115,33 @@ export function ImageUpload({
       {/* 图片预览网格 */}
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
-          {value.map((url, index) => (
+          {value.filter(url => url && url.trim()).map((url, index) => (
             <div
               key={index}
-              className="relative aspect-square rounded-lg border overflow-hidden group"
+              className="relative aspect-square rounded-lg border overflow-hidden group bg-gray-50"
             >
               <Image
                 src={url}
                 alt={`Upload ${index + 1}`}
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={(e) => {
+                  // 图片加载失败时显示占位符
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
               />
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
                 disabled={disabled || uploading}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 hover:bg-red-600 shadow-lg"
               >
                 <X className="h-4 w-4" />
               </button>
               {index === 0 && (
-                <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+                <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-md">
                   主图
                 </div>
               )}
@@ -189,4 +203,6 @@ export function ImageUpload({
     </div>
   );
 }
+
+
 

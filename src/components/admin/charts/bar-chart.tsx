@@ -143,3 +143,5 @@ export function BarChart({
   return <div ref={chartRef} style={{ width: '100%', height: `${height}px` }} />;
 }
 
+
+

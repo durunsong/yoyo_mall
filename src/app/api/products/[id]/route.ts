@@ -113,15 +113,52 @@ export async function GET(
   }
 }
 
-// 更新商品
+// 更新商品 - 支持PUT和PATCH方法
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  return updateProduct(request, params);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  return updateProduct(request, params);
+}
+
+// 商品更新的核心逻辑
+async function updateProduct(
+  request: NextRequest,
+  params: Promise<{ id: string }>,
+) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const data = updateProductSchema.parse(body);
+    
+    // 打印请求体，用于调试
+    console.log('更新商品请求体:', JSON.stringify(body, null, 2));
+    
+    // 验证数据
+    const validationResult = updateProductSchema.safeParse(body);
+    if (!validationResult.success) {
+      console.error('验证失败:', validationResult.error);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'VALIDATION_ERROR', 
+          message: '数据验证失败',
+          details: validationResult.error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message
+          }))
+        },
+        { status: 400 },
+      );
+    }
+    
+    const data = validationResult.data;
 
     // 检查商品是否存在
     const existingProduct = await prisma.product.findUnique({

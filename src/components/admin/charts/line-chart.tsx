@@ -132,3 +132,5 @@ export function LineChart({
   return <div ref={chartRef} style={{ width: '100%', height: `${height}px` }} />;
 }
 
+
+

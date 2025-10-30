@@ -173,3 +173,5 @@ export type ColorScale = keyof typeof designSystem.colors;
 export type SpacingKey = keyof typeof designSystem.spacing;
 export type FontSize = keyof typeof designSystem.typography.fontSize;
 
+
+
