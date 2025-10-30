@@ -41,7 +41,7 @@ export default function HomePage() {
       quantity: 1,
       price: product.price,
       name: product.name,
-      image: product.image || '/placeholder.png',
+      image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
     });
     
     // 如果用户已登录，同步到服务器

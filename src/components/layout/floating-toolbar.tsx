@@ -33,20 +33,24 @@ export function FloatingToolbar() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null); // 初始为 null
   const [isClient, setIsClient] = useState(false); // 客户端标记
   const [showScrollTop, setShowScrollTop] = useState(false); // 是否显示返回顶部
+  const [mounted, setMounted] = useState(false); // 确保客户端已挂载
+  
+  // 使用Zustand store - 确保在客户端正确读取
   const { items } = useCartStore();
   const wishlistItems = useWishlistStore(state => state.items);
 
-  // 购物车数量
-  const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+  // 购物车数量 - 只在客户端渲染后计算
+  const cartCount = mounted ? items.reduce((total, item) => total + item.quantity, 0) : 0;
   
-  // 心愿单数量
-  const wishlistCount = wishlistItems.length;
+  // 心愿单数量 - 只在客户端渲染后计算
+  const wishlistCount = mounted ? wishlistItems.length : 0;
   
   // 上一次的心愿单数量
-  const [prevWishlistCount, setPrevWishlistCount] = useState(wishlistCount);
+  const [prevWishlistCount, setPrevWishlistCount] = useState(0);
 
-  // 客户端挂载后才初始化时间
+  // 确保组件已在客户端挂载
   useEffect(() => {
+    setMounted(true);
     setIsClient(true);
     setCurrentTime(new Date());
 
@@ -222,50 +226,70 @@ export function FloatingToolbar() {
               </div>
             ) : (
               <>
-                <div className="max-h-64 space-y-3 overflow-y-auto">
-                  {items.slice(0, 3).map((item) => (
-                    <div key={item.id} className="flex gap-3">
-                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded border">
+                <div className="max-h-80 space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  {items.slice(0, 5).map((item) => (
+                    <div key={item.id} className="flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-2 transition-all hover:border-blue-200 hover:bg-blue-50/30">
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-white">
                         <Image
-                          src={item.image || '/placeholder.png'}
+                          src={item.image || `${process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL}/${process.env.OSS_FOLDER || 'yoyo_mall'}/placeholder.png`}
                           alt={item.name}
                           fill
                           className="object-cover"
-                          sizes="64px"
+                          sizes="80px"
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium">{item.name}</p>
+                      <div className="flex flex-1 flex-col justify-between min-w-0">
+                        <div>
+                          <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
+                            {item.name}
+                          </p>
+                        </div>
                         <div className="mt-1 flex items-center justify-between">
-                          <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
-                          <span className="text-sm font-semibold text-blue-600">
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-600">数量:</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-xs font-bold text-blue-700">
+                              {item.quantity}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500 line-through">
+                              ${item.price.toFixed(2)}
+                            </div>
+                            <div className="text-sm font-bold text-blue-600">
+                              ${(item.price * item.quantity).toFixed(2)}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
-                  {items.length > 3 && (
-                    <p className="text-center text-xs text-gray-400">
-                      +{items.length - 3} more items
+                  {items.length > 5 && (
+                    <p className="text-center text-xs font-medium text-blue-600">
+                      还有 {items.length - 5} 件商品...
                     </p>
                   )}
                 </div>
                 
-                <Separator className="my-3" />
+                <Separator className="my-4" />
                 
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">Total:</span>
-                  <span className="text-lg font-bold text-blue-600">
-                    ${items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-                  </span>
+                <div className="space-y-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">商品数量:</span>
+                    <span className="font-medium text-gray-800">{cartCount} 件</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-semibold text-gray-800">总计:</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      ${items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 
                 <Button 
-                  className="w-full" 
+                  className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold shadow-lg" 
                   onClick={handleCartClick}
                 >
-                  Check out cart
+                  查看购物车
                 </Button>
               </>
             )}
@@ -340,6 +364,7 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
 
 

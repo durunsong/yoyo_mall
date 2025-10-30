@@ -65,14 +65,43 @@ export function UserNotifications() {
   const router = useRouter();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // 模拟通知数据（实际应该从API获取）
+  // 从localStorage初始化通知（持久化）
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const saved = localStorage.getItem('user-notifications');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  // 确保客户端挂载
   useEffect(() => {
-    if (session?.user && open) {
-      // 这里应该调用API获取通知
-      // 现在使用模拟数据
+    setMounted(true);
+  }, []);
+
+  // 加载通知数据 - 页面加载时就获取，不等用户点击
+  useEffect(() => {
+    if (session?.user && mounted) {
+      // 从localStorage加载已有的通知，或使用模拟数据
+      const saved = localStorage.getItem('user-notifications');
+      if (saved) {
+        try {
+          setNotifications(JSON.parse(saved));
+          return;
+        } catch {
+          // 解析失败，使用默认数据
+        }
+      }
+
+      // 首次加载：使用模拟数据
       const mockNotifications: Notification[] = [
         {
           id: '1',
@@ -81,7 +110,7 @@ export function UserNotifications() {
           message: '您的订单 #12345 已发货，预计3天内送达',
           read: false,
           link: '/orders/12345',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2小时前
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
         },
         {
           id: '2',
@@ -90,7 +119,7 @@ export function UserNotifications() {
           message: '全场商品8折优惠，仅限今天！',
           read: false,
           link: '/deals',
-          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5小时前
+          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
         },
         {
           id: '3',
@@ -99,12 +128,20 @@ export function UserNotifications() {
           message: '您收藏的"MacBook Pro"降价了，快来看看！',
           read: true,
           link: '/account/wishlist',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1天前
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
         },
       ];
       setNotifications(mockNotifications);
+      localStorage.setItem('user-notifications', JSON.stringify(mockNotifications));
     }
-  }, [session, open]);
+  }, [session, mounted]);
+
+  // 通知变化时保存到localStorage
+  useEffect(() => {
+    if (mounted && notifications.length > 0) {
+      localStorage.setItem('user-notifications', JSON.stringify(notifications));
+    }
+  }, [notifications, mounted]);
 
   // 标记为已读
   const markAsRead = (id: string) => {

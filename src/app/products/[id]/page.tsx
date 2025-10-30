@@ -122,7 +122,7 @@ export default function ProductDetailPage() {
         quantity: quantity,
         price: product.price,
         name: product.name,
-        image: product.images[0]?.url || '/placeholder.png',
+        image: product.images[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
       });
       toast.success(t('addedToCart') || 'Added to cart successfully!');
     } catch (error) {

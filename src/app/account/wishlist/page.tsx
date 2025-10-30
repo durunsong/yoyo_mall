@@ -139,7 +139,7 @@ export default function WishlistPage() {
         quantity: 1,
         price: parseFloat(item.product.price.toString()),
         name: item.product.name,
-        image: item.product.images?.[0]?.url || '/placeholder.png',
+        image: item.product.images?.[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
       });
 
       toast.success('已添加到购物车');
@@ -226,6 +226,7 @@ export default function WishlistPage() {
                           alt={item.product.name}
                           width={300}
                           height={300}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                           className="h-full w-full object-cover transition-transform hover:scale-105"
                         />
                       ) : (

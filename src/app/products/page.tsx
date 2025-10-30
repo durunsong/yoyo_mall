@@ -54,7 +54,7 @@ function ProductsPageContent() {
       quantity: 1,
       price: product.price,
       name: product.name,
-      image: product.image || '/placeholder.png',
+      image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
     });
     toast.success('已添加到购物车');
   };
@@ -78,7 +78,7 @@ function ProductsPageContent() {
             productId: product.id,
             name: product.name,
             price: product.price,
-            image: product.images?.[0]?.url || product.image || '/placeholder.png',
+            image: product.images?.[0]?.url || product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
           });
         }
         toast.success('✨ 已添加到心愿单');
