@@ -11,6 +11,32 @@ import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
+const OSS_BASE_URL = process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL;
+const OSS_FOLDER = process.env.OSS_FOLDER && process.env.OSS_FOLDER !== 'root' ? process.env.OSS_FOLDER : undefined;
+const PLACEHOLDER_IMAGE = OSS_BASE_URL
+  ? `${OSS_BASE_URL.replace(/\/+$/u, '')}/${OSS_FOLDER ? `${OSS_FOLDER.replace(/\/+$/gu, '')}/` : ''}placeholder.png`
+  : 'https://next-static-oss.oss-rg-china-mainland.aliyuncs.com/placeholder.png';
+
+const resolveImageUrl = (src?: string | null) => {
+  if (!src) {
+    return PLACEHOLDER_IMAGE;
+  }
+
+  try {
+    const url = new URL(src);
+    if (url.hostname.endsWith('aliyuncs.com')) {
+      return url.toString();
+    }
+    if (OSS_BASE_URL && src.startsWith(OSS_BASE_URL)) {
+      return src;
+    }
+  } catch (error) {
+    // ignore
+  }
+
+  return PLACEHOLDER_IMAGE;
+};
+
 interface ImageUploadProps {
   value?: string[];
   onChange: (urls: string[]) => void;
@@ -105,6 +131,15 @@ export function ImageUpload({
     onChange(newValue);
   };
 
+  const handleSetPrimary = (index: number) => {
+    if (index === 0) return;
+    const newValue = [...value];
+    const [selectedImage] = newValue.splice(index, 1);
+    newValue.unshift(selectedImage);
+    onChange(newValue);
+    toast.success('已设置为主图');
+  };
+
   // 触发文件选择
   const handleClick = () => {
     fileInputRef.current?.click();
@@ -121,15 +156,16 @@ export function ImageUpload({
               className="relative aspect-square rounded-lg border overflow-hidden group bg-gray-50"
             >
               <Image
-                src={url}
+                src={resolveImageUrl(url)}
                 alt={`Upload ${index + 1}`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                onError={(e) => {
-                  // 图片加载失败时显示占位符
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
+                onError={(event) => {
+                  const target = event.currentTarget as HTMLImageElement;
+                  if (target.src !== PLACEHOLDER_IMAGE) {
+                    target.src = PLACEHOLDER_IMAGE;
+                  }
                 }}
               />
               <button
@@ -140,6 +176,16 @@ export function ImageUpload({
               >
                 <X className="h-4 w-4" />
               </button>
+              {index !== 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleSetPrimary(index)}
+                  disabled={disabled || uploading}
+                  className="absolute bottom-2 left-2 rounded bg-white/90 px-2 py-1 text-xs font-medium text-gray-700 shadow-md opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                >
+                  设为主图
+                </button>
+              )}
               {index === 0 && (
                 <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-md">
                   主图

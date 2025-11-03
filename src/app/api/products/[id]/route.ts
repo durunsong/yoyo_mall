@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
+const productImageSchema = z.object({
+  url: z.string().url('图片URL格式不正确'),
+  alt: z.string().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
 // 商品更新验证
 const updateProductSchema = z.object({
   name: z.string().min(1, '商品名称不能为空').max(255, '商品名称过长').optional(),
@@ -9,7 +15,7 @@ const updateProductSchema = z.object({
   shortDesc: z.string().max(500, '简短描述过长').optional(),
   sku: z.string().min(1, 'SKU不能为空').optional(),
   price: z.number().min(0, '价格不能为负数').optional(),
-  comparePrice: z.number().min(0, '对比价格不能为负数').optional(),
+  comparePrice: z.number().min(0, '对比价格不能为负数').optional().nullable(),
   currency: z.string().optional(),
   weight: z.number().min(0, '重量不能为负数').optional(),
   dimensions: z.string().optional(),
@@ -19,9 +25,12 @@ const updateProductSchema = z.object({
   isDigital: z.boolean().optional(),
   trackInventory: z.boolean().optional(),
   allowOutOfStock: z.boolean().optional(),
+  inventoryQuantity: z.number().int().min(0, '库存不能为负数').optional(),
+  lowStockThreshold: z.number().int().min(0, '低库存阈值不能为负数').optional(),
   metaTitle: z.string().optional(),
   metaDesc: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  images: z.array(productImageSchema).optional(),
 });
 
 // 获取单个商品详情
@@ -172,6 +181,10 @@ async function updateProduct(
       );
     }
 
+    const existingInventory = await prisma.inventory.findUnique({
+      where: { productId: id },
+    });
+
     // 如果更新SKU，检查是否与其他商品冲突
     if (data.sku && data.sku !== existingProduct.sku) {
       const skuExists = await prisma.product.findUnique({
@@ -214,18 +227,77 @@ async function updateProduct(
       }
     }
 
-    // 更新商品
-    const updateData: any = { ...data };
-    if (data.name && data.name !== existingProduct.name) {
-      updateData.slug = data.name.toLowerCase()
+    const { images, comparePrice, inventoryQuantity, lowStockThreshold, trackInventory, ...rest } = data;
+
+    const updateData: any = { ...rest };
+
+    if (comparePrice !== undefined) {
+      updateData.comparePrice =
+        typeof comparePrice === 'number' && comparePrice > 0 ? comparePrice : null;
+    }
+
+    if (rest.name && rest.name !== existingProduct.name) {
+      updateData.slug = rest.name.toLowerCase()
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-')
         .trim();
     }
 
-    const product = await prisma.product.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.product.update({
+        where: { id },
+        data: updateData,
+      });
+
+      if (images) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+
+        if (images.length > 0) {
+          await tx.productImage.createMany({
+            data: images.map((image, index) => ({
+              productId: id,
+              url: image.url,
+              alt: image.alt ?? `${rest.name ?? existingProduct.name} 图片 ${index + 1}`,
+              sortOrder: image.sortOrder ?? index,
+            })),
+          });
+        }
+      }
+
+      if (
+        inventoryQuantity !== undefined ||
+        lowStockThreshold !== undefined ||
+        trackInventory !== undefined
+      ) {
+        const shouldTrack = trackInventory ?? existingProduct.trackInventory;
+
+        if (shouldTrack) {
+          const quantity = inventoryQuantity ?? existingInventory?.quantity ?? 0;
+          const lowStock = lowStockThreshold ?? existingInventory?.lowStockThreshold ?? 10;
+
+          await tx.inventory.upsert({
+            where: { productId: id },
+            update: {
+              ...(inventoryQuantity !== undefined && { quantity: inventoryQuantity }),
+              ...(lowStockThreshold !== undefined && { lowStockThreshold: lowStockThreshold }),
+            },
+            create: {
+              productId: id,
+              quantity,
+              reservedQuantity: existingInventory?.reservedQuantity ?? 0,
+              lowStockThreshold: lowStock,
+            },
+          });
+        } else if (existingInventory) {
+          await tx.inventory.delete({
+            where: { productId: id },
+          });
+        }
+      }
+    });
+
+    const product = await prisma.product.findUnique({
       where: { id },
-      data: updateData,
       include: {
         category: {
           select: { id: true, name: true, slug: true },
@@ -239,6 +311,13 @@ async function updateProduct(
         },
       },
     });
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'PRODUCT_NOT_FOUND', message: '商品不存在' },
+        { status: 404 },
+      );
+    }
 
     console.log('商品更新成功:', {
       productId: product.id,

@@ -15,6 +15,12 @@ const productQuerySchema = z.object({
   maxPrice: z.coerce.number().min(0).optional(),
 });
 
+const productImageSchema = z.object({
+  url: z.string().url('图片URL格式不正确'),
+  alt: z.string().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
 // 商品创建验证
 const createProductSchema = z.object({
   name: z.string().min(1, '商品名称不能为空').max(255, '商品名称过长'),
@@ -22,7 +28,7 @@ const createProductSchema = z.object({
   shortDesc: z.string().max(500, '简短描述过长').optional(),
   sku: z.string().min(1, 'SKU不能为空'),
   price: z.number().min(0, '价格不能为负数'),
-  comparePrice: z.number().min(0, '对比价格不能为负数').optional(),
+  comparePrice: z.number().min(0, '对比价格不能为负数').optional().nullable(),
   currency: z.string().default('USD'),
   weight: z.number().min(0, '重量不能为负数').optional(),
   dimensions: z.string().optional(),
@@ -32,9 +38,12 @@ const createProductSchema = z.object({
   isDigital: z.boolean().default(false),
   trackInventory: z.boolean().default(true),
   allowOutOfStock: z.boolean().default(false),
+  inventoryQuantity: z.number().int().min(0, '库存不能为负数').optional().default(0),
+  lowStockThreshold: z.number().int().min(0, '低库存阈值不能为负数').optional().default(10),
   metaTitle: z.string().optional(),
   metaDesc: z.string().optional(),
   tags: z.array(z.string()).default([]),
+  images: z.array(productImageSchema).optional(),
 });
 
 // 获取商品列表
@@ -225,13 +234,35 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建商品
+    const {
+      images = [],
+      comparePrice,
+      inventoryQuantity = 0,
+      lowStockThreshold = 10,
+      ...productData
+    } = data;
+    const normalizedComparePrice =
+      typeof comparePrice === 'number' && comparePrice > 0 ? comparePrice : null;
+
+    const slug = productData.name.toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+
     const product = await prisma.product.create({
       data: {
-        ...data,
-        slug: data.name.toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .trim(),
+        ...productData,
+        comparePrice: normalizedComparePrice,
+        slug,
+        images: images.length
+          ? {
+              create: images.map((image, index) => ({
+                url: image.url,
+                alt: image.alt ?? `${productData.name} 图片 ${index + 1}`,
+                sortOrder: image.sortOrder ?? index,
+              })),
+            }
+          : undefined,
       },
       include: {
         category: {
@@ -240,17 +271,21 @@ export async function POST(request: NextRequest) {
         brand: {
           select: { id: true, name: true, slug: true },
         },
+        images: {
+          select: { id: true, url: true, alt: true, sortOrder: true },
+          orderBy: { sortOrder: 'asc' },
+        },
       },
     });
 
     // 如果启用库存跟踪，创建库存记录
-    if (data.trackInventory) {
+    if (productData.trackInventory) {
       await prisma.inventory.create({
         data: {
           productId: product.id,
-          quantity: 0,
+          quantity: inventoryQuantity,
           reservedQuantity: 0,
-          lowStockThreshold: 10,
+          lowStockThreshold,
         },
       });
     }
