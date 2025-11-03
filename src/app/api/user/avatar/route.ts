@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-import { oss, OSS_FOLDERS } from '@/lib/oss-improved';
+import { uploadFile, deleteFile, OSS_FOLDERS } from '@/lib/oss';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
 
     // 上传到 OSS
-    const uploadResult = await oss.upload({
+    const uploadResult = await uploadFile({
       file: buffer,
       filename: file.name,
       folder: OSS_FOLDERS.AVATARS,
@@ -69,7 +69,16 @@ export async function POST(request: NextRequest) {
       thumbnailSize: { width: 200, height: 200 },
       quality: 85,
       maxSize: 10 * 1024 * 1024,
+      mimeType: file.type,
     });
+
+    if (!uploadResult.success || !uploadResult.url) {
+      const message = uploadResult.error || '头像上传失败';
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 500 },
+      );
+    }
 
     console.log('头像上传成功:', uploadResult);
 
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
         // 从URL提取key
         const oldAvatarUrl = new URL(currentUser.avatar);
         const oldAvatarKey = oldAvatarUrl.pathname.substring(1); // 移除开头的 /
-        await oss.delete(oldAvatarKey);
+        await deleteFile(oldAvatarKey);
         console.log('旧头像删除成功:', oldAvatarKey);
       } catch (error) {
         console.warn('删除旧头像失败:', error);
@@ -152,7 +161,7 @@ export async function DELETE(request: NextRequest) {
     try {
       const avatarUrl = new URL(currentUser.avatar);
       const avatarKey = avatarUrl.pathname.substring(1);
-      await oss.delete(avatarKey);
+      await deleteFile(avatarKey);
     } catch (error) {
       console.warn('删除OSS头像失败:', error);
     }

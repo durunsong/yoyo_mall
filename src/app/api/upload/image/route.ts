@@ -93,9 +93,15 @@ export async function POST(request: NextRequest) {
           maxWidth,
           maxHeight,
           quality,
+          compress: true,
         });
 
-        uploadResults.push(result);
+        if (result.success && result.url) {
+          uploadResults.push(result);
+        } else {
+          const errorMessage = result.error || '上传失败';
+          errors.push(`文件 ${file.name}: ${errorMessage}`);
+        }
       } catch (error) {
         console.error(`上传文件 ${file.name} 失败:`, error);
         errors.push(

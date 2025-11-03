@@ -54,16 +54,18 @@ export async function POST(request: NextRequest) {
       quality: 85,
       maxWidth: 400,
       maxHeight: 400,
+      mimeType: file.type,
+      maxSize: 5 * 1024 * 1024,
     });
 
-    if (!result.success) {
+    if (!result.success || !result.url) {
       return NextResponse.json(
         { success: false, message: result.error || '上传失败' },
         { status: 500 },
       );
     }
 
-    const avatarUrl = result.url!;
+    const avatarUrl = result.url;
 
     // 更新用户头像
     await prisma.user.update({
