@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStaticTranslations } from '@/hooks/use-i18n';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 
 interface ProductCardProps {
   product: {
@@ -56,6 +57,10 @@ export default function ProductCard({
   } = product;
 
   const primaryImage = image || images?.[0]?.url;
+  
+  // 获取系统设置的货币符号
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
   // 处理收藏
   const handleWishlist = (e: React.MouseEvent) => {
@@ -172,12 +177,12 @@ export default function ProductCard({
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                ¥{price}
+                {currencySymbol}{price}
               </span>
               {originalPrice && (
                 <>
                   <span className="text-sm text-gray-400 line-through">
-                    ¥{originalPrice}
+                    {currencySymbol}{originalPrice}
                   </span>
                   <Badge variant="secondary" className="ml-auto text-xs bg-red-100 text-red-700 border-0">
                     -{Math.round((1 - price / originalPrice) * 100)}%

@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 
 export function FloatingToolbar() {
   const router = useRouter();
@@ -39,6 +40,10 @@ export function FloatingToolbar() {
   // 使用Zustand store - 确保在客户端正确读取
   const { items, updateQuantity, removeItem, _hasHydrated } = useCartStore();
   const wishlistItems = useWishlistStore(state => state.items);
+  
+  // 获取系统设置的货币符号
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
   // 购物车数量 - 只在客户端水合完成后计算
   const cartCount = (mounted && _hasHydrated) ? items.reduce((total, item) => total + item.quantity, 0) : 0;
@@ -371,10 +376,10 @@ export function FloatingToolbar() {
                             {/* 价格 */}
                             <div className="text-right">
                               <div className="text-xs text-gray-500 line-through">
-                                ${Number(item.price || 0).toFixed(2)}
+                                {currencySymbol}{Number(item.price || 0).toFixed(2)}
                               </div>
                               <div className="text-sm font-bold text-blue-600">
-                                ${(Number(item.price || 0) * item.quantity).toFixed(2)}
+                                {currencySymbol}{(Number(item.price || 0) * item.quantity).toFixed(2)}
                               </div>
                             </div>
                           </div>
@@ -399,7 +404,7 @@ export function FloatingToolbar() {
                   <div className="flex items-center justify-between">
                     <span className="text-base font-semibold text-gray-800">总计:</span>
                     <span className="text-xl font-bold text-blue-600">
-                      ${items.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0).toFixed(2)}
+                      {currencySymbol}{items.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -483,6 +488,7 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
 
 

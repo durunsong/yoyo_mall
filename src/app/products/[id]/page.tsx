@@ -34,6 +34,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 import ProductCard from '@/components/products/product-card';
 import { ProductReviews } from '@/components/products/product-reviews';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 
 interface Product {
   id: string;
@@ -66,6 +67,10 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  
+  // 获取系统设置的货币符号
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
   // 获取商品详情
   useEffect(() => {
@@ -301,11 +306,11 @@ export default function ProductDetailPage() {
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-blue-600">
-                  ${Number(product.price).toFixed(2)}
+                  {currencySymbol}{Number(product.price).toFixed(2)}
                 </span>
                 {product.comparePrice && (
                   <span className="text-xl text-gray-400 line-through">
-                    ${Number(product.comparePrice).toFixed(2)}
+                    {currencySymbol}{Number(product.comparePrice).toFixed(2)}
                   </span>
                 )}
               </div>

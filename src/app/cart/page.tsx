@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from 'sonner';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 
 export default function CartPage() {
   const router = useRouter();
@@ -40,6 +41,10 @@ export default function CartPage() {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  
+  // 获取系统设置的货币符号
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
   // 计算总价
   const subtotal = items.reduce(
@@ -308,7 +313,7 @@ export default function CartPage() {
 
                               <div className="flex items-center gap-4">
                                 <span className="text-lg font-bold text-blue-600">
-                                  ¥{(item.price * item.quantity).toFixed(2)}
+                                  {currencySymbol}{(item.price * item.quantity).toFixed(2)}
                                 </span>
                                 <Button
                                   variant="ghost"
@@ -361,7 +366,7 @@ export default function CartPage() {
                           {couponCode}
                         </Badge>
                         <span className="text-sm text-green-700">
-                          -${couponDiscount.toFixed(2)}
+                          -{currencySymbol}{couponDiscount.toFixed(2)}
                         </span>
                       </div>
                       <Button
@@ -402,26 +407,26 @@ export default function CartPage() {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-gray-600">
                     <span>{tCommon('subtotal') || 'Subtotal'}</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>{tCommon('shipping') || 'Shipping'}</span>
-                    <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? 'FREE' : `${currencySymbol}${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>{tCommon('tax') || 'Tax'}</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{currencySymbol}{tax.toFixed(2)}</span>
                   </div>
                   {couponDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>{tCommon('discount') || 'Discount'}</span>
-                      <span>-${couponDiscount.toFixed(2)}</span>
+                      <span>-{currencySymbol}{couponDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>{tCommon('total') || 'Total'}</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{currencySymbol}{total.toFixed(2)}</span>
                   </div>
                   <Button
                     className="w-full"
