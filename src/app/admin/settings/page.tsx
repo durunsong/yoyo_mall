@@ -108,11 +108,15 @@ export default function SettingsPage() {
 
   // 支付设置
   const [paymentSettings, setPaymentSettings] = useState({
-    stripeEnabled: true,
+    stripeEnabled: false,
     stripePublicKey: '',
     stripeSecretKey: '',
     alipayEnabled: false,
+    alipayAppId: '',
+    alipayPrivateKey: '',
     wechatPayEnabled: false,
+    wechatPayMchId: '',
+    wechatPayApiKey: '',
   });
 
   // 邮件设置
@@ -121,8 +125,9 @@ export default function SettingsPage() {
     smtpPort: '587',
     smtpUser: '',
     smtpPassword: '',
-    fromEmail: '',
-    fromName: '',
+    smtpSecure: false,
+    emailFrom: '',
+    emailFromName: '',
   });
 
   // 通知设置
@@ -158,6 +163,7 @@ export default function SettingsPage() {
   const [announcementSaving, setAnnouncementSaving] = useState(false);
   const [announcementConfig, setAnnouncementConfig] = useState<{ rotationInterval: number }>({ rotationInterval: 5000 });
   const [announcementConfigSaving, setAnnouncementConfigSaving] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
   const announcementActionOptions: { label: string; value: AnnouncementActionType }[] = [
     { label: '无操作', value: 'NONE' },
     { label: '跳转链接', value: 'URL' },
@@ -189,7 +195,72 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchAnnouncements();
+    fetchSystemSettings();
   }, []);
+
+  // 加载系统设置
+  const fetchSystemSettings = async () => {
+    try {
+      setSettingsLoading(true);
+      const response = await fetch('/api/admin/settings');
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '获取系统设置失败');
+      }
+
+      if (data.data) {
+        // 网站基本信息
+        setSiteSettings({
+          siteName: data.data.siteName || 'YoYo Mall',
+          siteDescription: data.data.siteDescription || '',
+          siteUrl: data.data.siteUrl || '',
+          contactEmail: data.data.contactEmail || '',
+          contactPhone: data.data.contactPhone || '',
+          defaultLanguage: data.data.defaultLanguage || 'zh-CN',
+          defaultCurrency: data.data.defaultCurrency || 'CNY',
+        });
+        
+        // 支付设置
+        setPaymentSettings({
+          stripeEnabled: data.data.stripeEnabled || false,
+          stripePublicKey: data.data.stripePublicKey || '',
+          stripeSecretKey: data.data.stripeSecretKey || '',
+          alipayEnabled: data.data.alipayEnabled || false,
+          alipayAppId: data.data.alipayAppId || '',
+          alipayPrivateKey: data.data.alipayPrivateKey || '',
+          wechatPayEnabled: data.data.wechatPayEnabled || false,
+          wechatPayMchId: data.data.wechatPayMchId || '',
+          wechatPayApiKey: data.data.wechatPayApiKey || '',
+        });
+        
+        // 邮件设置
+        setEmailSettings({
+          smtpHost: data.data.smtpHost || '',
+          smtpPort: data.data.smtpPort?.toString() || '587',
+          smtpUser: data.data.smtpUser || '',
+          smtpPassword: data.data.smtpPassword || '',
+          smtpSecure: data.data.smtpSecure || false,
+          emailFrom: data.data.emailFrom || '',
+          emailFromName: data.data.emailFromName || '',
+        });
+        
+        // 通知设置
+        setNotificationSettings({
+          orderNotifications: data.data.orderNotifications !== undefined ? data.data.orderNotifications : true,
+          userNotifications: data.data.userNotifications !== undefined ? data.data.userNotifications : true,
+          inventoryAlerts: data.data.inventoryAlerts !== undefined ? data.data.inventoryAlerts : true,
+          emailNotifications: data.data.emailNotifications !== undefined ? data.data.emailNotifications : true,
+          smsNotifications: data.data.smsNotifications || false,
+        });
+      }
+    } catch (error) {
+      console.error('获取系统设置失败:', error);
+      toast.error(error instanceof Error ? error.message : '获取系统设置失败');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   const resetAnnouncementForm = (nextSortOrder?: string) => {
     setAnnouncementForm({
@@ -387,11 +458,29 @@ export default function SettingsPage() {
   const handleSaveSiteSettings = async () => {
     try {
       setSaving(true);
-      // TODO: 调用 API 保存设置
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 验证必填字段
+      if (!siteSettings.siteName.trim()) {
+        toast.error('网站名称不能为空');
+        return;
+      }
+
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteSettings),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '保存失败');
+      }
+
       toast.success('网站设置已保存');
     } catch (error) {
-      toast.error('保存失败');
+      console.error('保存失败:', error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -401,11 +490,23 @@ export default function SettingsPage() {
   const handleSavePaymentSettings = async () => {
     try {
       setSaving(true);
-      // TODO: 调用 API 保存设置
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentSettings),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '保存失败');
+      }
+
       toast.success('支付设置已保存');
     } catch (error) {
-      toast.error('保存失败');
+      console.error('保存失败:', error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -415,11 +516,26 @@ export default function SettingsPage() {
   const handleSaveEmailSettings = async () => {
     try {
       setSaving(true);
-      // TODO: 调用 API 保存设置
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...emailSettings,
+          smtpPort: parseInt(emailSettings.smtpPort) || 587,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '保存失败');
+      }
+
       toast.success('邮件设置已保存');
     } catch (error) {
-      toast.error('保存失败');
+      console.error('保存失败:', error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -429,11 +545,23 @@ export default function SettingsPage() {
   const handleSaveNotificationSettings = async () => {
     try {
       setSaving(true);
-      // TODO: 调用 API 保存设置
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notificationSettings),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '保存失败');
+      }
+
       toast.success('通知设置已保存');
     } catch (error) {
-      toast.error('保存失败');
+      console.error('保存失败:', error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -796,25 +924,25 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="fromEmail">发件人邮箱</Label>
+                      <Label htmlFor="emailFrom">发件人邮箱</Label>
                       <Input
-                        id="fromEmail"
+                        id="emailFrom"
                         type="email"
-                        value={emailSettings.fromEmail}
+                        value={emailSettings.emailFrom}
                         onChange={(e) =>
-                          setEmailSettings({ ...emailSettings, fromEmail: e.target.value })
+                          setEmailSettings({ ...emailSettings, emailFrom: e.target.value })
                         }
                         placeholder="noreply@example.com"
                       />
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="fromName">发件人名称</Label>
+                      <Label htmlFor="emailFromName">发件人名称</Label>
                       <Input
-                        id="fromName"
-                        value={emailSettings.fromName}
+                        id="emailFromName"
+                        value={emailSettings.emailFromName}
                         onChange={(e) =>
-                          setEmailSettings({ ...emailSettings, fromName: e.target.value })
+                          setEmailSettings({ ...emailSettings, emailFromName: e.target.value })
                         }
                         placeholder="YoYo Mall"
                       />

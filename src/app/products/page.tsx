@@ -12,6 +12,7 @@
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ import ProductCard from '@/components/products/product-card';
 import { Pagination } from '@/components/ui/pagination';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 
 function ProductsPageContent() {
@@ -32,6 +34,8 @@ function ProductsPageContent() {
   const { t: tCommon } = useStaticTranslations('common');
   const searchParams = useSearchParams();
   const wishlistStore = useWishlistStore();
+  const { data: session } = useSession(); // 添加session
+  const { openModal } = useAuthModal(); // 添加登录弹窗
   
   // 从URL参数初始化搜索关键词
   const initialSearch = searchParams.get('search') || '';
@@ -47,16 +51,45 @@ function ProductsPageContent() {
   const { products, loading, pagination, refetch } = useProducts();
   const { addItem } = useCartStore();
 
-  // 添加到购物车
-  const handleAddToCart = (product: { id: string; name: string; price: number; image?: string }) => {
-    addItem({
-      productId: product.id,
-      quantity: 1,
-      price: product.price,
-      name: product.name,
-      image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
-    });
-    toast.success('已添加到购物车');
+  // 添加到购物车 - 未登录时弹出登录框
+  const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
+    // 检查登录状态
+    if (!session?.user) {
+      openModal('login');
+      toast.info('请先登录后再添加到购物车');
+      return;
+    }
+
+    try {
+      // 调用API添加到服务端购物车
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 同时添加到本地store（用于UI显示）
+        addItem({
+          productId: product.id,
+          quantity: 1,
+          price: product.price,
+          name: product.name,
+          image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+        });
+        toast.success('已添加到购物车');
+      } else {
+        toast.error(data.message || '添加失败');
+      }
+    } catch (error) {
+      console.error('Add to cart failed:', error);
+      toast.error('添加失败，请重试');
+    }
   };
 
   // 添加到心愿单

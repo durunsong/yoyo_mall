@@ -150,10 +150,12 @@ export function AnnouncementBar() {
     backgroundColor: background,
     color: textColor,
     minHeight: height,
+    display: 'flex',
+    alignItems: 'center',
   };
 
   const contentNode = (
-    <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 py-2 text-center text-sm md:text-base">
+    <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 text-center text-sm md:text-base">
       {currentAnnouncement?.imageUrl ? (
         <img
           src={currentAnnouncement.imageUrl}

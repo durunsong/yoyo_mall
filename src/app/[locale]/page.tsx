@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Sparkles,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useProducts } from '@/hooks/use-products';
 import ProductCard from '@/components/products/product-card';
 import { useCartStore } from '@/store/cart-store';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 
 export default function HomePage() {
@@ -32,20 +34,20 @@ export default function HomePage() {
   // 直接传递参数给 hook，它会自动获取数据
   const { products, loading } = useProducts({ limit: 8 });
   const { addItem } = useCartStore();
+  const { data: session } = useSession();
+  const { openModal } = useAuthModal();
 
-  // 添加到购物车
+  // 添加到购物车 - 未登录时弹出登录框
   const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
-    // 添加到本地购物车（Zustand store）
-    addItem({
-      productId: product.id,
-      quantity: 1,
-      price: product.price,
-      name: product.name,
-      image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
-    });
-    
-    // 如果用户已登录，同步到服务器
+    // 检查登录状态
+    if (!session?.user) {
+      openModal('login');
+      toast.info('请先登录后再添加到购物车');
+      return;
+    }
+
     try {
+      // 调用API添加到服务端购物车
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,21 +57,24 @@ export default function HomePage() {
         }),
       });
       
-      if (response.ok) {
+      const data = await response.json();
+      
+      if (data.success) {
+        // 同时添加到本地store（用于UI显示）
+        addItem({
+          productId: product.id,
+          quantity: 1,
+          price: product.price,
+          name: product.name,
+          image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+        });
         toast.success('已添加到购物车');
       } else {
-        // 如果是未登录，只显示本地添加成功
-        const data = await response.json();
-        if (data.error === 'UNAUTHORIZED') {
-          toast.success('已添加到购物车（未同步）');
-        } else {
-          toast.success('已添加到购物车');
-        }
+        toast.error(data.message || '添加失败');
       }
     } catch (error) {
-      // 网络错误，但本地已添加
-      console.error('Sync cart failed:', error);
-      toast.success('已添加到购物车');
+      console.error('Add to cart failed:', error);
+      toast.error('添加失败，请重试');
     }
   };
 

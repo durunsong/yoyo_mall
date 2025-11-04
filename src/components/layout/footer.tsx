@@ -88,9 +88,15 @@ export function Footer() {
               <input
                 type="email"
                 placeholder={t('enterEmailAddress')}
+                autoComplete="email"
+                data-lpignore="true"
+                data-form-type="other"
                 className="flex-1 rounded-l-md px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-80"
               />
-              <button className="rounded-r-md bg-blue-600 px-6 py-2 transition-colors hover:bg-blue-700">
+              <button 
+                type="button"
+                className="rounded-r-md bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
+              >
                 {t('subscribe')}
               </button>
             </div>

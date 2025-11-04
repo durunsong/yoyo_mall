@@ -1,24 +1,23 @@
 /**
  * 购物车同步组件
- * 双向同步：
- * 1. 登录后从服务端恢复购物车
- * 2. 本地有商品时同步到服务端
+ * 功能：登录后从服务端恢复购物车数据
+ * 注意：不再使用localStorage，未登录用户无法添加购物车
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCartStore } from '@/store/cart-store';
 
 export function CartSync() {
   const { data: session, status } = useSession();
-  const { items, addItem, clearCart } = useCartStore();
+  const { addItem, clearCart } = useCartStore();
   const [restored, setRestored] = useState(false);
-  const syncedRef = useRef(false);
 
-  // 步骤1: 登录后从服务端恢复购物车
+  // 登录后从服务端恢复购物车
   useEffect(() => {
+    // 只在认证完成且未恢复时执行
     if (status !== 'authenticated' || !session?.user || restored) {
       return;
     }
@@ -28,27 +27,31 @@ export function CartSync() {
         console.log('🔄 从服务端恢复购物车...');
 
         const response = await fetch('/api/cart');
-        const data = await response.json();
+        const result = await response.json();
 
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        if (result.success && result.data?.items && Array.isArray(result.data.items) && result.data.items.length > 0) {
           // 先清空本地购物车
           clearCart();
 
           // 从服务端恢复，确保数据类型正确
-          data.data.forEach((item: any) => {
+          result.data.items.forEach((item: any) => {
             if (item.product) {
               addItem({
-                productId: item.product.id,
+                id: item.id, // 🔥 保存服务器返回的购物车项ID
+                productId: item.productId,
                 name: item.product.name,
-                price: Number(item.product.price || 0), // 确保是数字类型
-                image: item.product.images?.[0]?.url || '',
-                quantity: Number(item.quantity || 1), // 确保是数字类型
+                price: Number(item.price || 0),
+                image: item.product.image || (item.product.images?.[0]?.url || ''),
+                quantity: Number(item.quantity || 1),
                 variantId: item.variantId || null,
+                attributes: item.variant?.attributes || undefined,
               });
             }
           });
 
-          console.log(`✅ 购物车恢复完成: ${data.data.length} 件商品`);
+          console.log(`✅ 购物车恢复完成: ${result.data.items.length} 件商品`);
+        } else {
+          console.log('ℹ️ 服务端购物车为空');
         }
 
         setRestored(true);
@@ -61,51 +64,13 @@ export function CartSync() {
     restoreCartFromServer();
   }, [status, session?.user, restored, clearCart, addItem]);
 
-  // 步骤2: 本地有商品时同步到服务端
-  useEffect(() => {
-    if (
-      status !== 'authenticated' ||
-      !session?.user ||
-      !restored ||
-      items.length === 0 ||
-      syncedRef.current
-    ) {
-      return;
-    }
-
-    const syncCartToServer = async () => {
-      try {
-        console.log('📤 同步本地购物车到服务端...');
-
-        const response = await fetch('/api/cart/sync', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ items }),
-        });
-
-        if (response.ok) {
-          console.log('✅ 购物车同步完成');
-          syncedRef.current = true;
-        } else {
-          console.error('❌ 购物车同步失败:', await response.text());
-        }
-      } catch (error) {
-        console.error('❌ 购物车同步失败:', error);
-      }
-    };
-
-    syncCartToServer();
-  }, [status, session?.user, items, restored]);
-
-  // 登出时重置状态
+  // 登出时清空购物车和重置状态
   useEffect(() => {
     if (status === 'unauthenticated') {
+      clearCart();
       setRestored(false);
-      syncedRef.current = false;
     }
-  }, [status]);
+  }, [status, clearCart]);
 
   // 不渲染任何UI
   return null;

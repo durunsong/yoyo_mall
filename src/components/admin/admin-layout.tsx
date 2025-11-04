@@ -125,7 +125,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <ul className="space-y-1">
             {adminNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+              // 修复高亮逻辑：精确匹配首页，其他页面使用startsWith
+              const isActive = 
+                item.href === '/admin' 
+                  ? pathname === '/admin' 
+                  : pathname.startsWith(item.href);
               
               return (
                 <li key={item.key}>

@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -29,6 +30,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useCartStore } from '@/store/cart-store';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 import ProductCard from '@/components/products/product-card';
 import { ProductReviews } from '@/components/products/product-reviews';
@@ -56,6 +58,8 @@ export default function ProductDetailPage() {
   const { t } = useStaticTranslations('product');
   const { t: tCommon } = useStaticTranslations('common');
   const { addItem } = useCartStore();
+  const { data: session } = useSession();
+  const { openModal } = useAuthModal();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -111,20 +115,43 @@ export default function ProductDetailPage() {
     }
   };
 
-  // 添加到购物车
+  // 添加到购物车 - 未登录时弹出登录框
   const handleAddToCart = async () => {
     if (!product) return;
 
+    // 检查登录状态
+    if (!session?.user) {
+      openModal('login');
+      toast.info('请先登录后再添加到购物车');
+      return;
+    }
+
     try {
-      // 构造完整的购物车项目
-      addItem({
-        productId: product.id,
-        quantity: quantity,
-        price: product.price,
-        name: product.name,
-        image: product.images[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+      // 调用API添加到服务端购物车
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity,
+        }),
       });
-      toast.success(t('addedToCart') || 'Added to cart successfully!');
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 同时添加到本地store（用于UI显示）
+        addItem({
+          productId: product.id,
+          quantity: quantity,
+          price: product.price,
+          name: product.name,
+          image: product.images[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+        });
+        toast.success(t('addedToCart') || 'Added to cart successfully!');
+      } else {
+        toast.error(data.message || t('addToCartFailed') || 'Failed to add to cart');
+      }
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error(t('addToCartFailed') || 'Failed to add to cart');

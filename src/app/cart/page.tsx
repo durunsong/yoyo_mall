@@ -9,6 +9,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   ShoppingCart,
   Trash2,
@@ -30,13 +31,15 @@ import { toast } from 'sonner';
 
 export default function CartPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { t } = useStaticTranslations('cart');
   const { t: tCommon } = useStaticTranslations('common');
   
-  const { items, updateQuantity, removeItem } = useCartStore();
+  const { items, updateQuantity, removeItem, _hasHydrated } = useCartStore();
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
 
   // 计算总价
   const subtotal = items.reduce(
@@ -81,22 +84,83 @@ export default function CartPage() {
   };
 
   // 更新数量
-  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (itemId: string, productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
+    
+    if (!session?.user) {
+      toast.error('请先登录');
+      return;
+    }
+
+    // 标记为正在更新
+    setUpdatingItems(prev => new Set(prev).add(itemId));
+
     try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '更新失败');
+      }
+
+      // 更新本地store
       updateQuantity(itemId, newQuantity);
+      
+      if (newQuantity === 0) {
+        toast.success('已从购物车移除');
+      }
     } catch (error) {
-      toast.error(t('updateFailed') || 'Failed to update quantity');
+      console.error('更新购物车失败:', error);
+      toast.error(error instanceof Error ? error.message : t('updateFailed') || 'Failed to update quantity');
+    } finally {
+      // 移除更新标记
+      setUpdatingItems(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
   // 删除商品
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string, productName: string) => {
+    if (!session?.user) {
+      toast.error('请先登录');
+      return;
+    }
+
+    // 标记为正在更新
+    setUpdatingItems(prev => new Set(prev).add(itemId));
+
     try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '删除失败');
+      }
+
+      // 更新本地store
       removeItem(itemId);
       toast.success(t('itemRemoved') || 'Item removed from cart');
     } catch (error) {
-      toast.error(t('removeFailed') || 'Failed to remove item');
+      console.error('删除购物车商品失败:', error);
+      toast.error(error instanceof Error ? error.message : t('removeFailed') || 'Failed to remove item');
+    } finally {
+      // 移除更新标记
+      setUpdatingItems(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
@@ -109,7 +173,27 @@ export default function CartPage() {
     router.push('/checkout');
   };
 
-  // 空购物车状态
+  // 空购物车状态 - 等待水合完成后再判断
+  if (!_hasHydrated) {
+    // 显示加载状态
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-16">
+          <div className="mx-auto max-w-md text-center">
+            <div className="mb-6 flex justify-center">
+              <div className="rounded-full bg-gray-100 p-6">
+                <ShoppingCart className="h-16 w-16 text-gray-400 animate-pulse" />
+              </div>
+            </div>
+            <h2 className="mb-2 text-2xl font-bold text-gray-900">
+              {t('loading') || 'Loading...'}
+            </h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -157,76 +241,81 @@ export default function CartPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id}>
-                      <div className="flex gap-4">
-                        {/* 商品图片 */}
-                        <Link
-                          href={`/products/${item.productId}`}
-                          className="relative h-24 w-24 overflow-hidden rounded-lg bg-gray-100"
-                        >
-                          <Image
-                            src={item.image || 'https://via.placeholder.com/96'}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </Link>
+                  {items.map((item) => {
+                    const isUpdating = updatingItems.has(item.id);
+                    
+                    return (
+                      <div key={item.id}>
+                        <div className="flex gap-4">
+                          {/* 商品图片 */}
+                          <Link
+                            href={`/products/${item.productId}`}
+                            className="relative h-24 w-24 overflow-hidden rounded-lg bg-gray-100"
+                          >
+                            <Image
+                              src={item.image || 'https://via.placeholder.com/96'}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </Link>
 
-                        {/* 商品信息 */}
-                        <div className="flex flex-1 flex-col justify-between">
-                          <div>
-                            <Link
-                              href={`/products/${item.productId}`}
-                              className="font-medium text-gray-900 hover:text-blue-600"
-                            >
-                              {item.name}
-                            </Link>
-                            {item.attributes && item.attributes.length > 0 && (
-                              <p className="mt-1 text-sm text-gray-600">
-                                {item.attributes.map(attr => `${attr.name}: ${attr.value}`).join(', ')}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* 价格和数量 */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() =>
-                                  handleUpdateQuantity(item.id, item.quantity - 1)
-                                }
-                                disabled={item.quantity <= 1}
+                          {/* 商品信息 */}
+                          <div className="flex flex-1 flex-col justify-between">
+                            <div>
+                              <Link
+                                href={`/products/${item.productId}`}
+                                className="font-medium text-gray-900 hover:text-blue-600"
                               >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                              <span className="w-8 text-center font-medium">
-                                {item.quantity}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() =>
-                                  handleUpdateQuantity(item.id, item.quantity + 1)
-                                }
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
+                                {item.name}
+                              </Link>
+                              {item.attributes && item.attributes.length > 0 && (
+                                <p className="mt-1 text-sm text-gray-600">
+                                  {item.attributes.map(attr => `${attr.name}: ${attr.value}`).join(', ')}
+                                </p>
+                              )}
                             </div>
 
-                            <div className="flex items-center gap-4">
-                              <span className="text-lg font-bold text-blue-600">
-                                ¥{(item.price * item.quantity).toFixed(2)}
-                              </span>
+                            {/* 价格和数量 */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() =>
+                                    handleUpdateQuantity(item.id, item.productId, item.quantity - 1)
+                                  }
+                                  disabled={isUpdating || item.quantity <= 1}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                                <span className="w-8 text-center font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() =>
+                                    handleUpdateQuantity(item.id, item.productId, item.quantity + 1)
+                                  }
+                                  disabled={isUpdating}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              <div className="flex items-center gap-4">
+                                <span className="text-lg font-bold text-blue-600">
+                                  ¥{(item.price * item.quantity).toFixed(2)}
+                                </span>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                  onClick={() => handleRemoveItem(item.id)}
+                                  onClick={() => handleRemoveItem(item.id, item.name)}
+                                  disabled={isUpdating}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -236,8 +325,9 @@ export default function CartPage() {
                         </div>
                         <Separator className="mt-4" />
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
 

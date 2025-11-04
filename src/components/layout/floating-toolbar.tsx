@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, ArrowUp } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowUp, Minus, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
@@ -34,13 +34,14 @@ export function FloatingToolbar() {
   const [isClient, setIsClient] = useState(false); // 客户端标记
   const [showScrollTop, setShowScrollTop] = useState(false); // 是否显示返回顶部
   const [mounted, setMounted] = useState(false); // 确保客户端已挂载
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set()); // 正在更新的商品ID
   
   // 使用Zustand store - 确保在客户端正确读取
-  const { items } = useCartStore();
+  const { items, updateQuantity, removeItem, _hasHydrated } = useCartStore();
   const wishlistItems = useWishlistStore(state => state.items);
 
-  // 购物车数量 - 只在客户端渲染后计算
-  const cartCount = mounted ? items.reduce((total, item) => total + item.quantity, 0) : 0;
+  // 购物车数量 - 只在客户端水合完成后计算
+  const cartCount = (mounted && _hasHydrated) ? items.reduce((total, item) => total + item.quantity, 0) : 0;
   
   // 心愿单数量 - 只在客户端渲染后计算
   const wishlistCount = mounted ? wishlistItems.length : 0;
@@ -115,6 +116,85 @@ export function FloatingToolbar() {
       return;
     }
     router.push('/account/wishlist');
+  };
+
+  // 更新购物车商品数量
+  const handleUpdateQuantity = async (itemId: string, productId: string, newQuantity: number) => {
+    if (!session?.user) {
+      toast.error('请先登录');
+      return;
+    }
+
+    // 标记为正在更新
+    setUpdatingItems(prev => new Set(prev).add(itemId));
+
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '更新失败');
+      }
+
+      // 更新本地store
+      updateQuantity(itemId, newQuantity);
+      
+      if (newQuantity === 0) {
+        toast.success('已从购物车移除');
+      }
+    } catch (error) {
+      console.error('更新购物车失败:', error);
+      toast.error(error instanceof Error ? error.message : '更新失败');
+    } finally {
+      // 移除更新标记
+      setUpdatingItems(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
+    }
+  };
+
+  // 删除购物车商品
+  const handleDeleteItem = async (itemId: string, productName: string) => {
+    if (!session?.user) {
+      toast.error('请先登录');
+      return;
+    }
+
+    // 标记为正在更新
+    setUpdatingItems(prev => new Set(prev).add(itemId));
+
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '删除失败');
+      }
+
+      // 更新本地store
+      removeItem(itemId);
+      toast.success('已从购物车移除');
+    } catch (error) {
+      console.error('删除购物车商品失败:', error);
+      toast.error(error instanceof Error ? error.message : '删除失败');
+    } finally {
+      // 移除更新标记
+      setUpdatingItems(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
+    }
   };
 
   // 返回顶部
@@ -227,42 +307,81 @@ export function FloatingToolbar() {
             ) : (
               <>
                 <div className="max-h-80 space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  {items.slice(0, 5).map((item) => (
-                    <div key={item.id} className="flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-2 transition-all hover:border-blue-200 hover:bg-blue-50/30">
-                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-white">
-                        <Image
-                          src={item.image || `${process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL}/${process.env.OSS_FOLDER || 'yoyo_mall'}/placeholder.png`}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="80px"
-                        />
-                      </div>
-                      <div className="flex flex-1 flex-col justify-between min-w-0">
-                        <div>
-                          <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
-                            {item.name}
-                          </p>
+                  {items.slice(0, 5).map((item) => {
+                    const isUpdating = updatingItems.has(item.id);
+                    
+                    return (
+                      <div 
+                        key={item.id} 
+                        className="group relative flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-blue-200 hover:bg-blue-50/30"
+                      >
+                        {/* 删除按钮 - 鼠标悬停显示 */}
+                        <button
+                          onClick={() => handleDeleteItem(item.id, item.name)}
+                          disabled={isUpdating}
+                          className="absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-lg transition-opacity hover:bg-red-600 group-hover:opacity-100 disabled:opacity-50"
+                          title="删除"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+
+                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-white">
+                          <Image
+                            src={item.image || `${process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL}/${process.env.OSS_FOLDER || 'yoyo_mall'}/placeholder.png`}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="80px"
+                          />
                         </div>
-                        <div className="mt-1 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-gray-600">数量:</span>
-                            <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-xs font-bold text-blue-700">
-                              {item.quantity}
-                            </span>
+                        
+                        <div className="flex flex-1 flex-col justify-between min-w-0">
+                          <div>
+                            <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
+                              {item.name}
+                            </p>
                           </div>
-                          <div className="text-right">
-                            <div className="text-xs text-gray-500 line-through">
-                              ${Number(item.price || 0).toFixed(2)}
+                          
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            {/* 数量加减按钮 */}
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleUpdateQuantity(item.id, item.productId, Math.max(1, item.quantity - 1))}
+                                disabled={isUpdating || item.quantity <= 1}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                title="减少数量"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              
+                              <span className="flex h-6 min-w-[28px] items-center justify-center rounded bg-blue-100 px-2 text-xs font-bold text-blue-700">
+                                {item.quantity}
+                              </span>
+                              
+                              <button
+                                onClick={() => handleUpdateQuantity(item.id, item.productId, item.quantity + 1)}
+                                disabled={isUpdating}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                title="增加数量"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
                             </div>
-                            <div className="text-sm font-bold text-blue-600">
-                              ${(Number(item.price || 0) * item.quantity).toFixed(2)}
+                            
+                            {/* 价格 */}
+                            <div className="text-right">
+                              <div className="text-xs text-gray-500 line-through">
+                                ${Number(item.price || 0).toFixed(2)}
+                              </div>
+                              <div className="text-sm font-bold text-blue-600">
+                                ${(Number(item.price || 0) * item.quantity).toFixed(2)}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {items.length > 5 && (
                     <p className="text-center text-xs font-medium text-blue-600">
                       还有 {items.length - 5} 件商品...
@@ -364,6 +483,7 @@ export function FloatingToolbar() {
     </div>
   );
 }
+
 
 
 

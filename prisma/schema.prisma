@@ -197,6 +197,51 @@ model AnnouncementConfig {
   @@map("announcement_config")
 }
 
+// 系统设置
+model SystemSettings {
+  id              String   @id @default("global")
+  // 网站基本信息
+  siteName        String   @default("YoYo Mall")
+  siteDescription String?
+  siteUrl         String?
+  contactEmail    String?
+  contactPhone    String?
+  defaultLanguage String   @default("zh-CN")
+  defaultCurrency String   @default("CNY")
+  
+  // 支付设置
+  stripeEnabled      Boolean @default(false)
+  stripePublicKey    String?
+  stripeSecretKey    String?
+  alipayEnabled      Boolean @default(false)
+  alipayAppId        String?
+  alipayPrivateKey   String?
+  wechatPayEnabled   Boolean @default(false)
+  wechatPayMchId     String?
+  wechatPayApiKey    String?
+  
+  // 邮件设置
+  smtpHost           String?
+  smtpPort           Int?    @default(587)
+  smtpUser           String?
+  smtpPassword       String?
+  smtpSecure         Boolean @default(false)
+  emailFrom          String?
+  emailFromName      String?
+  
+  // 通知设置
+  orderNotifications     Boolean @default(true)
+  userNotifications      Boolean @default(true)
+  inventoryAlerts        Boolean @default(true)
+  emailNotifications     Boolean @default(true)
+  smsNotifications       Boolean @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
 // 商品变体
 model ProductVariant {
   id           String   @id @default(cuid())
