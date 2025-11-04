@@ -43,6 +43,7 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 import ProductSearch from '@/components/products/product-search';
 import LanguageSwitcher from '@/components/ui/language-switcher';
 import { UserNotifications } from '@/components/layout/user-notifications';
+import { AnnouncementBar } from '@/components/layout/announcement-bar';
 
 // 导航菜单配置（去掉 Home，Logo 已可回到首页）
 const getNavItems = (t: (key: string) => string) => [
@@ -72,14 +73,8 @@ export function ShadcnHeader() {
 
   return (
     <>
-      {/* 顶部通知栏 */}
-      <div className="bg-blue-600 py-1 text-center text-sm text-white">
-        <div className="flex justify-center space-x-8">
-          <span>{tCommon('freeShipping')}</span>
-          <span>{tCommon('sevenDayReturns')}</span>
-          <span>{tCommon('twentyFourSupport')}</span>
-        </div>
-      </div>
+      {/* 公告栏 */}
+      <AnnouncementBar />
 
       {/* 主导航栏 */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

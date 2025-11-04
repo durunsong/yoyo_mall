@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { create } from 'zustand';
 
 export type AuthModalTab = 'login' | 'register';
 
@@ -16,28 +16,18 @@ interface UseAuthModalReturn {
   switchTab: (tab: AuthModalTab) => void;
 }
 
-export function useAuthModal(): UseAuthModalReturn {
-  const [isOpen, setIsOpen] = useState(false);
-  const [defaultTab, setDefaultTab] = useState<AuthModalTab>('login');
+const useAuthModalStore = create<UseAuthModalReturn>((set) => ({
+  // 记录弹窗是否打开
+  isOpen: false,
+  // 记录当前默认页签，支持登录与注册两种
+  defaultTab: 'login',
+  // 打开弹窗时可以指定页签
+  openModal: (tab: AuthModalTab = 'login') =>
+    set({ isOpen: true, defaultTab: tab }),
+  // 关闭弹窗
+  closeModal: () => set({ isOpen: false }),
+  // 在弹窗内部切换页签时更新默认值
+  switchTab: (tab: AuthModalTab) => set({ defaultTab: tab }),
+}));
 
-  const openModal = useCallback((tab: AuthModalTab = 'login') => {
-    setDefaultTab(tab);
-    setIsOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const switchTab = useCallback((tab: AuthModalTab) => {
-    setDefaultTab(tab);
-  }, []);
-
-  return {
-    isOpen,
-    defaultTab,
-    openModal,
-    closeModal,
-    switchTab,
-  };
-}
+export const useAuthModal = (): UseAuthModalReturn => useAuthModalStore();

@@ -1,10 +1,12 @@
 /**
  * 批量操作组件
- * 用于表格的批量选择和操作
+ * 用于展示已选择的记录数量，并触发批量操作下拉菜单
  */
 
 'use client';
 
+import { useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,104 +14,110 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronDown, Trash2, Archive, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+
+interface BulkActionItem {
+  /** 批量操作展示文案 */
+  label: string;
+  /** 操作的唯一标识，用于回调 */
+  value: string;
+  /** 可选的操作图标，提升辨识度 */
+  icon?: LucideIcon;
+  /** 视觉变体，支持 destructive 提示危险操作 */
+  variant?: 'default' | 'destructive';
+  /** 是否禁用本次操作 */
+  disabled?: boolean;
+}
 
 interface BulkActionsProps {
-  selectedCount: number;
-  totalCount: number;
-  onSelectAll: () => void;
-  onClearSelection: () => void;
-  onBulkDelete?: () => void;
-  onBulkArchive?: () => void;
-  onBulkPublish?: () => void;
-  onBulkUnpublish?: () => void;
+  /** 已选择的记录 ID 列表 */
+  selectedIds: string[];
+  /** 下拉菜单中可用的批量操作选项 */
+  actions: BulkActionItem[];
+  /** 触发具体批量操作的回调函数 */
+  onAction: (action: string) => void | Promise<void>;
+  /** 可选：清空当前选择 */
+  onClearSelection?: () => void;
+  /** 可选：在请求处理中禁用交互 */
+  disabled?: boolean;
+  /** 可选：自定义描述文案 */
+  description?: string;
 }
 
 export function BulkActions({
-  selectedCount,
-  totalCount,
-  onSelectAll,
+  selectedIds,
+  actions,
+  onAction,
   onClearSelection,
-  onBulkDelete,
-  onBulkArchive,
-  onBulkPublish,
-  onBulkUnpublish,
+  disabled = false,
+  description,
 }: BulkActionsProps) {
-  const allSelected = selectedCount === totalCount && totalCount > 0;
-  const someSelected = selectedCount > 0 && selectedCount < totalCount;
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
+  if (selectedIds.length === 0) {
+    return null;
+  }
+
+  /**
+   * 触发选中的批量操作
+   * @param value 操作标识
+   */
+  const handleAction = async (value: string) => {
+    if (disabled) return;
+    setPendingAction(value);
+    try {
+      await onAction(value);
+    } finally {
+      setPendingAction(null);
+    }
+  };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          checked={allSelected}
-          onCheckedChange={() => {
-            if (allSelected || someSelected) {
-              onClearSelection();
-            } else {
-              onSelectAll();
-            }
-          }}
-          aria-label="全选"
-        />
-        <span className="text-sm text-gray-700">
-          {selectedCount > 0 ? `已选择 ${selectedCount} 项` : '全选'}
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+          {selectedIds.length}
         </span>
+        <span>{description ?? '项已选中，可执行批量操作'}</span>
       </div>
-
-      {selectedCount > 0 && (
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                批量操作
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {onBulkPublish && (
-                <DropdownMenuItem onClick={onBulkPublish}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  批量发布
-                </DropdownMenuItem>
-              )}
-              {onBulkUnpublish && (
-                <DropdownMenuItem onClick={onBulkUnpublish}>
-                  <EyeOff className="mr-2 h-4 w-4" />
-                  批量下架
-                </DropdownMenuItem>
-              )}
-              {onBulkArchive && (
-                <DropdownMenuItem onClick={onBulkArchive}>
-                  <Archive className="mr-2 h-4 w-4" />
-                  批量归档
-                </DropdownMenuItem>
-              )}
-              {onBulkDelete && (
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" disabled={disabled || actions.length === 0}>
+              批量操作
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[160px]">
+            {actions.map((action) => {
+              const Icon = action.icon;
+              const isPending = pendingAction === action.value;
+              return (
                 <DropdownMenuItem
-                  onClick={onBulkDelete}
-                  className="text-red-600"
+                  key={action.value}
+                  onClick={() => handleAction(action.value)}
+                  className={action.variant === 'destructive' ? 'text-red-600 focus:text-red-600' : ''}
+                  disabled={disabled || action.disabled || isPending}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  批量删除
+                  {Icon ? <Icon className="mr-2 h-4 w-4" /> : null}
+                  <span>{action.label}</span>
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
+        {onClearSelection && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearSelection}
+            disabled={disabled || pendingAction !== null}
           >
             取消选择
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
-
-
-

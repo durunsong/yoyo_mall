@@ -17,7 +17,7 @@ const createCategorySchema = z.object({
   slug: z.string().min(1, 'URL标识不能为空').max(100, 'URL标识过长'),
   description: z.string().max(500, '描述过长').optional(),
   image: z.string().url('图片URL格式不正确').optional(),
-  parentId: z.string().optional(),
+  parentId: z.string().nullable().optional(),
   isActive: z.boolean().default(true),
   sortOrder: z.number().min(0).default(0),
 });

@@ -39,7 +39,8 @@ export async function GET(
       select: { role: true },
     });
 
-    if (currentUser?.role !== 'ADMIN') {
+    // 检查是否有管理员权限（ADMIN 或 SUPER_ADMIN）
+    if (currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
         { status: 403 },
@@ -141,7 +142,8 @@ export async function PATCH(
       select: { role: true },
     });
 
-    if (currentUser?.role !== 'ADMIN') {
+    // 检查是否有管理员权限（ADMIN 或 SUPER_ADMIN）
+    if (currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
         { status: 403 },
@@ -239,7 +241,8 @@ export async function DELETE(
       select: { id: true, role: true },
     });
 
-    if (currentUser?.role !== 'ADMIN') {
+    // 检查是否有管理员权限（ADMIN 或 SUPER_ADMIN）
+    if (currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
         { status: 403 },

@@ -169,6 +169,34 @@ model ProductImage {
   @@map("product_images")
 }
 
+model Announcement {
+  id              String                    @id @default(cuid())
+  title           String?
+  content         String?
+  imageUrl        String?
+  backgroundColor String?
+  textColor       String?
+  height          Int?
+  isActive        Boolean                   @default(true)
+  sortOrder       Int                       @default(0)
+  actionType      AnnouncementActionType    @default(NONE)
+  linkUrl         String?
+  openInNewTab    Boolean                   @default(false)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@map("announcements")
+}
+
+model AnnouncementConfig {
+  id               String   @id @default("global")
+  rotationInterval Int      @default(5000)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("announcement_config")
+}
+
 // 商品变体
 model ProductVariant {
   id           String   @id @default(cuid())
@@ -445,6 +473,13 @@ enum CouponType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_SHIPPING
+}
+
+enum AnnouncementActionType {
+  NONE
+  URL
+  OPEN_LOGIN_MODAL
+  OPEN_REGISTER_MODAL
 }
 
 // 登录记录

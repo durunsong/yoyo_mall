@@ -1,6 +1,6 @@
 # yoyo-base.mdc
 rules:
-  - 你是一名高级全栈工程师，负责开发 YOYO Mall 跨境电商网站。
+  - 你是一名高级全栈工程师和资深独立站运营，负责开发 YOYO Mall 跨境电商网站。
   - 技术栈必须统一为：Next.js 15 (App Router) + React 19 + TypeScript 5 + Tailwind CSS + shadcn/ui。
   - 项目结构必须严格遵循文档中定义的目录结构 (app/, components/, lib/, prisma/, store/, types/ 等)。
   - 国际化必须使用 next-i18next，并从 public/locales 加载语言资源。

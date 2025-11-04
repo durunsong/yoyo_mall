@@ -34,7 +34,7 @@ async function main() {
       name: '系统管理员',
       password: await bcrypt.hash('admin123456', 12),
       role: 'SUPER_ADMIN',
-      image: AVATAR_IMAGES[0],
+      avatar: AVATAR_IMAGES[0],
       profile: {
         create: {
           firstName: '系统',
@@ -57,7 +57,7 @@ async function main() {
         name: `测试用户${i}`,
         password: await bcrypt.hash('password123', 12),
         role: 'CUSTOMER',
-        image: AVATAR_IMAGES[i % AVATAR_IMAGES.length],
+        avatar: AVATAR_IMAGES[i % AVATAR_IMAGES.length],
         profile: {
           create: {
             firstName: `测试${i}`,
@@ -147,8 +147,8 @@ async function main() {
       update: {},
       create: {
         ...parentData,
-        level: 0,
-        position: createdCategories.length,
+        sortOrder: createdCategories.length,
+        isActive: true,
       },
     });
 
@@ -162,8 +162,8 @@ async function main() {
           create: {
             ...children[i],
             parentId: parentCategory.id,
-            level: 1,
-            position: i,
+            sortOrder: i,
+            isActive: true,
           },
         });
         createdCategories.push(childCategory);

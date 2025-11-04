@@ -8,12 +8,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, X, ShoppingCart, User, Globe } from 'lucide-react';
+import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { AnnouncementBar } from '@/components/layout/announcement-bar';
 
 // 导航菜单配置
 const navigation = [
@@ -32,26 +33,7 @@ export function Header() {
 
   return (
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
-      {/* Top Bar */}
-      <div className="hidden bg-gray-50 py-2 md:block">
-        <div className="container mx-auto flex items-center justify-between px-4 text-sm text-gray-600">
-          <div className="flex items-center space-x-4">
-            <span>免费配送满$99</span>
-            <span>•</span>
-            <span>7天无理由退货</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link href="/help" className="hover:text-gray-900">
-              客服中心
-            </Link>
-            <span>•</span>
-            <div className="flex items-center space-x-1">
-              <Globe className="h-4 w-4" />
-              <span>中文</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AnnouncementBar />
 
       {/* Main Header */}
       <div className="container mx-auto px-4">

@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
       select: { role: true },
     });
 
-    if (user?.role !== 'ADMIN') {
+    // 检查是否有管理员权限（ADMIN 或 SUPER_ADMIN）
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, error: '需要管理员权限' },
         { status: 403 },

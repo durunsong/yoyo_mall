@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -102,11 +102,18 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
     setIsLoading(true);
     try {
       console.log('开始登录:', data.email);
+
+      // 预先获取 CSRF Token，确保凭证登录在 NextAuth v5 下正常工作
+      const csrfResp = await fetch('/api/auth/csrf');
+      const csrfJson = await csrfResp.json().catch(() => ({}));
+
       const res = await signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
         callbackUrl: '/',
+        // 如果拿到了 csrfToken，则显式传入，避免 MissingCSRF
+        ...(csrfJson?.csrfToken ? { csrfToken: csrfJson.csrfToken } : {}),
       });
       
       console.log('登录结果:', res);
@@ -167,6 +174,12 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
   const handleGoogleLogin = useCallback(() => {
     signIn('google', { callbackUrl: '/' });
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab, open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

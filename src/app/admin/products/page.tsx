@@ -74,16 +74,30 @@ const resolveImageUrl = (src?: string | null) => {
     return PLACEHOLDER_IMAGE;
   }
 
+  const trimmed = src.trim();
+  if (!trimmed) {
+    return PLACEHOLDER_IMAGE;
+  }
+
+  if (OSS_BASE_URL && trimmed.startsWith(OSS_BASE_URL)) {
+    return trimmed;
+  }
+
+  if (/^https?:\/\//iu.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+
   try {
-    const url = new URL(src);
-    if (url.hostname.endsWith('aliyuncs.com')) {
-      return url.toString();
-    }
-    if (OSS_BASE_URL && src.startsWith(OSS_BASE_URL)) {
-      return src;
-    }
+    const url = new URL(trimmed, 'http://localhost');
+    return url.toString();
   } catch (error) {
-    // ignore
+    if (trimmed.startsWith('/')) {
+      return trimmed;
+    }
   }
 
   return PLACEHOLDER_IMAGE;
@@ -124,6 +138,15 @@ interface Category {
   _count?: {
     products: number;
   };
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+  details?: unknown;
+  [key: string]: unknown;
 }
 
 interface ProductFormData {
@@ -171,6 +194,7 @@ export default function ProductsPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryForm, setCategoryForm] = useState({
@@ -187,6 +211,43 @@ export default function ProductsPage() {
   const [isCategoryDeleteDialogOpen, setIsCategoryDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
+  /**
+   * 统一处理 API 请求，增加错误兜底提示
+   * @param input 请求地址或 Request 对象
+   * @param init 请求配置
+   * @param defaultError 当接口返回失败且未提供 message 时的默认提示
+   */
+  const requestJson = async <T = unknown>(
+    input: RequestInfo,
+    init: RequestInit = {},
+    defaultError = '请求失败',
+  ): Promise<T> => {
+    const response = await fetch(input, init);
+    let payload: any = null;
+
+    try {
+      payload = await response.json();
+    } catch (error) {
+      if (!response.ok) {
+        throw new Error(defaultError);
+      }
+    }
+
+    if (!response.ok || (payload && payload.success === false)) {
+      const message = payload?.message || payload?.error || defaultError;
+      const errorObject = new Error(message);
+      if (payload?.details) {
+        (errorObject as Error & { details?: unknown }).details = payload.details;
+      }
+      if ('status' in response) {
+        (errorObject as Error & { status?: number }).status = response.status;
+      }
+      throw errorObject;
+    }
+
+    return payload as T;
+  };
+
   // 加载商品列表
   useEffect(() => {
     fetchProducts();
@@ -197,14 +258,15 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/products?limit=100');
-      const data = await response.json();
-      if (data.success) {
-        setProducts(data.data);
-      }
+      const payload = await requestJson<ApiResponse<Product[]>>(
+        '/api/products?limit=100',
+        { cache: 'no-store' },
+        '加载商品列表失败',
+      );
+      setProducts(payload.data ?? []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      toast.error('加载商品列表失败');
+      toast.error(error instanceof Error ? error.message : '加载商品列表失败');
     } finally {
       setLoading(false);
     }
@@ -213,13 +275,15 @@ export default function ProductsPage() {
   // 获取分类列表
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories');
-      const data = await response.json();
-      if (data.success) {
-        setCategories(data.data);
-      }
+      const payload = await requestJson<ApiResponse<Category[]>>(
+        '/api/categories',
+        { cache: 'no-store' },
+        '加载分类失败',
+      );
+      setCategories(payload.data ?? []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
+      toast.error(error instanceof Error ? error.message : '加载分类失败');
     }
   };
 
@@ -294,7 +358,6 @@ export default function ProductsPage() {
 
   const buildImagePayload = (name: string) =>
     imageUrls
-      .filter((url) => url && url.trim())
       .map((url, index) => ({
         url,
         alt: `${name} 图片 ${index + 1}`,
@@ -382,10 +445,21 @@ export default function ProductsPage() {
   };
 
   const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
-  const flattenedCategoryOptions = useMemo(
-    () => flattenCategories(categoryTree),
-    [categoryTree],
-  );
+  const flattenedCategoryOptions = useMemo(() => {
+    /**
+     * 将分类树拍平成扁平数组，并使用 Set 过滤重复 ID，避免 Select 渲染 key 冲突。
+     * 部分后端接口会同时返回树形 children 和重复的父级节点，若不去重会导致 React 报错。
+     */
+    const flattened = flattenCategories(categoryTree);
+    const seen = new Set<string>();
+    return flattened.filter((option) => {
+      if (seen.has(option.id)) {
+        return false;
+      }
+      seen.add(option.id);
+      return true;
+    });
+  }, [categoryTree]);
   const availableParentOptions = useMemo(() => {
     if (!editingCategory) {
       return flattenedCategoryOptions;
@@ -466,28 +540,22 @@ export default function ProductsPage() {
 
     try {
       setCategorySubmitting(true);
-      const response = await fetch(
+      await requestJson<ApiResponse<Category>>(
         editingCategory ? `/api/categories/${editingCategory.id}` : '/api/categories',
         {
           method: editingCategory ? 'PATCH' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         },
+        editingCategory ? '更新分类失败' : '创建分类失败',
       );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success(editingCategory ? '分类更新成功' : '分类创建成功');
-        setIsCategoryDialogOpen(false);
-        resetCategoryForm();
-        fetchCategories();
-      } else {
-        toast.error(data.message || data.error || '保存分类失败');
-      }
+      toast.success(editingCategory ? '分类更新成功' : '分类创建成功');
+      setIsCategoryDialogOpen(false);
+      resetCategoryForm();
+      fetchCategories();
     } catch (error) {
       console.error('Failed to save category:', error);
-      toast.error('保存分类失败');
+      toast.error(error instanceof Error ? error.message : '保存分类失败');
     } finally {
       setCategorySubmitting(false);
     }
@@ -503,31 +571,27 @@ export default function ProductsPage() {
 
     try {
       setCategoryDeleting(true);
-      const response = await fetch(`/api/categories/${categoryToDelete.id}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success('分类删除成功');
-        if (categoryFilter === categoryToDelete.id) {
-          setCategoryFilter('all');
-        }
-        if (formData.categoryId === categoryToDelete.id) {
-          setFormData((prev) => ({
-            ...prev,
-            categoryId: '',
-          }));
-        }
-        setIsCategoryDeleteDialogOpen(false);
-        setCategoryToDelete(null);
-        fetchCategories();
-      } else {
-        toast.error(data.message || data.error || '删除分类失败');
+      await requestJson<ApiResponse<null>>(
+        `/api/categories/${categoryToDelete.id}`,
+        { method: 'DELETE' },
+        '删除分类失败',
+      );
+      toast.success('分类删除成功');
+      if (categoryFilter === categoryToDelete.id) {
+        setCategoryFilter('all');
       }
+      if (formData.categoryId === categoryToDelete.id) {
+        setFormData((prev) => ({
+          ...prev,
+          categoryId: '',
+        }));
+      }
+      setIsCategoryDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+      fetchCategories();
     } catch (error) {
       console.error('Failed to delete category:', error);
-      toast.error('删除分类失败');
+      toast.error(error instanceof Error ? error.message : '删除分类失败');
     } finally {
       setCategoryDeleting(false);
     }
@@ -784,44 +848,63 @@ export default function ProductsPage() {
     </div>
   );
 
+  /**
+   * 渲染单个分类节点
+   * @param category 当前分类节点对象
+   * @param depth 当前节点层级，用于控制缩进与层级展示
+   * @param order 同层级下的排序索引，作为 React key 的补充
+   * @description
+   * - 统一分类块的视觉样式，保证 hover 时才出现操作按钮，避免界面拥挤
+   * - 通过 marginLeft 控制缩进，使多级分类树在移动端也保持可读性
+   * - 结合启用状态与商品数量，向运营同学提供快速判断的辅助信息
+   */
   const renderCategoryItem = (category: Category, depth = 0, order = 0): ReactNode => {
     const itemKey = `cat-${category.id}-depth-${depth}-idx-${order}`;
+    const indent = Math.min(depth, 6) * 12;
+    const productCount = category._count?.products ?? 0;
+    const isInactive = category.isActive === false;
+
     return (
       <div key={itemKey} className="space-y-2">
         <div
-          style={{ paddingLeft: depth * 16 }}
-          className="group flex items-center justify-between rounded-md border bg-background p-2 text-xs shadow-sm transition hover:border-primary/40 hover:bg-muted/60"
+          className="group flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-xs shadow-sm transition hover:border-primary hover:bg-muted"
         >
-          <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-foreground truncate text-sm">{category.name}</span>
-              <Badge variant={category.isActive === false ? 'secondary' : 'default'} className="shrink-0 px-1 py-0 text-[10px]">
-                {category.isActive === false ? '禁用' : '启用'}
-              </Badge>
-            </div>
-            <div className="text-[11px] text-muted-foreground truncate">
-              {category.slug}
-              {typeof category._count?.products === 'number' && category._count.products > 0 && (
-                <span className="ml-2">商品 {category._count.products}</span>
-              )}
+          {indent > 0 ? <div style={{ width: indent }} className="shrink-0" /> : null}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <div className="flex items-center gap-2">
+                <span className="truncate text-sm font-medium text-foreground">{category.name}</span>
+                <Badge
+                  variant={isInactive ? 'secondary' : 'default'}
+                  className={`shrink-0 px-1.5 py-0 text-[10px] ${isInactive ? 'opacity-80' : ''}`}
+                >
+                  {isInactive ? '禁用' : '启用'}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                <span className="truncate max-w-[160px]">{category.slug}</span>
+                {productCount > 0 && <span className="whitespace-nowrap">商品 {productCount}</span>}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 shrink-0 ml-2">
+          <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <Button
               variant="ghost"
               size="icon"
               className="h-6 w-6"
               onClick={() => handleOpenEditCategory(category)}
+              aria-label="编辑分类"
             >
-              <Edit className="h-3 w-3" />
+              <Edit className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               className="h-6 w-6 text-red-500 hover:text-red-600"
               onClick={() => handleOpenDeleteCategory(category)}
+              aria-label="删除分类"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
@@ -861,40 +944,38 @@ export default function ProductsPage() {
       const lowStockThresholdValue = parseNonNegativeInt(formData.lowStockThreshold, 10);
       const imagesPayload = buildImagePayload(formData.name);
 
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          slug: `${slug}-${Date.now()}`,
-          shortDesc: formData.shortDesc,
-          description: formData.description,
-          sku: formData.sku,
-          price: priceValue,
-          comparePrice: normalizedComparePrice,
-          categoryId: formData.categoryId,
-          status: formData.status,
-          images: imagesPayload,
-          trackInventory: formData.trackInventory,
-          allowOutOfStock: formData.allowOutOfStock,
-          inventoryQuantity: formData.trackInventory ? inventoryQuantityValue : 0,
-          lowStockThreshold: formData.trackInventory ? lowStockThresholdValue : 10,
-        }),
-      });
+      const response = await requestJson<ApiResponse<Product>>(
+        '/api/products',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            slug: `${slug}-${Date.now()}`,
+            shortDesc: formData.shortDesc,
+            description: formData.description,
+            sku: formData.sku,
+            price: priceValue,
+            comparePrice: normalizedComparePrice,
+            categoryId: formData.categoryId,
+            status: formData.status,
+            images: imagesPayload.filter((image) => image.url && image.url.trim()),
+            trackInventory: formData.trackInventory,
+            allowOutOfStock: formData.allowOutOfStock,
+            inventoryQuantity: formData.trackInventory ? inventoryQuantityValue : 0,
+            lowStockThreshold: formData.trackInventory ? lowStockThresholdValue : 10,
+          }),
+        },
+        '添加商品失败',
+      );
 
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success('商品添加成功');
-        setIsAddDialogOpen(false);
-        resetForm();
-        fetchProducts();
-      } else {
-        toast.error(data.error || '添加商品失败');
-      }
+      toast.success('商品添加成功');
+      setIsAddDialogOpen(false);
+      resetForm();
+      fetchProducts();
     } catch (error) {
       console.error('Failed to add product:', error);
-      toast.error('添加商品失败');
+      toast.error(error instanceof Error ? error.message : '添加商品失败');
     } finally {
       setSubmitting(false);
     }
@@ -936,51 +1017,50 @@ export default function ProductsPage() {
       const lowStockThresholdValue = parseNonNegativeInt(formData.lowStockThreshold, 10);
       const imagesPayload = buildImagePayload(formData.name || selectedProduct.name);
 
-      const response = await fetch(`/api/products/${selectedProduct.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          shortDesc: formData.shortDesc || '',
-          description: formData.description || '',
-          sku: formData.sku,
-          price: priceValue,
-          comparePrice: normalizedComparePrice,
-          categoryId: formData.categoryId,
-          status: formData.status,
-          images: imagesPayload,
-          trackInventory: formData.trackInventory,
-          allowOutOfStock: formData.allowOutOfStock,
-          inventoryQuantity: formData.trackInventory ? inventoryQuantityValue : undefined,
-          lowStockThreshold: formData.trackInventory ? lowStockThresholdValue : undefined,
-        }),
-      });
+      await requestJson<ApiResponse<Product>>(
+        `/api/products/${selectedProduct.id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            shortDesc: formData.shortDesc || '',
+            description: formData.description || '',
+            sku: formData.sku,
+            price: priceValue,
+            comparePrice: normalizedComparePrice,
+            categoryId: formData.categoryId,
+            status: formData.status,
+            images: imagesPayload.filter((image) => image.url && image.url.trim()),
+            trackInventory: formData.trackInventory,
+            allowOutOfStock: formData.allowOutOfStock,
+            inventoryQuantity: formData.trackInventory ? inventoryQuantityValue : undefined,
+            lowStockThreshold: formData.trackInventory ? lowStockThresholdValue : undefined,
+          }),
+        },
+        '更新商品失败',
+      );
 
-      const data = await response.json();
-
-      if (data.success || response.ok) {
-        toast.success('商品更新成功');
-        setIsEditDialogOpen(false);
-        setSelectedProduct(null);
-        resetForm();
-        fetchProducts();
-      } else {
-        // 详细显示错误信息
-        if (data.details && Array.isArray(data.details)) {
-          // 显示验证错误详情
-          const errorMessages = data.details.map((err: any) => 
-            `${err.path}: ${err.message}`
-          ).join('\n');
-          toast.error(`更新失败:\n${errorMessages}`);
-          console.error('验证错误详情:', data.details);
-        } else {
-          toast.error(data.message || data.error || '更新商品失败');
-        }
-        console.error('Update error:', data);
-      }
+      toast.success('商品更新成功');
+      setIsEditDialogOpen(false);
+      setSelectedProduct(null);
+      resetForm();
+      fetchProducts();
     } catch (error) {
       console.error('Failed to update product:', error);
-      toast.error(error instanceof Error ? error.message : '更新商品失败');
+      if (error instanceof Error && (error as Error & { details?: unknown }).details) {
+        const details = (error as Error & { details?: any }).details;
+        if (Array.isArray(details)) {
+          const errorMessages = details
+            .map((detail: any) => `${detail.path ?? '字段'}: ${detail.message ?? ''}`)
+            .join('\n');
+          toast.error(`更新失败:\n${errorMessages}`);
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.error(error instanceof Error ? error.message : '更新商品失败');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -997,23 +1077,19 @@ export default function ProductsPage() {
     if (!productToDelete) return;
 
     try {
-      const response = await fetch(`/api/products/${productToDelete}`, {
-        method: 'DELETE',
-      });
+      await requestJson<ApiResponse<null>>(
+        `/api/products/${productToDelete}`,
+        { method: 'DELETE' },
+        '删除商品失败',
+      );
 
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success('商品删除成功');
-        setIsDeleteDialogOpen(false);
-        setProductToDelete(null);
-        fetchProducts();
-      } else {
-        toast.error(data.message || data.error || '删除商品失败');
-      }
+      toast.success('商品删除成功');
+      setIsDeleteDialogOpen(false);
+      setProductToDelete(null);
+      fetchProducts();
     } catch (error) {
       console.error('Failed to delete product:', error);
-      toast.error('删除商品失败');
+      toast.error(error instanceof Error ? error.message : '删除商品失败');
     }
   };
 
@@ -1043,66 +1119,102 @@ export default function ProductsPage() {
     }
 
     try {
+      if (action === 'delete') {
+        setIsBulkDeleteDialogOpen(true);
+        return;
+      }
+
+      setBulkProcessing(true);
       let successCount = 0;
-      
+
+      const execute = async (productId: string, payload: Record<string, unknown>) => {
+        try {
+          await requestJson<ApiResponse<Product>>(
+            `/api/products/${productId}`,
+            {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            },
+            '批量操作失败',
+          );
+          successCount += 1;
+        } catch (error) {
+          console.error('Bulk action failed:', error);
+        }
+      };
+
       switch (action) {
         case 'publish':
-          // 批量发布
-          for (const productId of selectedProducts) {
-            const response = await fetch(`/api/products/${productId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'PUBLISHED' }),
-            });
-            if (response.ok) successCount++;
+          await Promise.all(
+            selectedProducts.map((productId) => execute(productId, { status: 'PUBLISHED' })),
+          );
+          if (successCount > 0) {
+            toast.success(`成功发布 ${successCount} 个商品`);
           }
-          toast.success(`成功发布 ${successCount} 个商品`);
           break;
-          
+
         case 'unpublish':
-          // 批量下架
-          for (const productId of selectedProducts) {
-            const response = await fetch(`/api/products/${productId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'DRAFT' }),
-            });
-            if (response.ok) successCount++;
+          await Promise.all(
+            selectedProducts.map((productId) => execute(productId, { status: 'DRAFT' })),
+          );
+          if (successCount > 0) {
+            toast.success(`成功下架 ${successCount} 个商品`);
           }
-          toast.success(`成功下架 ${successCount} 个商品`);
           break;
-          
-        case 'delete':
-          // 批量删除 - 打开确认对话框
-          setIsBulkDeleteDialogOpen(true);
+        default:
+          toast.error('暂不支持的批量操作');
           return;
       }
-      
+
+      if (successCount < selectedProducts.length) {
+        toast.error(`有 ${selectedProducts.length - successCount} 个商品操作失败`);
+      }
+
       setSelectedProducts([]);
       fetchProducts();
     } catch (error) {
       console.error('Bulk action failed:', error);
       toast.error('批量操作失败');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
   // 批量删除商品
   const handleBulkDeleteProducts = async () => {
     try {
+      setBulkProcessing(true);
       let successCount = 0;
-      for (const productId of selectedProducts) {
-        const response = await fetch(`/api/products/${productId}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) successCount++;
+      await Promise.all(
+        selectedProducts.map(async (productId) => {
+          try {
+            await requestJson<ApiResponse<null>>(
+              `/api/products/${productId}`,
+              { method: 'DELETE' },
+              '删除商品失败',
+            );
+            successCount += 1;
+          } catch (error) {
+            console.error('Bulk delete failed:', error);
+          }
+        }),
+      );
+
+      if (successCount > 0) {
+        toast.success(`成功删除 ${successCount} 个商品`);
       }
-      toast.success(`成功删除 ${successCount} 个商品`);
+      if (successCount < selectedProducts.length) {
+        toast.error(`仍有 ${selectedProducts.length - successCount} 个商品删除失败`);
+      }
       setIsBulkDeleteDialogOpen(false);
       setSelectedProducts([]);
       fetchProducts();
     } catch (error) {
       console.error('Bulk delete failed:', error);
       toast.error('批量删除失败');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -1114,21 +1226,20 @@ export default function ProductsPage() {
     const newStatus = product.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
 
     try {
-      const response = await fetch(`/api/products/${productId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (response.ok) {
-        toast.success(`商品已${newStatus === 'PUBLISHED' ? '发布' : '下架'}`);
-        fetchProducts();
-      } else {
-        toast.error('状态切换失败');
-      }
+      await requestJson<ApiResponse<Product>>(
+        `/api/products/${productId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        },
+        '状态切换失败',
+      );
+      toast.success(`商品已${newStatus === 'PUBLISHED' ? '发布' : '下架'}`);
+      fetchProducts();
     } catch (error) {
       console.error('Toggle status failed:', error);
-      toast.error('状态切换失败');
+      toast.error(error instanceof Error ? error.message : '状态切换失败');
     }
   };
 
@@ -1162,9 +1273,10 @@ export default function ProductsPage() {
 
   return (
     <AdminLayout>
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
-        <div className="space-y-6">
-          <Card className="lg:sticky lg:top-24">
+      {/* 商品管理主容器，左侧分类面板在大屏保持窄列，移动端自动换行 */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(200px,240px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr]">
+        <div className="space-y-4">
+          <Card className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-160px)]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -1177,9 +1289,9 @@ export default function ProductsPage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className="space-y-1 pb-3 pr-0 lg:pr-1">
               {categoryTree.length > 0 ? (
-                <div className="max-h-[calc(100vh-280px)] space-y-1 overflow-y-auto pr-1">
+                <div className="max-h-[calc(100vh-240px)] space-y-2 overflow-y-auto pr-1">
                   {categoryTree.map((category, index) => renderCategoryItem(category, 0, index))}
                 </div>
               ) : (
@@ -1191,7 +1303,7 @@ export default function ProductsPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* 页头 */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -1213,7 +1325,7 @@ export default function ProductsPage() {
           </div>
 
           {/* 统计卡片 */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">总商品数</CardTitle>
@@ -1309,6 +1421,7 @@ export default function ProductsPage() {
                     { label: '批量下架', value: 'unpublish', icon: XCircle },
                     { label: '批量删除', value: 'delete', icon: Trash2, variant: 'destructive' },
                   ]}
+                      disabled={bulkProcessing}
                   onAction={handleBulkAction}
                   onClearSelection={() => setSelectedProducts([])}
                 />

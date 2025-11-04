@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import {
   Card,
@@ -36,8 +36,61 @@ import {
   Bell,
   Loader2,
   Save,
+  Megaphone,
+  Plus,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+
+type AnnouncementActionType = 'NONE' | 'URL' | 'OPEN_LOGIN_MODAL' | 'OPEN_REGISTER_MODAL';
+
+interface AnnouncementItem {
+  id: string;
+  title: string | null;
+  content: string | null;
+  imageUrl: string | null;
+  backgroundColor: string | null;
+  textColor: string | null;
+  height: number | null;
+  isActive: boolean;
+  sortOrder: number;
+  actionType: AnnouncementActionType;
+  linkUrl: string | null;
+  openInNewTab: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AnnouncementFormState {
+  title: string;
+  content: string;
+  imageUrl: string;
+  backgroundColor: string;
+  textColor: string;
+  height: string;
+  isActive: boolean;
+  sortOrder: string;
+  actionType: AnnouncementActionType;
+  linkUrl: string;
+  openInNewTab: boolean;
+}
+
+const ANNOUNCEMENT_ACTION_LABELS: Record<AnnouncementActionType, string> = {
+  NONE: '无操作',
+  URL: '跳转链接',
+  OPEN_LOGIN_MODAL: '打开登录弹窗',
+  OPEN_REGISTER_MODAL: '打开注册弹窗',
+};
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
@@ -80,6 +133,255 @@ export default function SettingsPage() {
     emailNotifications: true,
     smsNotifications: false,
   });
+
+  const announcementDefaultForm = useMemo<AnnouncementFormState>(
+    () => ({
+      title: '',
+      content: '',
+      imageUrl: '',
+      backgroundColor: '#1D4ED8',
+      textColor: '#FFFFFF',
+      height: '48',
+      isActive: true,
+      sortOrder: '0',
+      actionType: 'NONE',
+      linkUrl: '',
+      openInNewTab: false,
+    }),
+    [],
+  );
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+  const [announcementLoading, setAnnouncementLoading] = useState(false);
+  const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
+  const [announcementForm, setAnnouncementForm] = useState<AnnouncementFormState>(announcementDefaultForm);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
+  const [announcementSaving, setAnnouncementSaving] = useState(false);
+  const [announcementConfig, setAnnouncementConfig] = useState<{ rotationInterval: number }>({ rotationInterval: 5000 });
+  const [announcementConfigSaving, setAnnouncementConfigSaving] = useState(false);
+  const announcementActionOptions: { label: string; value: AnnouncementActionType }[] = [
+    { label: '无操作', value: 'NONE' },
+    { label: '跳转链接', value: 'URL' },
+    { label: '打开登录弹窗', value: 'OPEN_LOGIN_MODAL' },
+    { label: '打开注册弹窗', value: 'OPEN_REGISTER_MODAL' },
+  ];
+
+  const fetchAnnouncements = async () => {
+    try {
+      setAnnouncementLoading(true);
+      const response = await fetch('/api/announcements?includeConfig=true');
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.message || '获取公告失败');
+      }
+
+      setAnnouncements(data.data ?? []);
+      if (data.config?.rotationInterval) {
+        setAnnouncementConfig({ rotationInterval: data.config.rotationInterval });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : '获取公告失败');
+    } finally {
+      setAnnouncementLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  const resetAnnouncementForm = (nextSortOrder?: string) => {
+    setAnnouncementForm({
+      ...announcementDefaultForm,
+      sortOrder: nextSortOrder ?? String((announcements.length + 1) * 10),
+    });
+  };
+
+  const openCreateAnnouncement = () => {
+    setEditingAnnouncementId(null);
+    resetAnnouncementForm();
+    setAnnouncementDialogOpen(true);
+  };
+
+  const openEditAnnouncement = (item: AnnouncementItem) => {
+    setEditingAnnouncementId(item.id);
+    setAnnouncementForm({
+      title: item.title ?? '',
+      content: item.content ?? '',
+      imageUrl: item.imageUrl ?? '',
+      backgroundColor: item.backgroundColor ?? '',
+      textColor: item.textColor ?? '',
+      height: item.height !== null && item.height !== undefined ? String(item.height) : '',
+      isActive: item.isActive,
+      sortOrder: String(item.sortOrder),
+      actionType: item.actionType,
+      linkUrl: item.linkUrl ?? '',
+      openInNewTab: item.openInNewTab,
+    });
+    setAnnouncementDialogOpen(true);
+  };
+
+  const closeAnnouncementDialog = (open: boolean) => {
+    setAnnouncementDialogOpen(open);
+    if (!open) {
+      setEditingAnnouncementId(null);
+      resetAnnouncementForm('0');
+    }
+  };
+
+  const updateAnnouncement = async (
+    id: string,
+    payload: Record<string, unknown>,
+    successMessage = '公告已更新',
+  ) => {
+    try {
+      const response = await fetch(`/api/announcements/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.message || '更新失败');
+      }
+
+      toast.success(successMessage);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : '更新失败');
+    }
+  };
+
+  const handleAnnouncementSubmit = async () => {
+    try {
+      setAnnouncementSaving(true);
+
+      const heightNumber = announcementForm.height.trim()
+        ? Number(announcementForm.height.trim())
+        : undefined;
+      const sortOrderNumber = announcementForm.sortOrder.trim()
+        ? Number(announcementForm.sortOrder.trim())
+        : 0;
+
+      if (heightNumber !== undefined && Number.isNaN(heightNumber)) {
+        throw new Error('请填写正确的高度（数字）');
+      }
+
+      if (Number.isNaN(sortOrderNumber)) {
+        throw new Error('请填写正确的排序值（数字）');
+      }
+
+      const payload = {
+        title: announcementForm.title.trim() || null,
+        content: announcementForm.content.trim() || null,
+        imageUrl: announcementForm.imageUrl.trim() || null,
+        backgroundColor: announcementForm.backgroundColor.trim() || null,
+        textColor: announcementForm.textColor.trim() || null,
+        height: heightNumber,
+        isActive: announcementForm.isActive,
+        sortOrder: sortOrderNumber,
+        actionType: announcementForm.actionType,
+        linkUrl:
+          announcementForm.actionType === 'URL'
+            ? announcementForm.linkUrl.trim() || null
+            : null,
+        openInNewTab:
+          announcementForm.actionType === 'URL' ? announcementForm.openInNewTab : false,
+      };
+
+      const url = editingAnnouncementId
+        ? `/api/announcements/${editingAnnouncementId}`
+        : '/api/announcements';
+      const method = editingAnnouncementId ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.message || '保存失败');
+      }
+
+      toast.success(editingAnnouncementId ? '公告已更新' : '公告已创建');
+      closeAnnouncementDialog(false);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
+    } finally {
+      setAnnouncementSaving(false);
+    }
+  };
+
+  const handleAnnouncementDelete = async (id: string) => {
+    if (!window.confirm('确定要删除该公告吗？')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.message || '删除失败');
+      }
+
+      toast.success('公告已删除');
+      fetchAnnouncements();
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : '删除失败');
+    }
+  };
+
+  const handleToggleAnnouncement = (item: AnnouncementItem) => {
+    updateAnnouncement(item.id, { isActive: !item.isActive }, '公告状态已更新');
+  };
+
+  const handleSortOrderBlur = (item: AnnouncementItem, value: string) => {
+    if (!value.trim()) {
+      toast.error('排序值不能为空');
+      return;
+    }
+    const parsed = Number(value.trim());
+    if (Number.isNaN(parsed)) {
+      toast.error('请填写数字类型的排序值');
+      return;
+    }
+    if (parsed === item.sortOrder) {
+      return;
+    }
+
+    updateAnnouncement(item.id, { sortOrder: parsed }, '排序已更新');
+  };
+
+  const handleSaveAnnouncementConfig = async () => {
+    try {
+      setAnnouncementConfigSaving(true);
+      const response = await fetch('/api/announcements/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rotationInterval: announcementConfig.rotationInterval }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.message || '保存轮播配置失败');
+      }
+      toast.success('轮播设置已保存');
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
+    } finally {
+      setAnnouncementConfigSaving(false);
+    }
+  };
 
   // 保存网站设置
   const handleSaveSiteSettings = async () => {
@@ -148,7 +450,7 @@ export default function SettingsPage() {
 
         {/* 设置标签页 */}
         <Tabs defaultValue="site" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="site">
               <Globe className="mr-2 h-4 w-4" />
               网站设置
@@ -164,6 +466,10 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">
               <Bell className="mr-2 h-4 w-4" />
               通知设置
+            </TabsTrigger>
+            <TabsTrigger value="announcements">
+              <Megaphone className="mr-2 h-4 w-4" />
+              公告管理
             </TabsTrigger>
           </TabsList>
 
@@ -653,6 +959,388 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="announcements">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>公告管理</CardTitle>
+                  <CardDescription>配置前台顶部公告条的展示内容与跳转行为</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                    <div className="grid gap-2 md:w-72">
+                      <Label htmlFor="announcement-rotation">轮播间隔 (毫秒)</Label>
+                      <Input
+                        id="announcement-rotation"
+                        type="number"
+                        min={1000}
+                        value={announcementConfig.rotationInterval}
+                        onChange={(e) =>
+                          setAnnouncementConfig({
+                            rotationInterval: Number.parseInt(e.target.value || '0', 10) || 0,
+                          })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        多条公告同时启用时按照该间隔轮播，建议 3000-10000 之间。
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleSaveAnnouncementConfig}
+                      disabled={announcementConfigSaving || announcementConfig.rotationInterval < 1000}
+                    >
+                      {announcementConfigSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          保存中...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          保存轮播设置
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      公告内容会在前台顶部居中展示，可配置背景色、文字色、图片及点击行为。
+                    </p>
+                    <Button onClick={openCreateAnnouncement}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      新增公告
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {announcementLoading ? (
+                      <div className="space-y-3">
+                        {[1, 2].map((item) => (
+                          <div key={item} className="h-24 animate-pulse rounded-md bg-muted" />
+                        ))}
+                      </div>
+                    ) : announcements.length === 0 ? (
+                      <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
+                        暂无公告，点击右上角「新增公告」开始配置。
+                      </div>
+                    ) : (
+                      announcements
+                        .slice()
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((item) => (
+                          <Card key={item.id}>
+                            <CardContent className="space-y-4 pt-4">
+                              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <Switch
+                                      checked={item.isActive}
+                                      onCheckedChange={() => handleToggleAnnouncement(item)}
+                                    />
+                                    <div>
+                                      <p className="text-sm font-medium">
+                                        {item.title?.trim() || '未命名公告'}
+                                      </p>
+                                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                        <span>排序值</span>
+                                        <Input
+                                          type="number"
+                                          defaultValue={item.sortOrder}
+                                          className="h-7 w-24"
+                                          onBlur={(event) =>
+                                            handleSortOrderBlur(item, event.currentTarget.value)
+                                          }
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    动作：{ANNOUNCEMENT_ACTION_LABELS[item.actionType]}
+                                    {item.actionType === 'URL' && item.linkUrl ? (
+                                      <span className="ml-2 break-all text-primary">
+                                        {item.linkUrl}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => openEditAnnouncement(item)}>
+                                    <Edit className="mr-1 h-4 w-4" />
+                                    编辑
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-700"
+                                    onClick={() => handleAnnouncementDelete(item.id)}
+                                  >
+                                    <Trash2 className="mr-1 h-4 w-4" />
+                                    删除
+                                  </Button>
+                                </div>
+                              </div>
+
+                              <div
+                                className="rounded-md px-4 py-3 text-sm"
+                                style={{
+                                  backgroundColor: item.backgroundColor || 'var(--primary)',
+                                  color: item.textColor || '#ffffff',
+                                  minHeight: item.height ?? 40,
+                                }}
+                              >
+                                <div className="flex flex-col items-center justify-center gap-2 text-center">
+                                  {item.imageUrl ? (
+                                    <img
+                                      src={item.imageUrl}
+                                      alt={item.title ?? '公告图片'}
+                                      className="max-h-12 w-auto object-contain"
+                                    />
+                                  ) : null}
+                                  {item.title ? (
+                                    <span className="font-medium">{item.title}</span>
+                                  ) : null}
+                                  {item.content
+                                    ?.split('\n')
+                                    .filter(Boolean)
+                                    .map((line, index) => (
+                                      <span key={index} className="leading-tight">
+                                        {line}
+                                      </span>
+                                    ))}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Dialog open={announcementDialogOpen} onOpenChange={closeAnnouncementDialog}>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>{editingAnnouncementId ? '编辑公告' : '新增公告'}</DialogTitle>
+                  <DialogDescription>配置公告显示内容与点击行为，所有字段均可选填。</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="announcement-title-input">标题（可选）</Label>
+                    <Input
+                      id="announcement-title-input"
+                      value={announcementForm.title}
+                      onChange={(e) =>
+                        setAnnouncementForm({ ...announcementForm, title: e.target.value })
+                      }
+                      placeholder="例如：限时免邮"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="announcement-content-input">展示文案</Label>
+                    <Textarea
+                      id="announcement-content-input"
+                      rows={3}
+                      value={announcementForm.content}
+                      onChange={(e) =>
+                        setAnnouncementForm({ ...announcementForm, content: e.target.value })
+                      }
+                      placeholder="支持多行输入，将按照换行符进行展示"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="announcement-image-input">Banner 图片地址（可选）</Label>
+                    <Input
+                      id="announcement-image-input"
+                      value={announcementForm.imageUrl}
+                      onChange={(e) =>
+                        setAnnouncementForm({ ...announcementForm, imageUrl: e.target.value })
+                      }
+                      placeholder="https://example.com/banner.png"
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="announcement-bg-input">背景色</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="announcement-bg-input"
+                          value={announcementForm.backgroundColor}
+                          onChange={(e) =>
+                            setAnnouncementForm({
+                              ...announcementForm,
+                              backgroundColor: e.target.value,
+                            })
+                          }
+                          placeholder="#1D4ED8"
+                        />
+                        <Input
+                          type="color"
+                          className="h-10 w-16 cursor-pointer p-1"
+                          value={announcementForm.backgroundColor || '#1D4ED8'}
+                          onChange={(e) =>
+                            setAnnouncementForm({
+                              ...announcementForm,
+                              backgroundColor: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="announcement-text-input">文字颜色</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="announcement-text-input"
+                          value={announcementForm.textColor}
+                          onChange={(e) =>
+                            setAnnouncementForm({
+                              ...announcementForm,
+                              textColor: e.target.value,
+                            })
+                          }
+                          placeholder="#FFFFFF"
+                        />
+                        <Input
+                          type="color"
+                          className="h-10 w-16 cursor-pointer p-1"
+                          value={announcementForm.textColor || '#FFFFFF'}
+                          onChange={(e) =>
+                            setAnnouncementForm({
+                              ...announcementForm,
+                              textColor: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor="announcement-height-input">高度 (px)</Label>
+                      <Input
+                        id="announcement-height-input"
+                        type="number"
+                        min={24}
+                        max={200}
+                        value={announcementForm.height}
+                        onChange={(e) =>
+                          setAnnouncementForm({ ...announcementForm, height: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="announcement-sort-input">排序值</Label>
+                      <Input
+                        id="announcement-sort-input"
+                        type="number"
+                        value={announcementForm.sortOrder}
+                        onChange={(e) =>
+                          setAnnouncementForm({
+                            ...announcementForm,
+                            sortOrder: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>是否启用</Label>
+                      <div className="flex h-10 items-center gap-3 rounded-md border px-3">
+                        <Switch
+                          checked={announcementForm.isActive}
+                          onCheckedChange={(checked) =>
+                            setAnnouncementForm({ ...announcementForm, isActive: checked })
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {announcementForm.isActive ? '已启用' : '未启用'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="announcement-action-select">点击动作</Label>
+                      <Select
+                        value={announcementForm.actionType}
+                        onValueChange={(value: AnnouncementActionType) =>
+                          setAnnouncementForm({ ...announcementForm, actionType: value })
+                        }
+                      >
+                        <SelectTrigger id="announcement-action-select">
+                          <SelectValue placeholder="选择操作" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {announcementActionOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {announcementForm.actionType === 'URL' && (
+                      <div className="grid gap-2">
+                        <Label htmlFor="announcement-link-input">跳转链接</Label>
+                        <Input
+                          id="announcement-link-input"
+                          value={announcementForm.linkUrl}
+                          onChange={(e) =>
+                            setAnnouncementForm({ ...announcementForm, linkUrl: e.target.value })
+                          }
+                          placeholder="支持 /path 或完整链接"
+                        />
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Switch
+                            checked={announcementForm.openInNewTab}
+                            onCheckedChange={(checked) =>
+                              setAnnouncementForm({ ...announcementForm, openInNewTab: checked })
+                            }
+                          />
+                          <span>新窗口打开</span>
+                        </div>
+                      </div>
+                    )}
+                    {announcementForm.actionType === 'OPEN_LOGIN_MODAL' && (
+                      <p className="text-xs text-muted-foreground md:col-span-1">
+                        用户点击后将弹出登录弹窗。
+                      </p>
+                    )}
+                    {announcementForm.actionType === 'OPEN_REGISTER_MODAL' && (
+                      <p className="text-xs text-muted-foreground md:col-span-1">
+                        用户点击后将弹出注册弹窗。
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => closeAnnouncementDialog(false)}>
+                    取消
+                  </Button>
+                  <Button onClick={handleAnnouncementSubmit} disabled={announcementSaving}>
+                    {announcementSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        保存中...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        保存公告
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>

@@ -19,6 +19,7 @@ interface ProductCardProps {
     price: number;
     originalPrice?: number;
     image?: string;
+    images?: Array<{ url: string }>;
     rating?: number;
     reviews?: number;
     inStock?: boolean;
@@ -47,11 +48,14 @@ export default function ProductCard({
     price,
     originalPrice,
     image,
+    images,
     rating = 0,
     reviews = 0,
     inStock = true,
     featured = false,
   } = product;
+
+  const primaryImage = image || images?.[0]?.url;
 
   // 处理收藏
   const handleWishlist = (e: React.MouseEvent) => {
@@ -66,10 +70,11 @@ export default function ProductCard({
     <Card className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${className}`}>
       <CardContent className="p-0">
         {/* 商品图片 */}
-        <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gradient-to-br from-gray-100 to-gray-200">
-          {image ? (
+        <Link href={`/products/${id}`} className="block">
+          <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gradient-to-br from-gray-100 to-gray-200">
+          {primaryImage ? (
             <img
-              src={image}
+              src={primaryImage}
               alt={name}
               className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:rotate-1"
               loading="lazy"
@@ -113,7 +118,7 @@ export default function ProductCard({
                   e.preventDefault();
                   e.stopPropagation();
                   if (onAddToCart) {
-                    onAddToCart({ id, name, price, image });
+                    onAddToCart({ id, name, price, image: primaryImage });
                   }
                 }}
               >
@@ -132,6 +137,7 @@ export default function ProductCard({
             <Heart className="h-4 w-4 transition-colors hover:fill-red-500 hover:text-red-500" />
           </Button>
         </div>
+        </Link>
 
         {/* 商品信息 */}
         <div className="p-4 space-y-2">

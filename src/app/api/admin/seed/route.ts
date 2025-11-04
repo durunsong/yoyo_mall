@@ -6,8 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     
-    // 检查用户权限（只有管理员可以执行）
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    // 检查用户权限（只有管理员可以执行，包括ADMIN和SUPER_ADMIN）
+    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '需要管理员权限' },
         { status: 403 },
