@@ -242,6 +242,64 @@ model SystemSettings {
   @@map("system_settings")
 }
 
+// Newsletter 订阅者
+model NewsletterSubscriber {
+  id              String              @id @default(cuid())
+  email           String              @unique
+  status          SubscriberStatus    @default(PENDING)
+  subscribedAt    DateTime            @default(now())
+  confirmedAt     DateTime?
+  unsubscribedAt  DateTime?
+  verifyToken     String?             @unique
+  unsubscribeToken String?            @unique
+  source          String?             // 订阅来源（footer, popup等）
+  metadata        Json?               // 额外信息（如订阅页面、UTM参数等）
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("newsletter_subscribers")
+}
+
+// Newsletter 发送记录
+model NewsletterCampaign {
+  id              String              @id @default(cuid())
+  subject         String
+  content         String              @db.Text
+  htmlContent     String?             @db.Text
+  status          CampaignStatus      @default(DRAFT)
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  recipientCount  Int                 @default(0)
+  successCount    Int                 @default(0)
+  failureCount    Int                 @default(0)
+  openCount       Int                 @default(0)
+  clickCount      Int                 @default(0)
+  createdBy       String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("newsletter_campaigns")
+}
+
+enum SubscriberStatus {
+  PENDING       // 待验证
+  ACTIVE        // 已激活
+  UNSUBSCRIBED  // 已取消订阅
+  BOUNCED       // 邮件退回
+}
+
+enum CampaignStatus {
+  DRAFT         // 草稿
+  SCHEDULED     // 已计划
+  SENDING       // 发送中
+  SENT          // 已发送
+  FAILED        // 发送失败
+}
+
 // 商品变体
 model ProductVariant {
   id           String   @id @default(cuid())

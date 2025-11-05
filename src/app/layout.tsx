@@ -19,8 +19,10 @@ export const metadata: Metadata = {
   keywords: ['跨境电商', '网上购物', '全球商品', '安全支付', '电子商务'],
   authors: [{ name: 'YOYO Mall Team' }],
   creator: 'YOYO Mall',
+  // 动态获取应用URL，优先使用环境变量，其次使用 Vercel URL，最后才用 localhost
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    process.env.NEXT_PUBLIC_APP_URL || 
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
   ),
   openGraph: {
     type: 'website',

@@ -7,16 +7,11 @@ import bcrypt from 'bcryptjs';
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
-  // 动态配置URL，支持线上环境
-  ...(process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL !== 'http://localhost:3000' 
-    ? {} 
-    : { 
-        pages: {
-          signIn: '/',
-          signOut: '/',
-        },
-      }
-  ),
+  // 自定义登录和登出页面
+  pages: {
+    signIn: '/',
+    signOut: '/',
+  },
   providers: [
     // Google OAuth 提供者
     Google({

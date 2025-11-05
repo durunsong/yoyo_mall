@@ -5,6 +5,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Mail,
@@ -73,32 +74,100 @@ const socialLinks = [
 export function Footer() {
   const { t } = useStaticTranslations('navigation');
   const footerLinks = getFooterLinks(t);
+  
+  // Newsletter 订阅状态
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // 确保只在客户端渲染动态内容
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 处理订阅提交
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setMessage({ type: 'error', text: '请输入邮箱地址' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, source: 'footer' }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message || '订阅成功！请查收验证邮件' });
+        setEmail(''); // 清空输入框
+      } else {
+        setMessage({ 
+          type: 'error', 
+          text: data.message || '订阅失败，请稍后重试' 
+        });
+      }
+    } catch (error) {
+      console.error('订阅失败:', error);
+      setMessage({ type: 'error', text: '订阅失败，请稍后重试' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <footer className="bg-gray-900 text-white">
       {/* Newsletter Section */}
-      <div className="bg-gray-800 py-8">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between md:flex-row">
-            <div className="mb-4 md:mb-0">
-              <h3 className="mb-2 text-lg font-semibold">{t('subscribeNewsletter')}</h3>
-              <p className="text-gray-300">{t('getLatestOffers')}</p>
+          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+            <div className="text-center md:text-left">
+              <h3 className="mb-2 text-2xl font-bold text-white">
+                {mounted ? t('subscribeNewsletter') : '订阅我们的新闻'}
+              </h3>
+              <p className="text-blue-100">
+                {mounted ? t('getLatestOffers') : '获取最新优惠和资讯'}
+              </p>
             </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder={t('enterEmailAddress')}
-                autoComplete="email"
-                data-lpignore="true"
-                data-form-type="other"
-                className="flex-1 rounded-l-md px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-80"
-              />
-              <button 
-                type="button"
-                className="rounded-r-md bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
-              >
-                {t('subscribe')}
-              </button>
+            <div className="w-full md:w-auto">
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                <div className="flex w-full md:w-auto">
+                  <input
+                    type="email"
+                    placeholder={mounted ? t('enterEmailAddress') : '输入您的邮箱地址'}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    autoComplete="email"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    className="flex-1 rounded-l-lg border-2 border-white bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 disabled:bg-gray-100 disabled:cursor-not-allowed md:w-80"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="rounded-r-lg bg-white px-8 py-3 font-semibold text-blue-600 transition-all hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {isSubmitting ? '提交中...' : (mounted ? t('subscribe') : '订阅')}
+                  </button>
+                </div>
+                {message && (
+                  <p className={`text-sm font-medium ${message.type === 'success' ? 'text-green-200' : 'text-yellow-200'}`}>
+                    {message.text}
+                  </p>
+                )}
+              </form>
             </div>
           </div>
         </div>

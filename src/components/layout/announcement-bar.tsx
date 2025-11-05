@@ -38,6 +38,7 @@ export function AnnouncementBar() {
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [rotationInterval, setRotationInterval] = useState(DEFAULT_ROTATION_INTERVAL);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +73,7 @@ export function AnnouncementBar() {
     return () => controller.abort();
   }, []);
 
+  // 轮播定时器 - 添加平滑过渡效果
   useEffect(() => {
     if (announcements.length <= 1) {
       return;
@@ -79,7 +81,14 @@ export function AnnouncementBar() {
 
     const interval = rotationInterval >= 1000 ? rotationInterval : DEFAULT_ROTATION_INTERVAL;
     const timer = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % announcements.length);
+      // 触发过渡动画
+      setIsTransitioning(true);
+      
+      // 等待动画完成后再切换索引
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % announcements.length);
+        setIsTransitioning(false);
+      }, 500); // 动画持续时间 500ms
     }, interval);
 
     return () => window.clearInterval(timer);
@@ -154,24 +163,63 @@ export function AnnouncementBar() {
     alignItems: 'center',
   };
 
-  const contentNode = (
-    <div className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 text-center text-sm md:text-base">
-      {currentAnnouncement?.imageUrl ? (
-        <img
-          src={currentAnnouncement.imageUrl}
-          alt={currentAnnouncement.title ?? '公告'}
-          className="max-h-10 w-auto object-contain"
-        />
-      ) : null}
-      <div className="flex flex-col items-center justify-center gap-1">
-        {currentAnnouncement?.title ? (
-          <span className="font-semibold leading-tight">{currentAnnouncement.title}</span>
+  // 渲染内容节点
+  const renderContent = (announcement: AnnouncementItem | undefined, key: string) => {
+    if (!announcement) return null;
+    
+    const announcementLines = announcement.content
+      ? announcement.content.split('\n').map((line) => line.trim()).filter(Boolean)
+      : [];
+
+    return (
+      <div 
+        key={key}
+        className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 text-center text-sm md:text-base"
+      >
+        {announcement.imageUrl ? (
+          <img
+            src={announcement.imageUrl}
+            alt={announcement.title ?? '公告'}
+            className="max-h-10 w-auto object-contain"
+          />
         ) : null}
-        {lines.map((line, index) => (
-          <span key={index} className="leading-tight">
-            {line}
-          </span>
-        ))}
+        <div className="flex flex-col items-center justify-center gap-1">
+          {announcement.title ? (
+            <span className="font-semibold leading-tight">{announcement.title}</span>
+          ) : null}
+          {announcementLines.map((line, index) => (
+            <span key={index} className="leading-tight">
+              {line}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 容器内容 - 支持轮播动画
+  const contentNode = (
+    <div className="relative w-full overflow-hidden">
+      <div
+        className="flex transition-transform duration-500 ease-in-out"
+        style={{
+          transform: isTransitioning ? 'translateX(-100%)' : 'translateX(0)',
+        }}
+      >
+        {/* 当前公告 */}
+        <div className="min-w-full flex-shrink-0">
+          {renderContent(currentAnnouncement, `current-${currentIndex}`)}
+        </div>
+        
+        {/* 下一个公告（用于平滑过渡） */}
+        {announcements.length > 1 && (
+          <div className="min-w-full flex-shrink-0">
+            {renderContent(
+              announcements[(currentIndex + 1) % announcements.length],
+              `next-${(currentIndex + 1) % announcements.length}`
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

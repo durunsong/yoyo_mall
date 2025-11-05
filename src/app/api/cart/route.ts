@@ -122,7 +122,17 @@ export async function GET(request: NextRequest) {
 // 添加商品到购物车
 export async function POST(request: NextRequest) {
   try {
+    // 增强日志：记录请求开始
+    console.log('购物车API - 开始处理添加请求');
+    
     const session = await auth();
+    
+    // 增强日志：记录认证状态
+    console.log('购物车API - 认证状态:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -132,6 +142,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    
+    // 增强日志：记录请求参数
+    console.log('购物车API - 请求参数:', body);
+    
     const { productId, variantId, quantity } = addToCartSchema.parse(body);
 
     // 验证商品是否存在且可购买
@@ -142,6 +156,13 @@ export async function POST(request: NextRequest) {
           select: { quantity: true, reservedQuantity: true },
         },
       },
+    });
+
+    // 增强日志：记录商品查询结果
+    console.log('购物车API - 商品查询结果:', {
+      productId,
+      found: !!product,
+      status: product?.status,
     });
 
     if (!product) {
@@ -255,7 +276,15 @@ export async function POST(request: NextRequest) {
       data: cartItem,
     });
   } catch (error) {
-    console.error('添加到购物车失败:', error);
+    // 增强错误日志：记录详细的错误信息
+    console.error('添加到购物车失败 - 详细错误信息:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      // 如果是 Prisma 错误，记录更多信息
+      code: (error as any)?.code,
+      meta: (error as any)?.meta,
+    });
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
