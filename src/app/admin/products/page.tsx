@@ -62,6 +62,7 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import { ImageUpload } from '@/components/admin/image-upload';
 import { BulkActions } from '@/components/admin/bulk-actions';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 const OSS_BASE_URL = process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL;
 const OSS_FOLDER = process.env.OSS_FOLDER && process.env.OSS_FOLDER !== 'root' ? process.env.OSS_FOLDER : undefined;
@@ -208,6 +209,11 @@ export default function ProductsPage() {
   const [categorySlugEdited, setCategorySlugEdited] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [categoryDeleting, setCategoryDeleting] = useState(false);
+  // 新增：分类搜索状态
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  // 新增：商品列表分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // 每页显示10条商品
   const [isCategoryDeleteDialogOpen, setIsCategoryDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
@@ -288,6 +294,7 @@ export default function ProductsPage() {
   };
 
   // 筛选商品
+  // 过滤商品
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -298,6 +305,38 @@ export default function ProductsPage() {
       statusFilter === 'all' || product.status === statusFilter;
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  // 新增：分类搜索过滤
+  const filteredCategories = useMemo(() => {
+    if (!categorySearchTerm.trim()) {
+      return categories;
+    }
+    
+    const searchLower = categorySearchTerm.toLowerCase();
+    return categories.filter(category =>
+      category.name.toLowerCase().includes(searchLower) ||
+      category.slug.toLowerCase().includes(searchLower) ||
+      category.description?.toLowerCase().includes(searchLower)
+    );
+  }, [categories, categorySearchTerm]);
+
+  // 新增：商品分页计算
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // 当筛选条件变化时重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, statusFilter]);
+
+  // 当总页数减少时，自动调整当前页
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // 重置表单
   const resetForm = () => {
@@ -444,7 +483,8 @@ export default function ProductsPage() {
     }, []);
   };
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+  // 构建分类树 - 使用过滤后的分类
+  const categoryTree = useMemo(() => buildCategoryTree(filteredCategories), [filteredCategories]);
   const flattenedCategoryOptions = useMemo(() => {
     /**
      * 将分类树拍平成扁平数组，并使用 Set 过滤重复 ID，避免 Select 渲染 key 冲突。
@@ -1276,7 +1316,7 @@ export default function ProductsPage() {
       {/* 商品管理主容器，左侧分类面板在大屏保持窄列，移动端自动换行 */}
       <div className="grid gap-4 lg:grid-cols-[minmax(200px,240px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr]">
         <div className="space-y-4">
-          <Card className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-160px)]">
+          <Card className="flex flex-col lg:sticky lg:top-24 lg:max-h-[calc(100vh-160px)]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -1288,10 +1328,20 @@ export default function ProductsPage() {
                   新增
                 </Button>
               </div>
+              {/* 新增：分类搜索框 */}
+              <div className="relative mt-3">
+                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="搜索分类..."
+                  value={categorySearchTerm}
+                  onChange={(e) => setCategorySearchTerm(e.target.value)}
+                  className="h-8 pl-8 text-sm"
+                />
+              </div>
             </CardHeader>
-            <CardContent className="space-y-1 pb-3 pr-0 lg:pr-1">
+            <CardContent className="flex-1 space-y-1 overflow-hidden pb-3 pr-0 lg:pr-1">
               {categoryTree.length > 0 ? (
-                <div className="max-h-[calc(100vh-240px)] space-y-2 overflow-y-auto pr-1">
+                <div className="space-y-2 overflow-y-auto pr-1 max-h-64 sm:max-h-80 md:max-h-[28rem] lg:max-h-[calc(100vh-240px)]">
                   {categoryTree.map((category, index) => renderCategoryItem(category, 0, index))}
                 </div>
               ) : (
@@ -1459,7 +1509,7 @@ export default function ProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => {
+                    {paginatedProducts.map((product) => {
                       const priceValue = Number(product.price ?? 0);
                       const comparePriceValue = Number(product.comparePrice ?? 0);
                       const hasComparePrice = Number.isFinite(comparePriceValue) && comparePriceValue > 0;
@@ -1566,6 +1616,21 @@ export default function ProductsPage() {
                     })}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* 新增：分页控件 */}
+            {!loading && filteredProducts.length > 0 && (
+              <div className="mt-4 flex flex-col items-center gap-4">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+                <div className="text-sm text-muted-foreground">
+                  显示 {startIndex + 1} - {Math.min(endIndex, filteredProducts.length)} 条，
+                  共 {filteredProducts.length} 条商品
+                </div>
               </div>
             )}
           </CardContent>
