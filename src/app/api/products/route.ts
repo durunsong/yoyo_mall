@@ -66,6 +66,28 @@ export async function GET(request: NextRequest) {
     
     const query = productQuerySchema.parse(rawQuery);
 
+    // 如果指定了分类，获取该分类及其所有子分类的ID列表
+    let categoryIds: string[] = [];
+    if (query.category) {
+      // 递归获取所有子分类ID
+      const getAllChildCategoryIds = async (categoryId: string): Promise<string[]> => {
+        const childCategories = await prisma.category.findMany({
+          where: { parentId: categoryId },
+          select: { id: true },
+        });
+        
+        let ids = [categoryId];
+        for (const child of childCategories) {
+          const childIds = await getAllChildCategoryIds(child.id);
+          ids = [...ids, ...childIds];
+        }
+        
+        return ids;
+      };
+      
+      categoryIds = await getAllChildCategoryIds(query.category);
+    }
+
     // 构建查询条件
     const where: any = {
       AND: [
@@ -78,8 +100,8 @@ export async function GET(request: NextRequest) {
             { tags: { has: query.search } },
           ],
         } : {},
-        // 分类筛选
-        query.category ? { categoryId: query.category } : {},
+        // 分类筛选（包含该分类及其所有子分类）
+        categoryIds.length > 0 ? { categoryId: { in: categoryIds } } : {},
         // 状态筛选
         query.status ? { status: query.status } : {},
         // 价格范围筛选

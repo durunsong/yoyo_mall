@@ -86,8 +86,16 @@ export function AnnouncementBar() {
       
       // 等待动画完成后再切换索引
       setTimeout(() => {
+        // 先切换索引
         setCurrentIndex((prev) => (prev + 1) % announcements.length);
-        setIsTransitioning(false);
+        
+        // 使用 requestAnimationFrame 确保索引更新后再重置动画状态
+        // 这样可以避免视觉跳跃
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsTransitioning(false);
+          });
+        });
       }, 500); // 动画持续时间 500ms
     }, interval);
 
@@ -201,7 +209,7 @@ export function AnnouncementBar() {
   const contentNode = (
     <div className="relative w-full overflow-hidden">
       <div
-        className="flex transition-transform duration-500 ease-in-out"
+        className={isTransitioning ? "flex transition-transform duration-500 ease-in-out" : "flex"}
         style={{
           transform: isTransitioning ? 'translateX(-100%)' : 'translateX(0)',
         }}

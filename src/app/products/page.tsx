@@ -23,11 +23,11 @@ import { Heart, Eye, ShoppingCart, Star, Search, Filter } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useProducts } from '@/hooks/use-products';
 import ProductCard from '@/components/products/product-card';
-import { Pagination } from '@/components/ui/pagination';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 function ProductsPageContent() {
   const { t } = useStaticTranslations('product');
@@ -37,12 +37,13 @@ function ProductsPageContent() {
   const { data: session } = useSession(); // 添加session
   const { openModal } = useAuthModal(); // 添加登录弹窗
   
-  // 从URL参数初始化搜索关键词
+  // 从URL参数初始化搜索关键词和分类
   const initialSearch = searchParams.get('search') || '';
+  const initialCategory = searchParams.get('category') || 'all';
   
   // 状态管理
   const [keyword, setKeyword] = useState(initialSearch);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sort, setSort] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
   const [categories, setCategories] = useState<any[]>([]);
@@ -124,11 +125,20 @@ function ProductsPageContent() {
     }
   };
 
-  // 监听URL参数变化，更新搜索关键词
+  // 监听URL参数变化，更新搜索关键词和分类
   useEffect(() => {
     const searchParam = searchParams.get('search');
-    if (searchParam && searchParam !== keyword) {
+    const categoryParam = searchParams.get('category');
+    
+    if (searchParam !== null && searchParam !== keyword) {
       setKeyword(searchParam);
+    }
+    
+    if (categoryParam !== null && categoryParam !== activeCategory) {
+      setActiveCategory(categoryParam);
+    } else if (categoryParam === null && activeCategory !== 'all') {
+      // 如果URL中没有category参数，重置为all
+      setActiveCategory('all');
     }
   }, [searchParams]);
 
@@ -264,27 +274,23 @@ function ProductsPageContent() {
             ))}
           </div>
 
-          {/* 分页 */}
+          {/* 分页控制 */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="mt-8 flex justify-center">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                >
-                  {tCommon('previous') || 'Previous'}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {currentPage} / {pagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-                  disabled={currentPage === pagination.totalPages}
-                >
-                  {tCommon('next') || 'Next'}
-                </Button>
+            <div className="mt-8">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  // 滚动到页面顶部
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+              
+              {/* 显示当前范围 */}
+              <div className="mt-4 text-center text-sm text-muted-foreground">
+                显示 {((currentPage - 1) * 12) + 1} - {Math.min(currentPage * 12, pagination.total)} 条，
+                共 {pagination.total} 条结果
               </div>
             </div>
           )}

@@ -98,6 +98,23 @@ export async function GET(request: NextRequest) {
       orderBy: { [query.sortBy]: query.sortOrder },
     });
 
+    // 递归计算分类及其所有子分类的商品总数
+    const calculateTotalProducts = (categoryId: string, allCats: any[]): number => {
+      const category = allCats.find(c => c.id === categoryId);
+      if (!category) return 0;
+      
+      // 当前分类的商品数
+      let total = category._count?.products || 0;
+      
+      // 递归计算所有子分类的商品数
+      const childCategories = allCats.filter(c => c.parentId === categoryId);
+      for (const child of childCategories) {
+        total += calculateTotalProducts(child.id, allCats);
+      }
+      
+      return total;
+    };
+
     // 如果查询所有根分类，构建树形结构
     if (query.parentId === null || query.parentId === '') {
       const buildCategoryTree = (cats: any[], parentId: string | null = null): any[] => {
@@ -115,7 +132,16 @@ export async function GET(request: NextRequest) {
         orderBy: { [query.sortBy]: query.sortOrder },
       });
 
-      const tree = buildCategoryTree(allCategories);
+      // 为每个分类计算包含子分类的商品总数
+      const categoriesWithTotalCount = allCategories.map(cat => ({
+        ...cat,
+        _count: {
+          ...cat._count,
+          products: calculateTotalProducts(cat.id, allCategories),
+        },
+      }));
+
+      const tree = buildCategoryTree(categoriesWithTotalCount);
       
       return NextResponse.json({
         success: true,
@@ -127,9 +153,27 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // 为非树形结构查询也计算总商品数
+    const allCategoriesForCount = await prisma.category.findMany({
+      where: query.isActive !== undefined ? { isActive: query.isActive } : {},
+      include: {
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+
+    const categoriesWithTotalCount = categories.map(cat => ({
+      ...cat,
+      _count: {
+        ...cat._count,
+        products: calculateTotalProducts(cat.id, allCategoriesForCount),
+      },
+    }));
+
     return NextResponse.json({
       success: true,
-      data: categories,
+      data: categoriesWithTotalCount,
       meta: {
         total: categories.length,
         parentId: query.parentId,

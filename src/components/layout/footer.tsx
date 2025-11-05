@@ -133,10 +133,10 @@ export function Footer() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
-              <h3 className="mb-2 text-2xl font-bold text-white">
+              <h3 className="mb-2 text-2xl font-bold text-white" suppressHydrationWarning>
                 {mounted ? t('subscribeNewsletter') : '订阅我们的新闻'}
               </h3>
-              <p className="text-blue-100">
+              <p className="text-blue-100" suppressHydrationWarning>
                 {mounted ? t('getLatestOffers') : '获取最新优惠和资讯'}
               </p>
             </div>
