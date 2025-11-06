@@ -33,7 +33,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+# .env* (暂时需要commit到git，用于环境变量配置)
 
 # vercel
 .vercel
