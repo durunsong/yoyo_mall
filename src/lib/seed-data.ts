@@ -52,16 +52,6 @@ const categories = [
   },
 ];
 
-// 基础品牌数据
-const brands = [
-  { name: 'Apple', slug: 'apple', description: '创新科技品牌' },
-  { name: 'Samsung', slug: 'samsung', description: '全球电子品牌' },
-  { name: 'Nike', slug: 'nike', description: '运动品牌' },
-  { name: 'Adidas', slug: 'adidas', description: '德国运动品牌' },
-  { name: 'IKEA', slug: 'ikea', description: '瑞典家居品牌' },
-  { name: 'Zara', slug: 'zara', description: '西班牙快时尚品牌' },
-];
-
 // 示例商品数据
 const getProductsByCategory = (categoryId: string, categoryName: string) => {
   const baseProducts = {
@@ -137,20 +127,7 @@ export async function seedDatabase() {
   console.log('开始初始化数据库...');
 
   try {
-    // 1. 创建品牌
-    console.log('创建品牌...');
-    const createdBrands = await Promise.all(
-      brands.map(async (brand) => {
-        return prisma.brand.upsert({
-          where: { slug: brand.slug },
-          update: brand,
-          create: brand,
-        });
-      }),
-    );
-    console.log(`创建了 ${createdBrands.length} 个品牌`);
-
-    // 2. 创建分类
+    // 1. 创建分类
     console.log('创建分类...');
     for (const category of categories) {
       const { children, ...categoryData } = category;
@@ -177,7 +154,7 @@ export async function seedDatabase() {
     }
     console.log('分类创建完成');
 
-    // 3. 创建示例商品
+    // 2. 创建示例商品
     console.log('创建示例商品...');
     const allCategories = await prisma.category.findMany({
       where: { parentId: { not: null } }, // 只取子分类
@@ -194,17 +171,10 @@ export async function seedDatabase() {
       const products = getProductsByCategory(category.id, parent.slug);
       
       for (const product of products) {
-        // 找到对应的品牌
-        const brandName = product.tags.find(tag => 
-          createdBrands.some(brand => brand.name.toLowerCase() === tag.toLowerCase()),
-        );
-        const brand = brandName ? createdBrands.find(b => b.name.toLowerCase() === brandName.toLowerCase()) : null;
-
         const createdProduct = await prisma.product.create({
           data: {
             ...product,
             categoryId: category.id,
-            brandId: brand?.id,
             slug: product.name.toLowerCase()
               .replace(/[^\w\s-]/g, '')
               .replace(/\s+/g, '-')
@@ -229,7 +199,7 @@ export async function seedDatabase() {
     }
     console.log(`创建了 ${productCount} 个商品`);
 
-    // 4. 创建示例优惠券
+    // 3. 创建示例优惠券
     console.log('创建示例优惠券...');
     const coupons = [
       {
@@ -273,7 +243,6 @@ export async function seedDatabase() {
       success: true,
       message: '数据库初始化完成',
       stats: {
-        brands: createdBrands.length,
         categories: categories.length,
         products: productCount,
         coupons: coupons.length,

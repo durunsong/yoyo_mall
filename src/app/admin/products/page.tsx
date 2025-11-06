@@ -116,11 +116,9 @@ interface Product {
   comparePrice?: number;
   currency: string;
   categoryId: string;
-  brandId?: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   images: { id: string; url: string; alt: string }[];
   category?: { id: string; name: string };
-  brand?: { id: string; name: string };
   inventory?: { quantity: number; reservedQuantity?: number; lowStockThreshold?: number };
   trackInventory?: boolean;
   allowOutOfStock?: boolean;

@@ -36,8 +36,6 @@ function getUploadFolder(type: string): string {
     products: OSS_FOLDERS.PRODUCTS,
     avatar: OSS_FOLDERS.AVATARS,
     avatars: OSS_FOLDERS.AVATARS,
-    brand: OSS_FOLDERS.BRANDS,
-    brands: OSS_FOLDERS.BRANDS,
     category: OSS_FOLDERS.CATEGORIES,
     categories: OSS_FOLDERS.CATEGORIES,
     banner: OSS_FOLDERS.BANNERS,

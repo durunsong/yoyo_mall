@@ -126,28 +126,6 @@ async function main() {
     }
   }
 
-  // 创建品牌
-  const brands = [
-    { name: 'Apple', slug: 'apple', description: '苹果公司' },
-    { name: 'Samsung', slug: 'samsung', description: '三星公司' },
-    { name: 'Nike', slug: 'nike', description: '耐克运动品牌' },
-    { name: 'Adidas', slug: 'adidas', description: '阿迪达斯运动品牌' },
-    { name: 'IKEA', slug: 'ikea', description: '宜家家居' },
-  ];
-
-  for (const brandData of brands) {
-    const brand = await prisma.brand.upsert({
-      where: { slug: brandData.slug },
-      update: {},
-      create: {
-        ...brandData,
-        isActive: true,
-      },
-    });
-
-    console.log('✅ 品牌创建完成:', brand.name);
-  }
-
   // 创建示例商品
   const mobileCategory = await prisma.category.findUnique({
     where: { slug: 'mobile-devices' },
@@ -165,22 +143,6 @@ async function main() {
     where: { slug: 'furniture' },
   });
 
-  const appleBrand = await prisma.brand.findUnique({
-    where: { slug: 'apple' },
-  });
-  
-  const samsungBrand = await prisma.brand.findUnique({
-    where: { slug: 'samsung' },
-  });
-  
-  const nikeBrand = await prisma.brand.findUnique({
-    where: { slug: 'nike' },
-  });
-  
-  const ikeaBrand = await prisma.brand.findUnique({
-    where: { slug: 'ikea' },
-  });
-
   // 商品数据数组 - 使用Unsplash免费图片
   const productsData = [
     // 电子产品
@@ -193,7 +155,6 @@ async function main() {
       price: 999.0,
       comparePrice: 1099.0,
       categoryId: mobileCategory?.id,
-      brandId: appleBrand?.id,
       tags: ['smartphone', 'apple', 'iphone', 'premium'],
       quantity: 100,
       imageUrl: 'https://images.unsplash.com/photo-1592286927505-2fd5ee15aef3?w=800',
@@ -207,7 +168,6 @@ async function main() {
       price: 1199.0,
       comparePrice: 1299.0,
       categoryId: computersCategory?.id,
-      brandId: appleBrand?.id,
       tags: ['laptop', 'apple', 'macbook', 'productivity'],
       quantity: 50,
       imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800',
@@ -220,7 +180,6 @@ async function main() {
       sku: 'AIRPODS-PRO-2',
       price: 249.0,
       categoryId: mobileCategory?.id,
-      brandId: appleBrand?.id,
       tags: ['earphones', 'apple', 'airpods', 'wireless'],
       quantity: 200,
       imageUrl: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800',
@@ -234,7 +193,6 @@ async function main() {
       price: 1199.0,
       comparePrice: 1299.0,
       categoryId: mobileCategory?.id,
-      brandId: samsungBrand?.id,
       tags: ['smartphone', 'samsung', 'galaxy', 'android'],
       quantity: 80,
       imageUrl: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800',
@@ -249,7 +207,6 @@ async function main() {
       price: 159.0,
       comparePrice: 189.0,
       categoryId: mensClothingCategory?.id,
-      brandId: nikeBrand?.id,
       tags: ['shoes', 'nike', 'sports', 'running'],
       quantity: 150,
       imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
@@ -262,7 +219,6 @@ async function main() {
       sku: 'NIKE-PRO-TSHIRT-L',
       price: 45.0,
       categoryId: mensClothingCategory?.id,
-      brandId: nikeBrand?.id,
       tags: ['clothing', 'nike', 'sports', 'tshirt'],
       quantity: 300,
       imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800',
@@ -276,7 +232,6 @@ async function main() {
       sku: 'IKEA-MARKUS-BLACK',
       price: 199.0,
       categoryId: furnitureCategory?.id,
-      brandId: ikeaBrand?.id,
       tags: ['furniture', 'ikea', 'chair', 'office'],
       quantity: 60,
       imageUrl: 'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800',
@@ -289,7 +244,6 @@ async function main() {
       sku: 'IKEA-BILLY-WHITE-80',
       price: 89.0,
       categoryId: furnitureCategory?.id,
-      brandId: ikeaBrand?.id,
       tags: ['furniture', 'ikea', 'bookshelf', 'storage'],
       quantity: 100,
       imageUrl: 'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800',

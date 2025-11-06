@@ -11,7 +11,6 @@ import {
   CLOTHING_IMAGES,
   HOME_IMAGES,
   AVATAR_IMAGES,
-  BRAND_LOGOS,
   getRandomImage,
   getImage,
 } from '../src/lib/oss-images';
@@ -75,33 +74,7 @@ async function main() {
   console.log(`✅ 用户创建完成: 1个管理员 + ${testUsers.length}个测试用户\n`);
 
   // ============================================
-  // 2. 创建品牌
-  // ============================================
-  console.log('🏷️  创建品牌...');
-
-  const brands = [
-    { name: 'Apple', slug: 'apple', logo: BRAND_LOGOS[0], description: '美国科技公司' },
-    { name: 'Samsung', slug: 'samsung', logo: BRAND_LOGOS[1], description: '韩国电子品牌' },
-    { name: 'Nike', slug: 'nike', logo: BRAND_LOGOS[2], description: '美国运动品牌' },
-    { name: 'Adidas', slug: 'adidas', logo: BRAND_LOGOS[3], description: '德国运动品牌' },
-    { name: 'IKEA', slug: 'ikea', logo: BRAND_LOGOS[4], description: '瑞典家居品牌' },
-    { name: 'Zara', slug: 'zara', logo: BRAND_LOGOS[5], description: '西班牙时尚品牌' },
-  ];
-
-  const createdBrands = [];
-  for (const brand of brands) {
-    const created = await prisma.brand.upsert({
-      where: { slug: brand.slug },
-      update: {},
-      create: brand,
-    });
-    createdBrands.push(created);
-  }
-
-  console.log(`✅ 品牌创建完成: ${createdBrands.length}个品牌\n`);
-
-  // ============================================
-  // 3. 创建分类
+  // 2. 创建分类
   // ============================================
   console.log('📁 创建分类...');
 
@@ -174,7 +147,7 @@ async function main() {
   console.log(`✅ 分类创建完成: ${createdCategories.length}个分类\n`);
 
   // ============================================
-  // 4. 创建商品
+  // 3. 创建商品
   // ============================================
   console.log('📦 创建商品...');
 
@@ -190,7 +163,6 @@ async function main() {
       sku: 'IPHONE-15-PM-256',
       images: [ELECTRONICS_IMAGES[0]],
       categorySlug: 'mobile-devices',
-      brandId: createdBrands[0].id,
       stock: 50,
     },
     {
@@ -203,7 +175,6 @@ async function main() {
       sku: 'MBP-16-M3MAX-1TB',
       images: [ELECTRONICS_IMAGES[1]],
       categorySlug: 'computers',
-      brandId: createdBrands[0].id,
       stock: 30,
     },
     {
@@ -216,7 +187,6 @@ async function main() {
       sku: 'AIRPODS-PRO-2',
       images: [ELECTRONICS_IMAGES[2]],
       categorySlug: 'mobile-devices',
-      brandId: createdBrands[0].id,
       stock: 100,
     },
     {
@@ -229,7 +199,6 @@ async function main() {
       sku: 'SAMSUNG-S24U-256',
       images: [ELECTRONICS_IMAGES[3]],
       categorySlug: 'mobile-devices',
-      brandId: createdBrands[1].id,
       stock: 40,
     },
   ];
@@ -246,7 +215,6 @@ async function main() {
       sku: 'NIKE-AM270-42',
       images: [CLOTHING_IMAGES[0]],
       categorySlug: 'accessories',
-      brandId: createdBrands[2].id,
       stock: 80,
     },
     {
@@ -259,7 +227,6 @@ async function main() {
       sku: 'ADIDAS-UB23-42',
       images: [CLOTHING_IMAGES[1]],
       categorySlug: 'accessories',
-      brandId: createdBrands[3].id,
       stock: 60,
     },
     {
@@ -272,7 +239,6 @@ async function main() {
       sku: 'ZARA-TS-M-WHT',
       images: [CLOTHING_IMAGES[2]],
       categorySlug: 'mens-clothing',
-      brandId: createdBrands[5].id,
       stock: 200,
     },
   ];
@@ -289,7 +255,6 @@ async function main() {
       sku: 'IKEA-BILLY-WHT',
       images: [HOME_IMAGES[0]],
       categorySlug: 'furniture',
-      brandId: createdBrands[4].id,
       stock: 50,
     },
     {
@@ -302,7 +267,6 @@ async function main() {
       sku: 'IKEA-POANG-BRN',
       images: [HOME_IMAGES[1]],
       categorySlug: 'furniture',
-      brandId: createdBrands[4].id,
       stock: 35,
     },
   ];
@@ -544,7 +508,6 @@ async function main() {
   // ============================================
   console.log('\n📊 数据统计:');
   console.log(`  - 用户: ${testUsers.length + 1}个`);
-  console.log(`  - 品牌: ${createdBrands.length}个`);
   console.log(`  - 分类: ${createdCategories.length}个`);
   console.log(`  - 商品: ${createdProducts.length}个`);
   console.log(`  - 地址: ${addresses.length}个`);

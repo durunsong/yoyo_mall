@@ -33,7 +33,6 @@ function getUploadFolder(type: string): string {
   const folderMap: Record<string, string> = {
     product: OSS_FOLDERS.PRODUCTS,
     avatar: OSS_FOLDERS.AVATARS,
-    brand: OSS_FOLDERS.BRANDS,
     category: OSS_FOLDERS.CATEGORIES,
     banner: OSS_FOLDERS.BANNERS,
     document: OSS_FOLDERS.DOCUMENTS,

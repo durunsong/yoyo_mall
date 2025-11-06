@@ -43,7 +43,6 @@ const createProductSchema = z.object({
   weight: z.number().min(0, '重量不能为负数').optional(),
   dimensions: z.string().optional(),
   categoryId: z.string().min(1, '分类ID不能为空'),
-  brandId: z.string().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
   isDigital: z.boolean().default(false),
   trackInventory: z.boolean().default(true),
@@ -133,9 +132,6 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           category: {
-            select: { id: true, name: true, slug: true },
-          },
-          brand: {
             select: { id: true, name: true, slug: true },
           },
           images: {
@@ -251,20 +247,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 验证品牌是否存在（如果提供了brandId）
-    if (data.brandId) {
-      const brand = await prisma.brand.findUnique({
-        where: { id: data.brandId },
-      });
-
-      if (!brand) {
-        return NextResponse.json(
-          { success: false, error: 'BRAND_NOT_FOUND', message: '品牌不存在' },
-          { status: 400 },
-        );
-      }
-    }
-
     // 创建商品
     const {
       images = [],
@@ -302,9 +284,6 @@ export async function POST(request: NextRequest) {
       },
       include: {
         category: {
-          select: { id: true, name: true, slug: true },
-        },
-        brand: {
           select: { id: true, name: true, slug: true },
         },
         images: {

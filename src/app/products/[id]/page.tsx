@@ -48,7 +48,6 @@ interface Product {
   currency: string;
   images: { id: string; url: string; alt: string }[];
   category: { id: string; name: string };
-  brand?: { id: string; name: string };
   inventory?: { quantity: number; lowStockThreshold?: number };
   reviews?: any[];
   tags?: string[];
@@ -502,13 +501,6 @@ const isWishlisted = Boolean(currentWishlistItem);
 
           {/* 右侧：商品信息 */}
           <div className="space-y-6">
-            {/* 品牌 */}
-            {product.brand && (
-              <div className="text-sm text-gray-600">
-                {t('brand') || 'Brand'}: <span className="font-medium">{product.brand.name}</span>
-              </div>
-            )}
-
             {/* 标题 */}
             <div>
               <h1 className="mb-2 text-3xl font-bold text-gray-900">{product.name}</h1>
@@ -760,14 +752,6 @@ const isWishlisted = Boolean(currentWishlistItem);
                       </dt>
                       <dd className="mt-1 text-gray-600">{product.category.name}</dd>
                     </div>
-                    {product.brand && (
-                      <div>
-                        <dt className="font-medium text-gray-900">
-                          {t('brand') || 'Brand'}
-                        </dt>
-                        <dd className="mt-1 text-gray-600">{product.brand.name}</dd>
-                      </div>
-                    )}
                   </dl>
                 </CardContent>
               </Card>

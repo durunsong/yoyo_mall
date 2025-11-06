@@ -44,7 +44,6 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 const productSchema = z.object({
   name: z.string().min(1, '请输入商品名称'),
   category: z.string().min(1, '请选择商品分类'),
-  brand: z.string().min(1, '请输入品牌'),
   price: z.number().min(0, '价格必须大于0'),
   stock: z.number().min(0, '库存必须大于等于0'),
   description: z.string().min(1, '请输入商品描述'),
@@ -58,7 +57,6 @@ const mockProducts = [
     id: '1',
     name: 'iPhone 15 Pro',
     category: '手机数码',
-    brand: 'Apple',
     price: 7999,
     stock: 50,
     status: 'active',
@@ -68,7 +66,6 @@ const mockProducts = [
     id: '2',
     name: 'MacBook Pro 14',
     category: '电脑办公',
-    brand: 'Apple',
     price: 14999,
     stock: 20,
     status: 'active',
@@ -88,7 +85,6 @@ export default function ProductsShadcnPage() {
     defaultValues: {
       name: '',
       category: '',
-      brand: '',
       price: 0,
       stock: 0,
       description: '',
@@ -98,7 +94,7 @@ export default function ProductsShadcnPage() {
   // 过滤商品
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase()),
+    product.category.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // 处理表单提交
@@ -230,20 +226,6 @@ export default function ProductsShadcnPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="brand"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('brandLabel')}</FormLabel>
-                        <FormControl>
-                          <Input placeholder={t('brandPlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
@@ -336,9 +318,6 @@ export default function ProductsShadcnPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                     <div>
                       <span className="font-medium">{t('category')}:</span> {product.category}
-                    </div>
-                    <div>
-                      <span className="font-medium">{t('brand')}:</span> {product.brand}
                     </div>
                     <div>
                       <span className="font-medium">{t('price')}:</span> ¥{product.price}

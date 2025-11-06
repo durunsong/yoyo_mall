@@ -62,16 +62,6 @@ export const AVATAR_IMAGES = [
   getOssUrl('users/avatars/avatar-5.jpg'),
 ];
 
-// 品牌Logo
-export const BRAND_LOGOS = [
-  getOssUrl('brands/apple-logo.png'),
-  getOssUrl('brands/samsung-logo.png'),
-  getOssUrl('brands/nike-logo.png'),
-  getOssUrl('brands/adidas-logo.png'),
-  getOssUrl('brands/ikea-logo.png'),
-  getOssUrl('brands/zara-logo.png'),
-];
-
 // 占位图
 export const PLACEHOLDER_IMAGE = getOssUrl('placeholder.png');
 
@@ -81,7 +71,6 @@ export const OSS_IMAGES = {
   clothing: CLOTHING_IMAGES,
   home: HOME_IMAGES,
   avatars: AVATAR_IMAGES,
-  brands: BRAND_LOGOS,
 };
 
 /**

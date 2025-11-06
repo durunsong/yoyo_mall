@@ -49,7 +49,6 @@ import { AnnouncementBar } from '@/components/layout/announcement-bar';
 const getNavItems = (t: (key: string) => string) => [
   { key: '/products', label: t('products'), href: '/products' },
   { key: '/categories', label: t('categories'), href: '/categories' },
-  { key: '/brands', label: t('brands'), href: '/brands' },
   { key: '/deals', label: t('deals'), href: '/deals' },
   // Admin 链接在渲染时按权限过滤
   { key: '/admin', label: t('admin'), href: '/admin' },

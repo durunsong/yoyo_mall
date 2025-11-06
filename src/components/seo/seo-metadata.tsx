@@ -114,7 +114,6 @@ export function generateProductSEO(product: {
   currency: string;
   images: string[];
   category?: string;
-  brand?: string;
   sku?: string;
 }): Metadata {
   const siteName = 'YOYO Mall';
@@ -125,7 +124,6 @@ export function generateProductSEO(product: {
   
   const keywords = [
     product.name,
-    product.brand || '',
     product.category || '',
     '在线购物',
     '跨境电商',
@@ -143,7 +141,6 @@ export function generateProductSEO(product: {
     other: {
       'product:price:amount': product.price.toString(),
       'product:price:currency': product.currency,
-      'product:brand': product.brand || '',
       'product:condition': 'new',
       'product:availability': 'in stock',
     },

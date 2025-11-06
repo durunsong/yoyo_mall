@@ -500,7 +500,6 @@ export const getSignedUrl = (key: string, expires?: number) => oss.getSignedUrl(
 export const OSS_FOLDERS = {
   PRODUCTS: 'products',
   AVATARS: 'avatars',
-  BRANDS: 'brands',
   CATEGORIES: 'categories',
   BANNERS: 'banners',
   DOCUMENTS: 'documents',

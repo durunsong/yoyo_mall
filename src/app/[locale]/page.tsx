@@ -247,7 +247,7 @@ export default function HomePage() {
       {/* Statistics Section */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div className="text-center">
               <div className="mb-2 text-4xl font-bold text-green-600">1.2M+</div>
               <div className="text-gray-600">{t('stats.users')}</div>
@@ -255,10 +255,6 @@ export default function HomePage() {
             <div className="text-center">
               <div className="mb-2 text-4xl font-bold text-red-600">50K+</div>
               <div className="text-gray-600">{t('stats.products')}</div>
-            </div>
-            <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-blue-600">2K+</div>
-              <div className="text-gray-600">{t('stats.brands')}</div>
             </div>
             <div className="text-center">
               <div className="mb-2 text-4xl font-bold text-purple-600">98.5%</div>

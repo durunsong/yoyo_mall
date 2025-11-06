@@ -54,7 +54,6 @@ export interface SearchFilters {
   category?: string;
   minPrice?: number;
   maxPrice?: number;
-  brand?: string;
   rating?: number;
   inStock?: boolean;
   sortBy?: string;
@@ -117,7 +116,6 @@ export type {
   User,
   Product,
   Category,
-  Brand,
   Order,
   OrderItem,
   Review,

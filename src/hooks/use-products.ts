@@ -29,11 +29,6 @@ export interface Product {
     name: string;
     slug: string;
   };
-  brand?: {
-    id: string;
-    name: string;
-    slug: string;
-  };
   images: Array<{
     id: string;
     url: string;

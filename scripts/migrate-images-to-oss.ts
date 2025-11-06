@@ -60,16 +60,6 @@ const productImages: Record<string, ImageCategory> = {
       'https://ui-avatars.com/api/?name=Customer&size=200&background=10B981&color=fff',
     ],
   },
-  // 品牌Logo
-  brands: {
-    folder: 'brands',
-    images: [
-      'https://logo.clearbit.com/apple.com',
-      'https://logo.clearbit.com/samsung.com',
-      'https://logo.clearbit.com/nike.com',
-      'https://logo.clearbit.com/adidas.com',
-    ],
-  },
 };
 
 /**

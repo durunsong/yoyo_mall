@@ -21,7 +21,6 @@ const navigation = [
   { name: '首页', href: '/' },
   { name: '商品', href: '/products' },
   { name: '分类', href: '/categories' },
-  { name: '品牌', href: '/brands' },
   { name: '优惠', href: '/deals' },
 ];
 

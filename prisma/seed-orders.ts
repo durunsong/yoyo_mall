@@ -41,7 +41,6 @@ async function main() {
       images: { orderBy: { sortOrder: 'asc' } },
       inventory: true,
       category: true,
-      brand: true,
     },
   });
 
@@ -78,7 +77,6 @@ async function main() {
           sku: product.sku,
           image: product.images[0]?.url ?? null,
           category: product.category?.name ?? null,
-          brand: product.brand?.name ?? null,
         },
       };
     });

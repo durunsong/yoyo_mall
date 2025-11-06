@@ -10,12 +10,11 @@ import { auth } from '@/app/api/auth/[...nextauth]/route';
 
 // 批量操作验证schema
 const bulkOperationSchema = z.object({
-  action: z.enum(['update_status', 'delete', 'update_category', 'update_brand']),
+  action: z.enum(['update_status', 'delete', 'update_category']),
   productIds: z.array(z.string()).min(1, '至少选择一个商品'),
   data: z.object({
     status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
     categoryId: z.string().optional(),
-    brandId: z.string().optional(),
   }).optional(),
 });
 
@@ -92,38 +91,6 @@ export async function POST(request: NextRequest) {
         });
 
         message = `成功将 ${result.count} 个商品移至分类 ${category.name}`;
-        break;
-
-      case 'update_brand':
-        if (!data?.brandId) {
-          return NextResponse.json(
-            { success: false, error: 'MISSING_BRAND', message: '缺少品牌ID' },
-            { status: 400 },
-          );
-        }
-
-        // 验证品牌是否存在
-        const brand = await prisma.brand.findUnique({
-          where: { id: data.brandId },
-        });
-
-        if (!brand) {
-          return NextResponse.json(
-            { success: false, error: 'BRAND_NOT_FOUND', message: '品牌不存在' },
-            { status: 400 },
-          );
-        }
-
-        result = await prisma.product.updateMany({
-          where: {
-            id: { in: productIds },
-          },
-          data: {
-            brandId: data.brandId,
-          },
-        });
-
-        message = `成功将 ${result.count} 个商品更新为品牌 ${brand.name}`;
         break;
 
       case 'delete':

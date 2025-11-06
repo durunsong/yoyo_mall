@@ -20,7 +20,6 @@ const updateProductSchema = z.object({
   weight: z.number().min(0, '重量不能为负数').optional(),
   dimensions: z.string().optional(),
   categoryId: z.string().optional(),
-  brandId: z.string().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
   isDigital: z.boolean().optional(),
   trackInventory: z.boolean().optional(),
@@ -45,9 +44,6 @@ export async function GET(
       where: { id },
       include: {
         category: {
-          select: { id: true, name: true, slug: true },
-        },
-        brand: {
           select: { id: true, name: true, slug: true },
         },
         images: {
@@ -213,20 +209,6 @@ async function updateProduct(
       }
     }
 
-    // 验证品牌是否存在
-    if (data.brandId) {
-      const brand = await prisma.brand.findUnique({
-        where: { id: data.brandId },
-      });
-
-      if (!brand) {
-        return NextResponse.json(
-          { success: false, error: 'BRAND_NOT_FOUND', message: '品牌不存在' },
-          { status: 400 },
-        );
-      }
-    }
-
     const { images, comparePrice, inventoryQuantity, lowStockThreshold, trackInventory, ...rest } = data;
 
     const updateData: any = { ...rest };
@@ -300,9 +282,6 @@ async function updateProduct(
       where: { id },
       include: {
         category: {
-          select: { id: true, name: true, slug: true },
-        },
-        brand: {
           select: { id: true, name: true, slug: true },
         },
         images: {
