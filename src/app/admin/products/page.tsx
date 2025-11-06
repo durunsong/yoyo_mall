@@ -907,7 +907,7 @@ export default function ProductsPage() {
     return (
       <div key={itemKey} className="space-y-2">
         <div
-          className="group flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-xs shadow-sm transition hover:border-primary hover:bg-muted"
+          className="group flex items-center gap-3 rounded-xl border border-border bg-background px-2 md:px-3 py-3 text-xs shadow-sm transition hover:border-primary hover:bg-muted"
         >
           {indent > 0 ? <div style={{ width: indent }} className="shrink-0" /> : null}
           <div className="min-w-0 flex-1">
@@ -1316,7 +1316,8 @@ export default function ProductsPage() {
       {/* 商品管理主容器，左侧分类面板在大屏保持窄列，移动端自动换行 */}
       <div className="grid gap-4 lg:grid-cols-[minmax(200px,240px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr]">
         <div className="space-y-4">
-          <Card className="flex flex-col lg:sticky lg:top-24 lg:max-h-[calc(100vh-160px)]">
+          {/* 调整高度与滚动：固定卡片高度，内部内容独立滚动，避免分类过多时被裁切 */}
+          <Card className="flex flex-col lg:sticky lg:h-[calc(100vh-95px)]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -1339,9 +1340,10 @@ export default function ProductsPage() {
                 />
               </div>
             </CardHeader>
-            <CardContent className="flex-1 space-y-1 overflow-hidden pb-3 pr-0 lg:pr-1">
+            {/* 重要：给内容区域 min-h-0 与 overflow-y-auto，使其在 flex 布局下可滚动；同时统一左右内边距，避免视觉不居中 */}
+            <CardContent className="flex-1 space-y-1 min-h-0 overflow-y-auto px-3 pb-3">
               {categoryTree.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto pr-1 max-h-64 sm:max-h-80 md:max-h-[28rem] lg:max-h-[calc(100vh-240px)]">
+                <div className="space-y-2 px-1">
                   {categoryTree.map((category, index) => renderCategoryItem(category, 0, index))}
                 </div>
               ) : (
@@ -1357,7 +1359,7 @@ export default function ProductsPage() {
           {/* 页头 */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">商品管理</h1>
+              <h1 className="text-xl font-bold text-gray-900">商品管理</h1>
               <p className="mt-1 text-gray-600">
                 管理所有商品信息,包括添加、编辑和删除商品
               </p>
@@ -1374,35 +1376,35 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* 统计卡片 */}
-          <div className="grid gap-3 md:grid-cols-3">
+          {/* 统计卡片（紧凑版） */}
+          <div className="grid gap-2 md:grid-cols-3">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">总商品数</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                <CardTitle className="text-xs font-medium text-muted-foreground">总商品数</CardTitle>
+                <Package className="h-3.5 w-3.5 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{products.length}</div>
+              <CardContent className="px-3 py-2">
+                <div className="text-xl font-bold leading-none">{products.length}</div>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">已发布</CardTitle>
-                <Package className="h-4 w-4 text-green-600" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                <CardTitle className="text-xs font-medium text-muted-foreground">已发布</CardTitle>
+                <Package className="h-3.5 w-3.5 text-green-600" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="px-3 py-2">
+                <div className="text-xl font-bold leading-none">
                   {products.filter((p) => p.status === 'PUBLISHED').length}
                 </div>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">低库存</CardTitle>
-                <AlertCircle className="h-4 w-4 text-orange-600" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                <CardTitle className="text-xs font-medium text-muted-foreground">低库存</CardTitle>
+                <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="px-3 py-2">
+                <div className="text-xl font-bold leading-none">
                   {
                     products.filter(
                       (p) => (p.inventory?.quantity || 0) <= 10 && (p.inventory?.quantity || 0) > 0,
@@ -1490,7 +1492,8 @@ export default function ProductsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                {/* 表头独立，不随表体滚动 */}
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12">
@@ -1508,6 +1511,10 @@ export default function ProductsPage() {
                       <TableHead className="text-right">操作</TableHead>
                     </TableRow>
                   </TableHeader>
+                </Table>
+                {/* 仅表体滚动 */}
+                <div className="max-h-[45vh] overflow-y-auto overscroll-contain">
+                  <Table className="w-full">
                   <TableBody>
                     {paginatedProducts.map((product) => {
                       const priceValue = Number(product.price ?? 0);
@@ -1616,18 +1623,19 @@ export default function ProductsPage() {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             )}
 
-            {/* 新增：分页控件 */}
+            {/* 新增：分页控件（同一行显示） */}
             {!loading && filteredProducts.length > 0 && (
-              <div className="mt-4 flex flex-col items-center gap-4">
+              <div className="mt-4 flex w-full items-center justify-between gap-4">
                 <PaginationControls
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
                 />
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground whitespace-nowrap">
                   显示 {startIndex + 1} - {Math.min(endIndex, filteredProducts.length)} 条，
                   共 {filteredProducts.length} 条商品
                 </div>

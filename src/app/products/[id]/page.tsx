@@ -63,26 +63,23 @@ interface Product {
 const PLACEHOLDER_IMAGE =
   'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png';
 
-const ShareButtonIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <circle cx="18" cy="5" r="3" />
-    <circle cx="6" cy="12" r="3" />
-    <circle cx="18" cy="19" r="3" />
-    <line x1="8.6" y1="10.5" x2="15.4" y2="6.6" />
-    <line x1="8.6" y1="13.5" x2="15.4" y2="17.4" />
-  </svg>
+// 使用静态资源 public/icons/share.svg 作为分享按钮图标
+const ShareButtonIcon = ({ className }: { className?: string }) => (
+  <img
+    src="/icons/share.svg"
+    alt="share"
+    width={20}
+    height={20}
+    className={className}
+    style={{ width: 20, height: 20, display: 'inline-block' }}
+    loading="lazy"
+    decoding="async"
+  />
 );
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const routeProductId = (params as any)?.id as string | undefined;
   const router = useRouter();
   const { t } = useStaticTranslations('product');
   const { t: tCommon } = useStaticTranslations('common');
@@ -114,7 +111,7 @@ export default function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/products/${params.id}`);
+        const response = await fetch(`/api/products/${routeProductId}`);
         const data = await response.json();
 
         if (data.success) {
@@ -142,10 +139,10 @@ export default function ProductDetailPage() {
       }
     };
 
-    if (params.id) {
+    if (routeProductId) {
       fetchProduct();
     }
-  }, [params.id, router, t, recommendationLimit, recommendationsEnabled]);
+  }, [routeProductId, router, t, recommendationLimit, recommendationsEnabled]);
 
   // 监听当前页面 URL，用于分享链接
   useEffect(() => {
@@ -319,11 +316,76 @@ export default function ProductDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="aspect-square animate-pulse rounded-lg bg-gray-200" />
+          {/* 左侧：主图与缩略图骨架 */}
           <div className="space-y-4">
-            <div className="h-8 animate-pulse rounded bg-gray-200" />
-            <div className="h-6 w-2/3 animate-pulse rounded bg-gray-200" />
-            <div className="h-12 w-1/3 animate-pulse rounded bg-gray-200" />
+            <div className="aspect-square animate-pulse rounded-lg bg-gray-200" />
+            <div className="flex gap-2">
+              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
+            </div>
+          </div>
+
+          {/* 右侧：信息骨架，尽可能还原最终布局占位 */}
+          <div className="space-y-6">
+            {/* 标题与短描述 */}
+            <div className="space-y-3">
+              <div className="h-7 w-3/4 animate-pulse rounded bg-gray-200" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200" />
+              <div className="h-4 w-1/3 animate-pulse rounded bg-gray-200" />
+            </div>
+
+            {/* 评分与标签 */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+              </div>
+              <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+              <div className="h-5 w-16 animate-pulse rounded-full bg-gray-200" />
+            </div>
+
+            {/* 价格与划线价 */}
+            <div className="space-y-2">
+              <div className="h-10 w-40 animate-pulse rounded bg-gray-200" />
+              <div className="h-5 w-28 animate-pulse rounded bg-gray-200" />
+            </div>
+
+            {/* 库存状态 */}
+            <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
+
+            {/* 数量步进器 */}
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-32 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
+            </div>
+
+            {/* 操作按钮：加入购物车 / 心愿单 / 分享 */}
+            <div className="flex gap-3">
+              <div className="h-11 flex-1 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-11 w-11 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-11 w-11 animate-pulse rounded-md bg-gray-200" />
+            </div>
+
+            {/* 保障信息卡片 */}
+            <div className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-36 animate-pulse rounded bg-gray-200" />
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-44 animate-pulse rounded bg-gray-200" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -354,7 +416,7 @@ const isWishlisted = Boolean(currentWishlistItem);
   const availableQuantity =
     product.availableQuantity ?? product.inventory?.quantity ?? 0;
   const lowStockThreshold = product.inventory?.lowStockThreshold ?? 10;
-  const inStock = product.inStock ?? availableQuantity > 0 || product.allowOutOfStock;
+  const inStock = product.inStock ?? (availableQuantity > 0 || product.allowOutOfStock);
   const lowStock =
     product.isLowStock ??
     (availableQuantity > 0 && availableQuantity <= lowStockThreshold);
@@ -606,12 +668,12 @@ const isWishlisted = Boolean(currentWishlistItem);
                 image={primaryImageUrl}
                 trigger={
                   <Button
-                    size="lg"
+                    size="icon"
                     variant="outline"
-                    className="w-12 justify-center"
+                    className="h-11 w-11 p-0"
                     aria-label={t('share') || '分享'}
                   >
-                    <ShareButtonIcon className="h-5 w-5 text-gray-600" />
+                    <ShareButtonIcon className="h-5 w-5" />
                   </Button>
                 }
                 messages={{

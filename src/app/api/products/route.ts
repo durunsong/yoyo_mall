@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
+// 规范化 slug：允许中文与数字，去除首尾连接符
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 // 商品查询参数验证
 const productQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -24,6 +33,7 @@ const productImageSchema = z.object({
 // 商品创建验证
 const createProductSchema = z.object({
   name: z.string().min(1, '商品名称不能为空').max(255, '商品名称过长'),
+  slug: z.string().optional(),
   description: z.string().optional(),
   shortDesc: z.string().max(500, '简短描述过长').optional(),
   sku: z.string().min(1, 'SKU不能为空'),
@@ -265,11 +275,15 @@ export async function POST(request: NextRequest) {
     } = data;
     const normalizedComparePrice =
       typeof comparePrice === 'number' && comparePrice > 0 ? comparePrice : null;
-
-    const slug = productData.name.toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .trim();
+    // 优先使用前端传来的 slug；否则根据名称生成。为空则兜底为时间戳。
+    const rawSlug = data.slug && data.slug.trim() ? data.slug : productData.name;
+    const baseSlug = slugify(rawSlug) || `p-${Date.now()}`;
+    // 保证 slug 唯一：若已存在则追加时间戳
+    let slug = baseSlug;
+    const existWithSlug = await prisma.product.findUnique({ where: { slug } });
+    if (existWithSlug) {
+      slug = `${baseSlug}-${Date.now()}`;
+    }
 
     const product = await prisma.product.create({
       data: {
