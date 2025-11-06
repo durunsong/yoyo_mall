@@ -115,7 +115,7 @@ export function Footer() {
       } else {
         setMessage({ 
           type: 'error', 
-          text: data.message || '订阅失败，请稍后重试' 
+          text: data.message || '订阅失败，请稍后重试', 
         });
       }
     } catch (error) {

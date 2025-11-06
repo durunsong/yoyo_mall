@@ -40,6 +40,9 @@ import {
   Plus,
   Edit,
   Trash2,
+  Share2,
+  Sparkles,
+  Star,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -51,6 +54,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import {
+  ProductDetailConfig,
+  ShareChannelConfig,
+  ShareChannelType,
+  defaultProductDetailConfig,
+  normalizeProductDetailConfig,
+  sanitizeProductDetailConfigForStorage,
+} from '@/lib/config/product-detail';
+import { v4 as uuidv4 } from 'uuid';
 
 type AnnouncementActionType = 'NONE' | 'URL' | 'OPEN_LOGIN_MODAL' | 'OPEN_REGISTER_MODAL';
 
@@ -91,6 +103,16 @@ const ANNOUNCEMENT_ACTION_LABELS: Record<AnnouncementActionType, string> = {
   OPEN_LOGIN_MODAL: '打开登录弹窗',
   OPEN_REGISTER_MODAL: '打开注册弹窗',
 };
+
+const SHARE_TYPE_OPTIONS: { label: string; value: ShareChannelType }[] = [
+  { label: 'Facebook', value: 'facebook' },
+  { label: 'Pinterest', value: 'pinterest' },
+  { label: 'Twitter / X', value: 'twitter' },
+  { label: '邮件', value: 'email' },
+  { label: '复制链接', value: 'link' },
+  { label: 'WhatsApp', value: 'whatsapp' },
+  { label: '自定义', value: 'custom' },
+];
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
@@ -138,6 +160,12 @@ export default function SettingsPage() {
     emailNotifications: true,
     smsNotifications: false,
   });
+
+  // 商品详情页配置
+  const [productDetailConfig, setProductDetailConfig] = useState<ProductDetailConfig>(
+    () => normalizeProductDetailConfig(defaultProductDetailConfig),
+  );
+  const [productConfigSaving, setProductConfigSaving] = useState(false);
 
   const announcementDefaultForm = useMemo<AnnouncementFormState>(
     () => ({
@@ -253,6 +281,11 @@ export default function SettingsPage() {
           emailNotifications: data.data.emailNotifications !== undefined ? data.data.emailNotifications : true,
           smsNotifications: data.data.smsNotifications || false,
         });
+
+        // 商品详情配置
+        setProductDetailConfig(
+          normalizeProductDetailConfig(data.data.productDetailConfig),
+        );
       }
     } catch (error) {
       console.error('获取系统设置失败:', error);
@@ -567,6 +600,129 @@ export default function SettingsPage() {
     }
   };
 
+  // 商品详情页配置 - 更新分享基础字段
+  const updateShareConfig = (key: keyof ProductDetailConfig['share'], value: any) => {
+    setProductDetailConfig((prev) => ({
+      ...prev,
+      share: {
+        ...prev.share,
+        [key]: value,
+      },
+    }));
+  };
+
+  // 分享渠道编辑
+  const handleShareChannelChange = <K extends keyof ShareChannelConfig>(
+    channelId: string,
+    key: K,
+    value: ShareChannelConfig[K],
+  ) => {
+    setProductDetailConfig((prev) => ({
+      ...prev,
+      share: {
+        ...prev.share,
+        channels: prev.share.channels.map((channel) =>
+          channel.id === channelId ? { ...channel, [key]: value } : channel,
+        ),
+      },
+    }));
+  };
+
+  const handleAddShareChannel = () => {
+    const newChannel: ShareChannelConfig = {
+      id: uuidv4(),
+      type: 'custom',
+      label: '自定义渠道',
+      icon: 'share-2',
+      brandColor: '#3B82F6',
+      enabled: true,
+      urlTemplate: '',
+    };
+
+    setProductDetailConfig((prev) => ({
+      ...prev,
+      share: {
+        ...prev.share,
+        channels: [...prev.share.channels, newChannel],
+      },
+    }));
+  };
+
+  const handleRemoveShareChannel = (channelId: string) => {
+    setProductDetailConfig((prev) => {
+      if (prev.share.channels.length <= 1) {
+        toast.error('至少保留一个分享渠道');
+        return prev;
+      }
+
+      return {
+        ...prev,
+        share: {
+          ...prev.share,
+          channels: prev.share.channels.filter((channel) => channel.id !== channelId),
+        },
+      };
+    });
+  };
+
+  const handleSaveProductDetailConfig = async () => {
+    try {
+      setProductConfigSaving(true);
+
+      const payload = sanitizeProductDetailConfigForStorage(productDetailConfig);
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productDetailConfig: payload }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error || '保存失败');
+      }
+
+      if (data.data?.productDetailConfig) {
+        setProductDetailConfig(
+          normalizeProductDetailConfig(data.data.productDetailConfig),
+        );
+      }
+
+      toast.success('商品详情设置已保存');
+    } catch (error) {
+      console.error('保存商品详情设置失败:', error);
+      toast.error(error instanceof Error ? error.message : '保存失败');
+    } finally {
+      setProductConfigSaving(false);
+    }
+  };
+
+  const updateRecommendationsConfig = (
+    key: keyof ProductDetailConfig['recommendations'],
+    value: any,
+  ) => {
+    setProductDetailConfig((prev) => ({
+      ...prev,
+      recommendations: {
+        ...prev.recommendations,
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateReviewsConfig = (
+    key: keyof ProductDetailConfig['reviews'],
+    value: any,
+  ) => {
+    setProductDetailConfig((prev) => ({
+      ...prev,
+      reviews: {
+        ...prev.reviews,
+        [key]: value,
+      },
+    }));
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -578,7 +734,7 @@ export default function SettingsPage() {
 
         {/* 设置标签页 */}
         <Tabs defaultValue="site" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="site">
               <Globe className="mr-2 h-4 w-4" />
               网站设置
@@ -594,6 +750,10 @@ export default function SettingsPage() {
             <TabsTrigger value="notifications">
               <Bell className="mr-2 h-4 w-4" />
               通知设置
+            </TabsTrigger>
+            <TabsTrigger value="product-detail">
+              <Sparkles className="mr-2 h-4 w-4" />
+              商详配置
             </TabsTrigger>
             <TabsTrigger value="announcements">
               <Megaphone className="mr-2 h-4 w-4" />
@@ -1087,6 +1247,317 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="product-detail">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Share2 className="h-5 w-5 text-blue-500" />
+                    分享设置
+                  </CardTitle>
+                  <CardDescription>配置分享弹层的文案、渠道与链路</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                    <div>
+                      <p className="font-medium text-gray-900">启用商品分享浮层</p>
+                      <p className="text-sm text-gray-500">关闭后前台将隐藏分享按钮与分享弹窗</p>
+                    </div>
+                    <Switch
+                      checked={productDetailConfig.share.enabled}
+                      onCheckedChange={(checked) => updateShareConfig('enabled', checked)}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="shareTitle">弹层标题</Label>
+                      <Input
+                        id="shareTitle"
+                        value={productDetailConfig.share.title}
+                        onChange={(e) => updateShareConfig('title', e.target.value)}
+                        placeholder="例如：分享给好友"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="shareSubtitle">副标题</Label>
+                      <Input
+                        id="shareSubtitle"
+                        value={productDetailConfig.share.subtitle ?? ''}
+                        onChange={(e) => updateShareConfig('subtitle', e.target.value)}
+                        placeholder="例如：把这款好物推荐给你的朋友"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-gray-900">分享渠道</h4>
+                      <Button variant="outline" size="sm" onClick={handleAddShareChannel}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        新增渠道
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      支持占位符：{'{url}'}、{'{title}'}、{'{description}'}、{'{image}'}，系统会自动替换为实际内容
+                    </p>
+
+                    <div className="space-y-3">
+                      {productDetailConfig.share.channels.map((channel) => (
+                        <div key={channel.id} className="space-y-4 rounded-lg border p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {channel.label || '未命名渠道'}
+                              </span>
+                              <span className="text-xs uppercase tracking-wide text-gray-400">
+                                {channel.type}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-500">启用</span>
+                              <Switch
+                                checked={channel.enabled}
+                                onCheckedChange={(checked) =>
+                                  handleShareChannelChange(channel.id, 'enabled', checked)
+                                }
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveShareChannel(channel.id)}
+                                disabled={productDetailConfig.share.channels.length <= 1}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                              <Label>显示名称</Label>
+                              <Input
+                                value={channel.label}
+                                onChange={(e) =>
+                                  handleShareChannelChange(channel.id, 'label', e.target.value)
+                                }
+                                placeholder="例如：Facebook"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label>渠道类型</Label>
+                              <Select
+                                value={channel.type}
+                                onValueChange={(value) =>
+                                  handleShareChannelChange(
+                                    channel.id,
+                                    'type',
+                                    value as ShareChannelType,
+                                  )
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="选择类型" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SHARE_TYPE_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label>图标关键字</Label>
+                              <Input
+                                value={channel.icon ?? ''}
+                                onChange={(e) =>
+                                  handleShareChannelChange(channel.id, 'icon', e.target.value)
+                                }
+                                placeholder="如 facebook / twitter / link"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label>品牌色</Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="color"
+                                  value={channel.brandColor ?? '#3B82F6'}
+                                  onChange={(e) =>
+                                    handleShareChannelChange(channel.id, 'brandColor', e.target.value)
+                                  }
+                                  className="h-10 w-16 rounded-md border"
+                                  aria-label="品牌色"
+                                />
+                                <Input
+                                  value={channel.brandColor ?? ''}
+                                  onChange={(e) =>
+                                    handleShareChannelChange(channel.id, 'brandColor', e.target.value)
+                                  }
+                                  placeholder="#1877F2"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-2">
+                            <Label>分享链接模板</Label>
+                            <Input
+                              value={channel.urlTemplate ?? ''}
+                              onChange={(e) =>
+                                handleShareChannelChange(channel.id, 'urlTemplate', e.target.value)
+                              }
+                              placeholder="https://www.facebook.com/sharer/sharer.php?u={url}"
+                            />
+                            <p className="text-xs text-gray-500">
+                              建议保留 {'{url}'} 和 {'{title}'} 占位符，确保社交平台能正确识别链接
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    推荐模块
+                  </CardTitle>
+                  <CardDescription>控制相关推荐区域的展示、文案和数量</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                    <div>
+                      <p className="font-medium text-gray-900">启用相关推荐</p>
+                      <p className="text-sm text-gray-500">关闭后前台将不展示相关商品区域</p>
+                    </div>
+                    <Switch
+                      checked={productDetailConfig.recommendations.enabled}
+                      onCheckedChange={(checked) =>
+                        updateRecommendationsConfig('enabled', checked)
+                      }
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="recommendTitle">标题</Label>
+                      <Input
+                        id="recommendTitle"
+                        value={productDetailConfig.recommendations.title}
+                        onChange={(e) =>
+                          updateRecommendationsConfig('title', e.target.value)
+                        }
+                        placeholder="例如：相关推荐"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="recommendSubtitle">副标题</Label>
+                      <Input
+                        id="recommendSubtitle"
+                        value={productDetailConfig.recommendations.subtitle ?? ''}
+                        onChange={(e) =>
+                          updateRecommendationsConfig('subtitle', e.target.value)
+                        }
+                        placeholder="例如：你可能也喜欢这些商品"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="recommendLimit">展示数量</Label>
+                      <Input
+                        id="recommendLimit"
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={productDetailConfig.recommendations.limit}
+                        onChange={(e) => {
+                          const next = Number(e.target.value);
+                          const safeValue = Number.isNaN(next)
+                            ? productDetailConfig.recommendations.limit
+                            : Math.min(12, Math.max(1, next));
+                          updateRecommendationsConfig('limit', safeValue);
+                        }}
+                      />
+                      <p className="text-xs text-gray-500">建议 4-8 个之间，兼顾加载速度与内容丰富度</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-amber-500" />
+                    评价模块
+                  </CardTitle>
+                  <CardDescription>配置用户评价区域的可见性与展示文案</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                      <div>
+                        <p className="font-medium text-gray-900">启用评价模块</p>
+                        <p className="text-sm text-gray-500">关闭后用户无法在商品详情页查看或提交评价</p>
+                      </div>
+                      <Switch
+                        checked={productDetailConfig.reviews.enabled}
+                        onCheckedChange={(checked) => updateReviewsConfig('enabled', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                      <div>
+                        <p className="font-medium text-gray-900">展示评分概览</p>
+                        <p className="text-sm text-gray-500">显示平均分、评分分布等统计信息</p>
+                      </div>
+                      <Switch
+                        checked={productDetailConfig.reviews.showSummary}
+                        onCheckedChange={(checked) =>
+                          updateReviewsConfig('showSummary', checked)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="reviewTitle">标题</Label>
+                      <Input
+                        id="reviewTitle"
+                        value={productDetailConfig.reviews.title}
+                        onChange={(e) => updateReviewsConfig('title', e.target.value)}
+                        placeholder="例如：用户评价"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="reviewSubtitle">副标题</Label>
+                      <Input
+                        id="reviewSubtitle"
+                        value={productDetailConfig.reviews.subtitle ?? ''}
+                        onChange={(e) => updateReviewsConfig('subtitle', e.target.value)}
+                        placeholder="例如：来自真实购买者的反馈"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSaveProductDetailConfig} disabled={productConfigSaving}>
+                  {productConfigSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  保存商品详情设置
+                </Button>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="announcements">

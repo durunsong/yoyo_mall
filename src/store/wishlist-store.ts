@@ -16,6 +16,15 @@ interface WishlistItem {
   addedAt: Date;
 }
 
+interface AddWishlistItemInput {
+  id?: string;
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
+  addedAt?: Date;
+}
+
 // 心愿单状态接口
 interface WishlistState {
   // 状态
@@ -25,7 +34,7 @@ interface WishlistState {
   itemCount: number;
 
   // 操作方法
-  addItem: (item: Omit<WishlistItem, 'id' | 'addedAt'>) => void;
+  addItem: (item: AddWishlistItemInput) => void;
   removeItem: (itemId: string) => void;
   clearWishlist: () => void;
   isInWishlist: (productId: string) => boolean;
@@ -59,14 +68,15 @@ export const useWishlistStore = create<WishlistState>()(
             // 如果商品已存在,不重复添加
             return state;
           } else {
+            const { id, addedAt, ...rest } = newItem;
             // 添加新商品
             return {
               items: [
                 ...state.items,
                 {
-                  ...newItem,
-                  id: generateId(),
-                  addedAt: new Date(),
+                  ...rest,
+                  id: id ?? generateId(),
+                  addedAt: addedAt ?? new Date(),
                 },
               ],
             };

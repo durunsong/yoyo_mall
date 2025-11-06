@@ -63,7 +63,7 @@ export function OptimizedImage({
       <div
         className={cn(
           'flex items-center justify-center bg-gray-100 text-gray-400',
-          className
+          className,
         )}
       >
         <svg
@@ -104,7 +104,7 @@ export function OptimizedImage({
           objectFit === 'contain' && 'object-contain',
           objectFit === 'fill' && 'object-fill',
           objectFit === 'none' && 'object-none',
-          objectFit === 'scale-down' && 'object-scale-down'
+          objectFit === 'scale-down' && 'object-scale-down',
         )}
         priority={priority}
         quality={quality}
@@ -134,7 +134,7 @@ export function ProductImage({
       <div
         className={cn(
           'flex items-center justify-center bg-gray-100 text-gray-400',
-          className
+          className,
         )}
       >
         <svg
@@ -188,7 +188,7 @@ export function AvatarImage({
       <div
         className={cn(
           'flex items-center justify-center rounded-full bg-gray-200 text-gray-600',
-          sizeClasses[size]
+          sizeClasses[size],
         )}
       >
         <svg

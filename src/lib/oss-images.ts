@@ -12,7 +12,7 @@ const OSS_FOLDER = process.env.OSS_FOLDER || 'yoyo_mall';
 const getOssUrl = (path: string) => {
   if (!OSS_BASE_URL) {
     console.warn('OSS_BASE_URL not configured, using placeholder');
-    return `/placeholder.png`;
+    return '/placeholder.png';
   }
   return `${OSS_BASE_URL}/${OSS_FOLDER}/${path}`;
 };
@@ -88,7 +88,7 @@ export const OSS_IMAGES = {
  * 获取随机图片
  */
 export function getRandomImage(
-  category: keyof typeof OSS_IMAGES
+  category: keyof typeof OSS_IMAGES,
 ): string {
   const images = OSS_IMAGES[category];
   if (!images || images.length === 0) {
@@ -102,7 +102,7 @@ export function getRandomImage(
  */
 export function getImage(
   category: keyof typeof OSS_IMAGES,
-  index: number
+  index: number,
 ): string {
   const images = OSS_IMAGES[category];
   if (!images || images.length === 0) {

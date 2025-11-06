@@ -102,10 +102,10 @@ function main() {
   }
 
   console.log('\n' + '='.repeat(60));
-  console.log(`\n✨ 更新完成！`);
+  console.log('\n✨ 更新完成！');
   console.log(`  - 已更新: ${updatedCount} 个文件`);
   console.log(`  - 跳过: ${skippedCount} 个文件`);
-  console.log(`\n💡 提示: 请运行 npm run lint 检查代码质量`);
+  console.log('\n💡 提示: 请运行 npm run lint 检查代码质量');
   console.log('');
 }
 

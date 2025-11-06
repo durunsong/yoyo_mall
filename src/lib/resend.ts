@@ -84,8 +84,8 @@ export async function sendBatchEmails({
             html,
             text,
             from,
-          })
-        )
+          }),
+        ),
       );
       results.push(...batchResults);
     }

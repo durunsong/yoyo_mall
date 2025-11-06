@@ -12,13 +12,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Heart,
-  Share2,
   Star,
   ShoppingCart,
   Truck,
   Shield,
   RotateCcw,
-  ChevronLeft,
   Plus,
   Minus,
   Check,
@@ -35,6 +33,8 @@ import { toast } from 'sonner';
 import ProductCard from '@/components/products/product-card';
 import { ProductReviews } from '@/components/products/product-reviews';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
+import { ShareMenu } from '@/components/common/share-menu';
+import { useWishlistStore } from '@/store/wishlist-store';
 
 interface Product {
   id: string;
@@ -49,9 +49,37 @@ interface Product {
   images: { id: string; url: string; alt: string }[];
   category: { id: string; name: string };
   brand?: { id: string; name: string };
-  inventory?: { quantity: number };
+  inventory?: { quantity: number; lowStockThreshold?: number };
   reviews?: any[];
+  tags?: string[];
+  averageRating?: number;
+  reviewCount?: number;
+  availableQuantity?: number;
+  inStock?: boolean;
+  isLowStock?: boolean;
+  allowOutOfStock?: boolean;
 }
+
+const PLACEHOLDER_IMAGE =
+  'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png';
+
+const ShareButtonIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <line x1="8.6" y1="10.5" x2="15.4" y2="6.6" />
+    <line x1="8.6" y1="13.5" x2="15.4" y2="17.4" />
+  </svg>
+);
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -67,10 +95,19 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [shareUrl, setShareUrl] = useState('');
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  const wishlistItems = useWishlistStore(state => state.items);
+  const addWishlistItem = useWishlistStore(state => state.addItem);
+  const removeWishlistItem = useWishlistStore(state => state.removeItem);
   
   // 获取系统设置的货币符号
   const { settings } = useSystemSettings();
   const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
+  // 后台配置：控制推荐商品数量与是否展示
+  const recommendationLimit = settings.productDetailConfig.recommendations.limit;
+  const recommendationsEnabled = settings.productDetailConfig.recommendations.enabled;
 
   // 获取商品详情
   useEffect(() => {
@@ -82,9 +119,16 @@ export default function ProductDetailPage() {
 
         if (data.success) {
           setProduct(data.data);
+          setSelectedImage(0);
           // 获取相关商品
-          if (data.data.category?.id) {
-            fetchRelatedProducts(data.data.category.id, data.data.id);
+          if (data.data.category?.id && recommendationsEnabled) {
+            fetchRelatedProducts(
+              data.data.category.id,
+              data.data.id,
+              recommendationLimit,
+            );
+          } else {
+            setRelatedProducts([]);
           }
         } else {
           toast.error(t('productNotFound') || 'Product not found');
@@ -101,19 +145,30 @@ export default function ProductDetailPage() {
     if (params.id) {
       fetchProduct();
     }
-  }, [params.id, router, t]);
+  }, [params.id, router, t, recommendationLimit, recommendationsEnabled]);
+
+  // 监听当前页面 URL，用于分享链接
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(window.location.href);
+    }
+  }, []);
 
   // 获取相关商品
-  const fetchRelatedProducts = async (categoryId: string, productId: string) => {
+  const fetchRelatedProducts = async (
+    categoryId: string,
+    productId: string,
+    limit: number,
+  ) => {
     try {
       const response = await fetch(
-        `/api/products?category=${categoryId}&limit=4`,
+        `/api/products?category=${categoryId}&limit=${limit}`,
       );
       const data = await response.json();
       if (data.success) {
         // 过滤掉当前商品
         const filtered = data.data.filter((p: any) => p.id !== productId);
-        setRelatedProducts(filtered.slice(0, 4));
+        setRelatedProducts(filtered.slice(0, limit));
       }
     } catch (error) {
       console.error('Failed to fetch related products:', error);
@@ -146,12 +201,16 @@ export default function ProductDetailPage() {
 
       if (data.success) {
         // 同时添加到本地store（用于UI显示）
+        const imageUrl =
+          product.images?.[selectedImage]?.url ||
+          product.images?.[0]?.url ||
+          PLACEHOLDER_IMAGE;
         addItem({
           productId: product.id,
           quantity: quantity,
           price: product.price,
           name: product.name,
-          image: product.images[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+          image: imageUrl,
         });
         toast.success(t('addedToCart') || 'Added to cart successfully!');
       } else {
@@ -163,10 +222,94 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+
+    if (!session?.user) {
+      openModal('login');
+      toast.info('请先登录后再添加到心愿单');
+      return;
+    }
+
+    const existingItem = wishlistItems.find(
+      item => item.productId === product.id,
+    );
+
+    try {
+      setWishlistLoading(true);
+
+      if (existingItem) {
+        const response = await fetch(`/api/wishlist/${existingItem.id}`, {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          removeWishlistItem(existingItem.id);
+          toast.success('已从心愿单移除');
+        } else {
+          toast.error(data.error || '移除心愿单失败');
+        }
+      } else {
+        const response = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: product.id }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const wishlistItem = data.data;
+          const imageUrl =
+            product.images?.[selectedImage]?.url ||
+            product.images?.[0]?.url ||
+            PLACEHOLDER_IMAGE;
+
+          addWishlistItem({
+            id: wishlistItem?.id,
+            productId: product.id,
+            name: product.name,
+            price: Number(product.price ?? 0),
+            image: imageUrl,
+            addedAt: wishlistItem?.createdAt
+              ? new Date(wishlistItem.createdAt)
+              : undefined,
+          });
+
+          toast.success('已加入心愿单');
+        } else {
+          toast.error(data.error || '加入心愿单失败');
+        }
+      }
+    } catch (error) {
+      console.error('心愿单操作失败:', error);
+      toast.error('操作失败，请稍后重试');
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   // 数量增减
   const handleQuantityChange = (delta: number) => {
+    if (!product) return;
+
+    // 兼容库存追踪与允许超卖两种模式
+    const currentAvailable =
+      product.availableQuantity ?? product.inventory?.quantity ?? 0;
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= (product?.inventory?.quantity || 999)) {
+    if (newQuantity < 1) return;
+
+    if (product?.allowOutOfStock) {
+      setQuantity(Math.min(newQuantity, 999));
+      return;
+    }
+
+    if (currentAvailable === 0) {
+      return;
+    }
+
+    if (newQuantity <= currentAvailable) {
       setQuantity(newQuantity);
     }
   };
@@ -191,14 +334,41 @@ export default function ProductDetailPage() {
     return null;
   }
 
+const primaryImageUrl =
+  product.images?.[selectedImage]?.url ||
+  product.images?.[0]?.url ||
+  PLACEHOLDER_IMAGE;
+const primaryImageAlt =
+  product.images?.[selectedImage]?.alt || product.name;
+const currentWishlistItem = wishlistItems.find(
+  item => item.productId === product.id,
+);
+const isWishlisted = Boolean(currentWishlistItem);
+
   // 计算折扣百分比
   const discountPercent = product.comparePrice
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : 0;
 
-  // 库存状态
-  const inStock = (product.inventory?.quantity || 0) > 0;
-  const lowStock = (product.inventory?.quantity || 0) <= 10 && (product.inventory?.quantity || 0) > 0;
+  // 库存、评价、分享等辅助信息（后台可统一配置）
+  const availableQuantity =
+    product.availableQuantity ?? product.inventory?.quantity ?? 0;
+  const lowStockThreshold = product.inventory?.lowStockThreshold ?? 10;
+  const inStock = product.inStock ?? availableQuantity > 0 || product.allowOutOfStock;
+  const lowStock =
+    product.isLowStock ??
+    (availableQuantity > 0 && availableQuantity <= lowStockThreshold);
+  const ratingValue = product.averageRating ?? 0;
+  const reviewCount = product.reviewCount ?? product.reviews?.length ?? 0;
+  const shareConfig = settings.productDetailConfig.share;
+  const reviewsConfig = settings.productDetailConfig.reviews;
+  const recommendationsConfig = settings.productDetailConfig.recommendations;
+  const fallbackShareUrl =
+    shareUrl ||
+    (settings.siteUrl
+      ? `${settings.siteUrl.replace(/\/$/, '')}/products/${product.slug}`
+      : '');
+  const clampedRating = Math.max(0, Math.min(5, ratingValue));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -230,8 +400,8 @@ export default function ProductDetailPage() {
             {/* 主图 */}
             <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
               <Image
-                src={product.images[selectedImage]?.url || 'https://via.placeholder.com/800'}
-                alt={product.images[selectedImage]?.alt || product.name}
+                src={primaryImageUrl}
+                alt={primaryImageAlt}
                 fill
                 className="object-cover"
                 priority
@@ -281,6 +451,20 @@ export default function ProductDetailPage() {
             <div>
               <h1 className="mb-2 text-3xl font-bold text-gray-900">{product.name}</h1>
               <p className="text-gray-600">{product.shortDesc}</p>
+              {/* 商品标签，来自后台 tags 配置 */}
+              {product.tags && product.tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {product.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="rounded-full border-transparent bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600"
+                    >
+                      #{tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* 评分 */}
@@ -290,14 +474,27 @@ export default function ProductDetailPage() {
                   <Star
                     key={i}
                     className={`h-5 w-5 ${
-                      i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                      clampedRating >= i + 1
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : clampedRating > i
+                          ? 'fill-yellow-200 text-yellow-300'
+                          : 'text-gray-300'
                     }`}
                   />
                 ))}
               </div>
               <span className="text-sm text-gray-600">
-                4.5 (128 {t('reviews') || 'reviews'})
+                {clampedRating > 0 ? `${clampedRating.toFixed(1)} / 5` : '暂无评分'}
+                {`（${reviewCount} ${t('reviews') || 'reviews'}）`}
               </span>
+              {clampedRating > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="rounded-full border-transparent bg-yellow-100 text-xs font-semibold text-yellow-700"
+                >
+                  {(t('reviewHeat') || '热度')} {Math.round((clampedRating / 5) * 100)}%
+                </Badge>
+              )}
             </div>
 
             <Separator />
@@ -316,7 +513,7 @@ export default function ProductDetailPage() {
               </div>
               {lowStock && (
                 <p className="text-sm text-orange-600">
-                  ⚠️ {t('lowStock') || 'Only'} {product.inventory?.quantity}{' '}
+                  ⚠️ {t('lowStock') || 'Only'} {availableQuantity}{' '}
                   {t('itemsLeft') || 'items left'}
                 </p>
               )}
@@ -358,13 +555,18 @@ export default function ProductDetailPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= (product.inventory?.quantity || 0)}
+                    disabled={
+                      !product?.allowOutOfStock &&
+                      (availableQuantity === 0 || quantity >= availableQuantity)
+                    }
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
                 <span className="text-sm text-gray-600">
-                  {product.inventory?.quantity || 0} {t('available') || 'available'}
+                  {product.allowOutOfStock
+                    ? t('preorderHint') || '可预订，下单后优先为您安排备货'
+                    : `${availableQuantity} ${t('available') || 'available'}`}
                 </span>
               </div>
             </div>
@@ -380,12 +582,44 @@ export default function ProductDetailPage() {
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 {t('addToCart') || 'Add to Cart'}
               </Button>
-              <Button size="lg" variant="outline">
-                <Heart className="h-5 w-5" />
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleToggleWishlist}
+                disabled={wishlistLoading}
+                aria-pressed={isWishlisted}
+                className={`transition-colors ${
+                  isWishlisted ? 'border-red-200 bg-red-50 text-red-600' : ''
+                }`}
+              >
+                <Heart
+                  className={`h-5 w-5 transition-colors ${
+                    isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-600'
+                  }`}
+                />
               </Button>
-              <Button size="lg" variant="outline">
-                <Share2 className="h-5 w-5" />
-              </Button>
+              <ShareMenu
+                shareConfig={shareConfig}
+                url={fallbackShareUrl}
+                title={product.name}
+                description={product.shortDesc}
+                image={primaryImageUrl}
+                trigger={
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-12 justify-center"
+                    aria-label={t('share') || '分享'}
+                  >
+                    <ShareButtonIcon className="h-5 w-5 text-gray-600" />
+                  </Button>
+                }
+                messages={{
+                  defaultShareLabel: t('share') || '分享',
+                  copySuccess: t('shareCopySuccess') || '链接已复制到剪贴板',
+                  copyFailed: t('shareCopyFailed') || '复制失败，请手动复制',
+                }}
+              />
             </div>
 
             {/* 保障信息 */}
@@ -435,9 +669,11 @@ export default function ProductDetailPage() {
               <TabsTrigger value="specifications">
                 {t('specifications') || 'Specifications'}
               </TabsTrigger>
-              <TabsTrigger value="reviews">
-                {t('reviews') || 'Reviews'} (128)
-              </TabsTrigger>
+              {reviewsConfig.enabled && (
+                <TabsTrigger value="reviews">
+                  {t('reviews') || 'Reviews'}（{reviewCount}）
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="description" className="mt-6">
@@ -475,21 +711,25 @@ export default function ProductDetailPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="reviews" className="mt-6">
-              <ProductReviews productId={product.id} />
-            </TabsContent>
+            {reviewsConfig.enabled && (
+              <TabsContent value="reviews" className="mt-6">
+                <ProductReviews productId={product.id} />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
 
         {/* 相关商品 */}
-        {relatedProducts.length > 0 && (
+        {recommendationsConfig.enabled && relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                {t('relatedProducts') || 'Related Products'}
+                {recommendationsConfig.title || t('relatedProducts') || 'Related Products'}
               </h2>
               <p className="text-gray-600">
-                {t('relatedProductsDesc') || 'You may also like these products'}
+                {recommendationsConfig.subtitle ||
+                  t('relatedProductsDesc') ||
+                  'You may also like these products'}
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

@@ -18,7 +18,7 @@ export function Price({
   amount, 
   className = '', 
   showOriginal = false,
-  originalAmount 
+  originalAmount, 
 }: PriceProps) {
   const { settings } = useSystemSettings();
   const currencySymbol = getCurrencySymbol(settings.defaultCurrency);

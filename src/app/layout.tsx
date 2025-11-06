@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   // 动态获取应用URL，优先使用环境变量，其次使用 Vercel URL，最后才用 localhost
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || 
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
   ),
   openGraph: {
     type: 'website',

@@ -36,10 +36,12 @@ export function WishlistSync() {
           data.data.forEach((item: any) => {
             if (item.product) {
               wishlistStore.addItem({
+                id: item.id,
                 productId: item.product.id,
                 name: item.product.name,
-                price: item.product.price,
+                price: Number(item.product.price ?? 0),
                 image: item.product.images?.[0]?.url || '',
+                addedAt: item.createdAt ? new Date(item.createdAt) : undefined,
               });
             }
           });

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     if (!token) {
       return NextResponse.redirect(
-        new URL('/newsletter/unsubscribe-error?reason=missing_token', request.url)
+        new URL('/newsletter/unsubscribe-error?reason=missing_token', request.url),
       );
     }
 
@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
 
     if (!subscriber) {
       return NextResponse.redirect(
-        new URL('/newsletter/unsubscribe-error?reason=invalid_token', request.url)
+        new URL('/newsletter/unsubscribe-error?reason=invalid_token', request.url),
       );
     }
 
     // 如果已经取消订阅
     if (subscriber.status === 'UNSUBSCRIBED') {
       return NextResponse.redirect(
-        new URL('/newsletter/already-unsubscribed', request.url)
+        new URL('/newsletter/already-unsubscribed', request.url),
       );
     }
 
@@ -57,12 +57,12 @@ export async function GET(request: NextRequest) {
 
     // 重定向到成功页面
     return NextResponse.redirect(
-      new URL('/newsletter/unsubscribe-success', request.url)
+      new URL('/newsletter/unsubscribe-success', request.url),
     );
   } catch (error) {
     console.error('Newsletter 取消订阅失败:', error);
     return NextResponse.redirect(
-      new URL('/newsletter/unsubscribe-error?reason=server_error', request.url)
+      new URL('/newsletter/unsubscribe-error?reason=server_error', request.url),
     );
   }
 }

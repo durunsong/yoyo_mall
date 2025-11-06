@@ -235,6 +235,9 @@ model SystemSettings {
   inventoryAlerts        Boolean @default(true)
   emailNotifications     Boolean @default(true)
   smsNotifications       Boolean @default(false)
+
+  // 商详页展示配置（JSON 存储）
+  productDetailConfig    Json?   @default("{}")
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

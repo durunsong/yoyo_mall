@@ -157,7 +157,7 @@ export function UserNotifications() {
   // 标记为已读
   const markAsRead = (id: string) => {
     setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+      prev.map(n => (n.id === id ? { ...n, read: true } : n)),
     );
     // 这里应该调用API标记为已读
   };
@@ -268,7 +268,7 @@ export function UserNotifications() {
                   key={notification.id}
                   className={cn(
                     'px-4 py-3 border-b cursor-pointer transition-all hover:bg-gray-50 relative group',
-                    !notification.read && 'bg-blue-50/50'
+                    !notification.read && 'bg-blue-50/50',
                   )}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -289,7 +289,7 @@ export function UserNotifications() {
                         <p className={cn(
                           'text-sm font-medium',
                           !notification.read && 'text-gray-900',
-                          notification.read && 'text-gray-600'
+                          notification.read && 'text-gray-600',
                         )}>
                           {notification.title}
                         </p>

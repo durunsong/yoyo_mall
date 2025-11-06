@@ -14,7 +14,7 @@ export async function GET() {
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '需要管理员权限' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET() {
     // 生成 CSV 内容
     const csvHeaders = '邮箱,订阅时间,确认时间,来源\n';
     const csvRows = subscribers.map(sub => 
-      `${sub.email},${new Date(sub.subscribedAt).toLocaleString('zh-CN')},${sub.confirmedAt ? new Date(sub.confirmedAt).toLocaleString('zh-CN') : ''},${sub.source || ''}`
+      `${sub.email},${new Date(sub.subscribedAt).toLocaleString('zh-CN')},${sub.confirmedAt ? new Date(sub.confirmedAt).toLocaleString('zh-CN') : ''},${sub.source || ''}`,
     ).join('\n');
     
     const csv = '\uFEFF' + csvHeaders + csvRows; // 添加 BOM 以支持中文
@@ -52,7 +52,7 @@ export async function GET() {
     console.error('导出订阅者失败:', error);
     return NextResponse.json(
       { success: false, error: 'INTERNAL_ERROR', message: '服务器内部错误' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

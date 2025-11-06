@@ -5,6 +5,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {
+  defaultProductDetailConfig,
+  normalizeProductDetailConfig,
+} from '@/lib/config/product-detail';
 
 /**
  * GET /api/settings
@@ -28,6 +32,7 @@ export async function GET(request: NextRequest) {
         stripeEnabled: true,
         alipayEnabled: true,
         wechatPayEnabled: true,
+        productDetailConfig: true,
       },
     });
 
@@ -46,13 +51,19 @@ export async function GET(request: NextRequest) {
           stripeEnabled: false,
           alipayEnabled: false,
           wechatPayEnabled: false,
+          productDetailConfig: defaultProductDetailConfig,
         },
       });
     }
 
+    const normalizedConfig = normalizeProductDetailConfig(settings.productDetailConfig);
+
     return NextResponse.json({
       success: true,
-      data: settings,
+      data: {
+        ...settings,
+        productDetailConfig: normalizedConfig,
+      },
     });
   } catch (error: any) {
     console.error('获取系统设置失败:', error);
@@ -62,7 +73,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: '获取系统设置失败',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

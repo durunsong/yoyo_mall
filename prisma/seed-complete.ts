@@ -553,10 +553,10 @@ async function main() {
 
   console.log('\n🎉 完整数据库种子完成！');
   console.log('\n📝 测试账号:');
-  console.log(`  管理员: admin@yoyomall.com / admin123456`);
-  console.log(`  用户1: user1@example.com / password123`);
-  console.log(`  用户2: user2@example.com / password123`);
-  console.log(`  用户3: user3@example.com / password123`);
+  console.log('  管理员: admin@yoyomall.com / admin123456');
+  console.log('  用户1: user1@example.com / password123');
+  console.log('  用户2: user2@example.com / password123');
+  console.log('  用户3: user3@example.com / password123');
 }
 
 main()

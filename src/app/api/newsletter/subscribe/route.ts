@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
           error: 'CONFIG_ERROR',
           message: '邮件服务未配置，请联系管理员',
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             error: 'ALREADY_SUBSCRIBED',
             message: '该邮箱已订阅',
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
           message: '请输入有效的邮箱地址',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
         error: 'INTERNAL_ERROR',
         message: '订阅失败，请稍后重试',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

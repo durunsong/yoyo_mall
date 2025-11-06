@@ -277,7 +277,7 @@ export function FloatingToolbar() {
               onClick={handleCartClick}
               className={cn(
                 'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
-                cartAnimation && 'animate-bounce'
+                cartAnimation && 'animate-bounce',
               )}
             >
               <ShoppingCart className="h-5 w-5 text-gray-700" />
@@ -285,7 +285,7 @@ export function FloatingToolbar() {
                 <span
                   className={cn(
                     'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white',
-                    cartAnimation && 'animate-pulse'
+                    cartAnimation && 'animate-pulse',
                   )}
                 >
                   {cartCount > 9 ? '9+' : cartCount}
@@ -427,21 +427,21 @@ export function FloatingToolbar() {
           onClick={handleWishlistClick}
           className={cn(
             'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-pink-50',
-            wishlistAnimation && 'animate-bounce'
+            wishlistAnimation && 'animate-bounce',
           )}
         >
           <Heart 
             className={cn(
               'h-5 w-5 transition-all duration-300',
               wishlistCount > 0 ? 'text-red-500 fill-red-500' : 'text-gray-700',
-              wishlistAnimation && 'scale-125'
+              wishlistAnimation && 'scale-125',
             )}
           />
           {wishlistCount > 0 && (
             <span
               className={cn(
                 'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-[10px] font-bold text-white shadow-lg',
-                wishlistAnimation && 'animate-ping'
+                wishlistAnimation && 'animate-ping',
               )}
             >
               {wishlistCount > 9 ? '9+' : wishlistCount}
@@ -468,12 +468,12 @@ export function FloatingToolbar() {
       )}
 
       {/* Discord 按钮 - 底部 */}
-      <div className={cn("w-16 bg-white shadow-md rounded-lg", !showScrollTop && "rounded-b-xl")}>
+      <div className={cn('w-16 bg-white shadow-md rounded-lg', !showScrollTop && 'rounded-b-xl')}>
         <button
           onClick={() => toast.info('Discord 功能即将上线')}
           className={cn(
-            "flex h-12 w-full items-center justify-center transition-all hover:bg-gray-50",
-            !showScrollTop && "rounded-b-xl"
+            'flex h-12 w-full items-center justify-center transition-all hover:bg-gray-50',
+            !showScrollTop && 'rounded-b-xl',
           )}
         >
           <svg

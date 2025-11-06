@@ -316,7 +316,7 @@ export default function ProductsPage() {
     return categories.filter(category =>
       category.name.toLowerCase().includes(searchLower) ||
       category.slug.toLowerCase().includes(searchLower) ||
-      category.description?.toLowerCase().includes(searchLower)
+      category.description?.toLowerCase().includes(searchLower),
     );
   }, [categories, categorySearchTerm]);
 
@@ -1138,7 +1138,7 @@ export default function ProductsPage() {
     setSelectedProducts((prev) =>
       prev.includes(productId)
         ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+        : [...prev, productId],
     );
   };
 

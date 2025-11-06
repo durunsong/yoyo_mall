@@ -72,7 +72,7 @@ export function TawkToWidget() {
     return () => {
       // 移除脚本(如果需要)
       const tawkScript = document.querySelector(
-        `script[src*="embed.tawk.to"]`
+        'script[src*="embed.tawk.to"]',
       );
       if (tawkScript) {
         tawkScript.remove();

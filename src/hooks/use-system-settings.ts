@@ -7,6 +7,11 @@
 
 import { create } from 'zustand';
 import { useEffect } from 'react';
+import {
+  ProductDetailConfig,
+  defaultProductDetailConfig,
+  normalizeProductDetailConfig,
+} from '@/lib/config/product-detail';
 
 interface SystemSettings {
   siteName: string;
@@ -19,6 +24,7 @@ interface SystemSettings {
   stripeEnabled: boolean;
   alipayEnabled: boolean;
   wechatPayEnabled: boolean;
+  productDetailConfig: ProductDetailConfig;
 }
 
 interface SettingsStore {
@@ -40,6 +46,7 @@ const defaultSettings: SystemSettings = {
   stripeEnabled: false,
   alipayEnabled: false,
   wechatPayEnabled: false,
+  productDetailConfig: normalizeProductDetailConfig(defaultProductDetailConfig),
 };
 
 // Zustand store
@@ -56,7 +63,15 @@ const useSettingsStore = create<SettingsStore>((set) => ({
       const data = await response.json();
       
       if (data.success && data.data) {
-        set({ settings: data.data, loading: false });
+        const normalizedSettings: SystemSettings = {
+          ...defaultSettings,
+          ...data.data,
+          productDetailConfig: normalizeProductDetailConfig(
+            data.data.productDetailConfig,
+          ),
+        };
+
+        set({ settings: normalizedSettings, loading: false });
       } else {
         set({ settings: defaultSettings, loading: false });
       }
@@ -65,7 +80,7 @@ const useSettingsStore = create<SettingsStore>((set) => ({
       set({ 
         settings: defaultSettings, 
         loading: false, 
-        error: '获取系统设置失败' 
+        error: '获取系统设置失败', 
       });
     }
   },

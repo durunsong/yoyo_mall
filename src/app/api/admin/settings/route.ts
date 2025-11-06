@@ -7,6 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/authz';
+import {
+  defaultProductDetailConfig,
+  normalizeProductDetailConfig,
+  sanitizeProductDetailConfigForStorage,
+} from '@/lib/config/product-detail';
 
 /**
  * GET /api/admin/settings
@@ -25,7 +30,7 @@ export async function GET(request: NextRequest) {
           success: false,
           error: 'Database client not properly initialized. Please restart the server after running: npx prisma generate',
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -46,13 +51,23 @@ export async function GET(request: NextRequest) {
           contactPhone: '+86 400-123-4567',
           defaultLanguage: 'zh-CN',
           defaultCurrency: 'CNY',
+          productDetailConfig: JSON.parse(
+            JSON.stringify(defaultProductDetailConfig),
+          ),
         },
       });
     }
 
+    const normalizedConfig = normalizeProductDetailConfig(
+      settings.productDetailConfig,
+    );
+
     return NextResponse.json({
       success: true,
-      data: settings,
+      data: {
+        ...settings,
+        productDetailConfig: normalizedConfig,
+      },
     });
   } catch (error: any) {
     console.error('获取系统设置失败:', error);
@@ -65,7 +80,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: message,
       },
-      { status }
+      { status },
     );
   }
 }
@@ -88,7 +103,7 @@ export async function PUT(request: NextRequest) {
           success: false,
           error: '网站名称不能为空',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -131,6 +146,12 @@ export async function PUT(request: NextRequest) {
     if (body.emailNotifications !== undefined) updateData.emailNotifications = body.emailNotifications;
     if (body.smsNotifications !== undefined) updateData.smsNotifications = body.smsNotifications;
 
+    if (body.productDetailConfig !== undefined) {
+      updateData.productDetailConfig = sanitizeProductDetailConfigForStorage(
+        body.productDetailConfig,
+      );
+    }
+
     // 更新或创建系统设置
     const settings = await prisma.systemSettings.upsert({
       where: { id: 'global' },
@@ -144,13 +165,21 @@ export async function PUT(request: NextRequest) {
         contactPhone: body.contactPhone || null,
         defaultLanguage: body.defaultLanguage || 'zh-CN',
         defaultCurrency: body.defaultCurrency || 'CNY',
+        productDetailConfig: updateData.productDetailConfig
+          ? updateData.productDetailConfig
+          : JSON.parse(JSON.stringify(defaultProductDetailConfig)),
         ...updateData,
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: settings,
+      data: {
+        ...settings,
+        productDetailConfig: normalizeProductDetailConfig(
+          settings.productDetailConfig,
+        ),
+      },
       message: '系统设置已保存',
     });
   } catch (error: any) {
@@ -164,7 +193,7 @@ export async function PUT(request: NextRequest) {
         success: false,
         error: message,
       },
-      { status }
+      { status },
     );
   }
 }

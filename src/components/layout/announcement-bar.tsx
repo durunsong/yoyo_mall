@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
@@ -209,7 +209,7 @@ export function AnnouncementBar() {
   const contentNode = (
     <div className="relative w-full overflow-hidden">
       <div
-        className={isTransitioning ? "flex transition-transform duration-500 ease-in-out" : "flex"}
+        className={isTransitioning ? 'flex transition-transform duration-500 ease-in-out' : 'flex'}
         style={{
           transform: isTransitioning ? 'translateX(-100%)' : 'translateX(0)',
         }}
@@ -224,7 +224,7 @@ export function AnnouncementBar() {
           <div className="min-w-full flex-shrink-0">
             {renderContent(
               announcements[(currentIndex + 1) % announcements.length],
-              `next-${(currentIndex + 1) % announcements.length}`
+              `next-${(currentIndex + 1) % announcements.length}`,
             )}
           </div>
         )}

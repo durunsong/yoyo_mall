@@ -77,7 +77,7 @@ const productImages: Record<string, ImageCategory> = {
  */
 async function downloadAndUploadToOSS(
   url: string,
-  ossPath: string
+  ossPath: string,
 ): Promise<string> {
   try {
     console.log(`📥 下载图片: ${url}`);
@@ -130,7 +130,7 @@ async function generateImageMapping(): Promise<Record<string, string[]>> {
         console.error(`跳过图片: ${imageUrl}`);
         // 使用占位图
         mapping[category].push(
-          `https://${client.options.bucket}.${client.options.region}.aliyuncs.com/${ossPath}`
+          `https://${client.options.bucket}.${client.options.region}.aliyuncs.com/${ossPath}`,
         );
       }
     }
@@ -143,7 +143,7 @@ async function generateImageMapping(): Promise<Record<string, string[]>> {
  * 生成图片URL常量文件
  */
 async function generateImageConstants(
-  mapping: Record<string, string[]>
+  mapping: Record<string, string[]>,
 ): Promise<void> {
   const content = `/**
  * 阿里云OSS图片URL常量
@@ -191,7 +191,7 @@ async function main() {
       !process.env.OSS_ACCESS_KEY_SECRET
     ) {
       console.error(
-        '❌ 请在.env.local中配置OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET'
+        '❌ 请在.env.local中配置OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET',
       );
       process.exit(1);
     }

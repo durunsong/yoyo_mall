@@ -140,7 +140,7 @@ export default function NotificationsPage() {
   // 标记为已读
   const markAsRead = (id: string) => {
     setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+      prev.map(n => (n.id === id ? { ...n, read: true } : n)),
     );
   };
 
@@ -244,7 +244,7 @@ export default function NotificationsPage() {
                     key={notification.id}
                     className={cn(
                       'p-4 transition-colors cursor-pointer hover:bg-gray-50 relative group',
-                      !notification.read && 'bg-blue-50/50'
+                      !notification.read && 'bg-blue-50/50',
                     )}
                     onClick={() => handleNotificationClick(notification)}
                   >
@@ -258,7 +258,7 @@ export default function NotificationsPage() {
                       <div
                         className={cn(
                           'flex-shrink-0 p-2 rounded-full',
-                          colorClass
+                          colorClass,
                         )}
                       >
                         <Icon className="h-5 w-5" />
@@ -273,7 +273,7 @@ export default function NotificationsPage() {
                                 'text-sm font-medium mb-1',
                                 !notification.read
                                   ? 'text-gray-900'
-                                  : 'text-gray-600'
+                                  : 'text-gray-600',
                               )}
                             >
                               {notification.title}

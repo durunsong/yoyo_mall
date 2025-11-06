@@ -160,8 +160,8 @@ async function updateProduct(
           message: '数据验证失败',
           details: validationResult.error.errors.map(err => ({
             path: err.path.join('.'),
-            message: err.message
-          }))
+            message: err.message,
+          })),
         },
         { status: 400 },
       );

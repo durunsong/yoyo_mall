@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     if (!token) {
       return NextResponse.redirect(
-        new URL('/newsletter/verify-error?reason=missing_token', request.url)
+        new URL('/newsletter/verify-error?reason=missing_token', request.url),
       );
     }
 
@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
 
     if (!subscriber) {
       return NextResponse.redirect(
-        new URL('/newsletter/verify-error?reason=invalid_token', request.url)
+        new URL('/newsletter/verify-error?reason=invalid_token', request.url),
       );
     }
 
     // 如果已经验证过
     if (subscriber.status === 'ACTIVE') {
       return NextResponse.redirect(
-        new URL('/newsletter/already-verified', request.url)
+        new URL('/newsletter/already-verified', request.url),
       );
     }
 
@@ -64,12 +64,12 @@ export async function GET(request: NextRequest) {
 
     // 重定向到成功页面
     return NextResponse.redirect(
-      new URL('/newsletter/verify-success', request.url)
+      new URL('/newsletter/verify-success', request.url),
     );
   } catch (error) {
     console.error('Newsletter 邮箱验证失败:', error);
     return NextResponse.redirect(
-      new URL('/newsletter/verify-error?reason=server_error', request.url)
+      new URL('/newsletter/verify-error?reason=server_error', request.url),
     );
   }
 }
