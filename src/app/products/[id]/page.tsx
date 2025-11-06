@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ import {
   Plus,
   Minus,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +37,7 @@ import { ProductReviews } from '@/components/products/product-reviews';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 import { ShareMenu } from '@/components/common/share-menu';
 import { useWishlistStore } from '@/store/wishlist-store';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface Product {
   id: string;
@@ -93,6 +96,11 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [shareUrl, setShareUrl] = useState('');
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
+
+  const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const thumbnailListRef = useRef<HTMLDivElement | null>(null);
 
   const wishlistItems = useWishlistStore(state => state.items);
   const addWishlistItem = useWishlistStore(state => state.addItem);
@@ -105,6 +113,103 @@ export default function ProductDetailPage() {
   const recommendationLimit = settings.productDetailConfig.recommendations.limit;
   const recommendationsEnabled = settings.productDetailConfig.recommendations.enabled;
 
+  // 图片相关逻辑：必须在任何条件性 return 之前声明，避免 Hook 顺序变化
+  const imageList =
+    product?.images && product.images.length > 0
+      ? product.images
+      : product
+        ? [{ id: 'placeholder', url: PLACEHOLDER_IMAGE, alt: product.name }]
+        : [];
+
+  const totalImages = imageList.length;
+
+  useEffect(() => {
+    thumbnailRefs.current = [];
+  }, [product?.id]);
+
+  useEffect(() => {
+    if (totalImages === 0) return;
+    if (selectedImage >= totalImages) {
+      setSelectedImage(0);
+      setPreviewIndex(0);
+    }
+  }, [selectedImage, totalImages]);
+
+  useEffect(() => {
+    const currentThumbnail = thumbnailRefs.current[selectedImage];
+    if (currentThumbnail) {
+      currentThumbnail.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }
+  }, [selectedImage]);
+
+  const goToImage = useCallback(
+    (index: number) => {
+      if (totalImages === 0) return;
+      const normalized = ((index % totalImages) + totalImages) % totalImages;
+      setSelectedImage(normalized);
+      setPreviewIndex(normalized);
+    },
+    [totalImages],
+  );
+
+  const handlePrevImage = useCallback(() => {
+    if (totalImages > 1) {
+      goToImage(selectedImage - 1);
+    }
+  }, [goToImage, selectedImage, totalImages]);
+
+  const handleNextImage = useCallback(() => {
+    if (totalImages > 1) {
+      goToImage(selectedImage + 1);
+    }
+  }, [goToImage, selectedImage, totalImages]);
+
+  const scrollThumbnails = useCallback(
+    (direction: 'left' | 'right') => {
+      const container = thumbnailListRef.current;
+      if (!container) return;
+      const scrollAmount = 120 * 3;
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    },
+    [],
+  );
+
+  const handleThumbnailHover = useCallback(
+    (index: number) => {
+      goToImage(index);
+    },
+    [goToImage],
+  );
+
+  const handleOpenPreview = useCallback(
+    (index: number) => {
+      goToImage(index);
+      setPreviewOpen(true);
+    },
+    [goToImage],
+  );
+
+  const handlePreviewPrev = useCallback(() => {
+    goToImage(previewIndex - 1);
+  }, [goToImage, previewIndex]);
+
+  const handlePreviewNext = useCallback(() => {
+    goToImage(previewIndex + 1);
+  }, [goToImage, previewIndex]);
+
+  const primaryImage = imageList[selectedImage] ?? imageList[0];
+  const primaryImageUrl = primaryImage?.url || PLACEHOLDER_IMAGE;
+  const primaryImageAlt = primaryImage?.alt || product?.name || 'Product image';
+  const showMainNav = totalImages > 2;
+  const showThumbnailNav = totalImages > 4;
+
   // 获取商品详情
   useEffect(() => {
     const fetchProduct = async () => {
@@ -116,6 +221,7 @@ export default function ProductDetailPage() {
         if (data.success) {
           setProduct(data.data);
           setSelectedImage(0);
+          setPreviewIndex(0);
           // 获取相关商品
           if (data.data.category?.id && recommendationsEnabled) {
             fetchRelatedProducts(
@@ -371,7 +477,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 保障信息卡片 */}
-            <div className="space-y-3 rounded-lg border p-4">
+            <div className="space-y-3 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
                 <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
@@ -395,16 +501,10 @@ export default function ProductDetailPage() {
     return null;
   }
 
-const primaryImageUrl =
-  product.images?.[selectedImage]?.url ||
-  product.images?.[0]?.url ||
-  PLACEHOLDER_IMAGE;
-const primaryImageAlt =
-  product.images?.[selectedImage]?.alt || product.name;
-const currentWishlistItem = wishlistItems.find(
-  item => item.productId === product.id,
-);
-const isWishlisted = Boolean(currentWishlistItem);
+  const currentWishlistItem = wishlistItems.find(
+    item => item.productId === product.id,
+  );
+  const isWishlisted = Boolean(currentWishlistItem);
 
   // 计算折扣百分比
   const discountPercent = product.comparePrice
@@ -429,7 +529,8 @@ const isWishlisted = Boolean(currentWishlistItem);
     (settings.siteUrl
       ? `${settings.siteUrl.replace(/\/$/, '')}/products/${product.slug}`
       : '');
-  const clampedRating = Math.max(0, Math.min(5, ratingValue));
+const clampedRating = Math.max(0, Math.min(5, ratingValue));
+const hasReviews = reviewCount > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -457,44 +558,104 @@ const isWishlisted = Boolean(currentWishlistItem);
         {/* 商品主要信息 */}
         <div className="grid gap-8 lg:grid-cols-2">
           {/* 左侧：图片画廊 */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
             {/* 主图 */}
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-              <Image
-                src={primaryImageUrl}
-                alt={primaryImageAlt}
-                fill
-                className="object-cover"
-                priority
-              />
-              {discountPercent > 0 && (
-                <Badge variant="destructive" className="absolute left-4 top-4">
-                  -{discountPercent}%
-                </Badge>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => handleOpenPreview(selectedImage)}
+                className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 focus:outline-none"
+              >
+                <Image
+                  src={primaryImageUrl}
+                  alt={primaryImageAlt}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                {discountPercent > 0 && (
+                  <Badge variant="destructive" className="absolute left-4 top-4">
+                    -{discountPercent}%
+                  </Badge>
+                )}
+              </button>
+
+              {showMainNav && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    aria-label={t('previousImage') || '上一张'}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    aria-label={t('nextImage') || '下一张'}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
               )}
             </div>
 
             {/* 缩略图 */}
-            {product.images.length > 1 && (
-              <div className="flex gap-2">
-                {product.images.map((image, index) => (
-                  <button
-                    key={image.id}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative h-20 w-20 overflow-hidden rounded-md border-2 transition-colors ${
-                      selectedImage === index
-                        ? 'border-blue-600'
-                        : 'border-transparent hover:border-gray-300'
-                    }`}
-                  >
-                    <Image
-                      src={image.url || 'https://via.placeholder.com/80'}
-                      alt={image.alt || `${product.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+            {totalImages > 1 && (
+              <div className="relative">
+                {showThumbnailNav && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails('left')}
+                      className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
+                      aria-label={t('scrollLeft') || '向左滚动'}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails('right')}
+                      className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
+                      aria-label={t('scrollRight') || '向右滚动'}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+
+                <div
+                  ref={thumbnailListRef}
+                  className={`flex gap-2 overflow-x-auto ${showThumbnailNav ? 'px-10' : ''}`}
+                >
+                  {imageList.map((image, index) => (
+                    <button
+                      key={image.id ?? `${product.id}-image-${index}`}
+                      ref={(el) => {
+                        thumbnailRefs.current[index] = el;
+                      }}
+                      type="button"
+                      onClick={() => goToImage(index)}
+                      onMouseEnter={() => handleThumbnailHover(index)}
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-[3px] transition-all focus:outline-none ${
+                        selectedImage === index
+                          ? 'border-black'
+                          : 'border-transparent hover:border-black/40'
+                      }`}
+                    >
+                      <Image
+                        src={image.url || PLACEHOLDER_IMAGE}
+                        alt={image.alt || `${product.name} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                      <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -522,34 +683,35 @@ const isWishlisted = Boolean(currentWishlistItem);
             </div>
 
             {/* 评分 */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      clampedRating >= i + 1
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : clampedRating > i
-                          ? 'fill-yellow-200 text-yellow-300'
-                          : 'text-gray-300'
-                    }`}
-                  />
-                ))}
+            {hasReviews ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        clampedRating >= i + 1
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : clampedRating > i
+                            ? 'fill-yellow-200 text-yellow-300'
+                            : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600">
+                  {`${clampedRating.toFixed(1)} / 5（${reviewCount} ${t('reviews') || 'reviews'}）`}
+                </span>
+                {clampedRating > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full border-transparent bg-yellow-100 text-xs font-semibold text-yellow-700"
+                  >
+                    {(t('reviewHeat') || '热度')} {Math.round((clampedRating / 5) * 100)}%
+                  </Badge>
+                )}
               </div>
-              <span className="text-sm text-gray-600">
-                {clampedRating > 0 ? `${clampedRating.toFixed(1)} / 5` : '暂无评分'}
-                {`（${reviewCount} ${t('reviews') || 'reviews'}）`}
-              </span>
-              {clampedRating > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-full border-transparent bg-yellow-100 text-xs font-semibold text-yellow-700"
-                >
-                  {(t('reviewHeat') || '热度')} {Math.round((clampedRating / 5) * 100)}%
-                </Badge>
-              )}
-            </div>
+            ) : null}
 
             <Separator />
 
@@ -710,59 +872,65 @@ const isWishlisted = Boolean(currentWishlistItem);
                 </div>
               </CardContent>
             </Card>
+
+            {/* 商品详细信息 */}
+            <div className="space-y-6">
+              <Tabs defaultValue="description">
+                <TabsList>
+                  <TabsTrigger value="description">
+                    {t('description') || 'Description'}
+                  </TabsTrigger>
+                  <TabsTrigger value="specifications">
+                    {t('specifications') || 'Specifications'}
+                  </TabsTrigger>
+                  {reviewsConfig.enabled && (
+                    <TabsTrigger value="reviews">
+                      {t('reviews') || 'Reviews'}（{reviewCount}）
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+
+                <TabsContent value="description" className="mt-6">
+                  <Card>
+                    <CardContent className="prose max-w-none p-6">
+                      <p className="text-gray-700">{product.description}</p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="specifications" className="mt-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <dl className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <dt className="font-medium text-gray-900">SKU</dt>
+                          <dd className="mt-1 text-gray-600">{product.sku}</dd>
+                        </div>
+                        <div>
+                          <dt className="font-medium text-gray-900">
+                            {t('category') || 'Category'}
+                          </dt>
+                          <dd className="mt-1 text-gray-600">{product.category.name}</dd>
+                        </div>
+                      </dl>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {reviewsConfig.enabled && (
+                  <TabsContent value="reviews" className="mt-6">
+                    {hasReviews ? <ProductReviews productId={product.id} /> : (
+                      <Card>
+                        <CardContent className="p-6 text-sm text-gray-500">
+                          {t('noReviewsYet') || '该商品暂时没有评价'}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
           </div>
-        </div>
-
-        {/* 商品详细信息标签页 */}
-        <div className="mt-12">
-          <Tabs defaultValue="description">
-            <TabsList>
-              <TabsTrigger value="description">
-                {t('description') || 'Description'}
-              </TabsTrigger>
-              <TabsTrigger value="specifications">
-                {t('specifications') || 'Specifications'}
-              </TabsTrigger>
-              {reviewsConfig.enabled && (
-                <TabsTrigger value="reviews">
-                  {t('reviews') || 'Reviews'}（{reviewCount}）
-                </TabsTrigger>
-              )}
-            </TabsList>
-
-            <TabsContent value="description" className="mt-6">
-              <Card>
-                <CardContent className="prose max-w-none p-6">
-                  <p className="text-gray-700">{product.description}</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="specifications" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <dl className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <dt className="font-medium text-gray-900">SKU</dt>
-                      <dd className="mt-1 text-gray-600">{product.sku}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium text-gray-900">
-                        {t('category') || 'Category'}
-                      </dt>
-                      <dd className="mt-1 text-gray-600">{product.category.name}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {reviewsConfig.enabled && (
-              <TabsContent value="reviews" className="mt-6">
-                <ProductReviews productId={product.id} />
-              </TabsContent>
-            )}
-          </Tabs>
         </div>
 
         {/* 相关商品 */}
@@ -786,6 +954,67 @@ const isWishlisted = Boolean(currentWishlistItem);
           </div>
         )}
       </div>
+
+      {/* 图片预览 */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="w-full max-w-6xl overflow-hidden border-0 bg-background p-0 shadow-lg sm:rounded-xl">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-6">
+            <div className="flex max-h-[110px] shrink-0 flex-row gap-2 overflow-x-auto sm:max-h-[520px] sm:w-28 sm:flex-col sm:overflow-y-auto">
+              {imageList.map((image, index) => (
+                <button
+                  key={`preview-${image.id ?? index}`}
+                  type="button"
+                  onClick={() => goToImage(index)}
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-[3px] transition-all focus:outline-none ${
+                    previewIndex === index ? 'border-black' : 'border-transparent hover:border-black/40'
+                  }`}
+                >
+                  <Image
+                    src={image.url || PLACEHOLDER_IMAGE}
+                    alt={image.alt || `${product.name} ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="relative flex-1">
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+                <Image
+                  key={`preview-main-${previewIndex}`}
+                  src={imageList[previewIndex]?.url || PLACEHOLDER_IMAGE}
+                  alt={imageList[previewIndex]?.alt || product.name}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              {totalImages > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePreviewPrev}
+                    className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    aria-label={t('previousImage') || '上一张'}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePreviewNext}
+                    className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    aria-label={t('nextImage') || '下一张'}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
