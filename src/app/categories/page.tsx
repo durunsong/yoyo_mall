@@ -47,9 +47,34 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* 标题骨架 */}
+          <div className="mb-8">
+            <div className="skeleton-wave mb-2 h-9 w-48 rounded" />
+            <div className="skeleton-wave h-5 w-80 rounded" />
+          </div>
+
+          {/* 分类卡片骨架网格 */}
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <CardContent className="p-6">
+                  {/* 图标骨架 */}
+                  <div className="skeleton-wave mb-4 h-16 w-16 rounded-lg" />
+                  {/* 标题骨架 */}
+                  <div className="skeleton-wave mb-2 h-6 w-32 rounded" />
+                  {/* 描述骨架 */}
+                  <div className="mb-3 space-y-2">
+                    <div className="skeleton-wave h-4 w-full rounded" />
+                    <div className="skeleton-wave h-4 w-24 rounded" />
+                  </div>
+                  {/* 徽章骨架 */}
+                  <div className="skeleton-wave h-5 w-20 rounded-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
