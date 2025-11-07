@@ -708,9 +708,9 @@ const hasReviews = reviewCount > 0;
                       }}
                     onMouseEnter={() => handleThumbnailHover(index)}
                     onMouseLeave={handleThumbnailLeave}
-                    className="relative h-20 w-20 shrink-0 overflow-hidden border-[3px] border-transparent transition-transform duration-200 focus:outline-none"
+                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md outline outline-[3px] outline-transparent transition-transform duration-200 focus:outline-black"
                     style={{
-                      borderColor:
+                      outlineColor:
                         selectedImage === index
                           ? '#000'
                           : hoveredThumbnail === index
@@ -745,7 +745,7 @@ const hasReviews = reviewCount > 0;
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="rounded-full border-transparent bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600"
+                      className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 shadow-sm"
                     >
                       #{tag}
                     </Badge>
@@ -777,7 +777,7 @@ const hasReviews = reviewCount > 0;
                 {clampedRating > 0 && (
                   <Badge
                     variant="secondary"
-                    className="rounded-full border-transparent bg-yellow-100 text-xs font-semibold text-yellow-700"
+                    className="rounded-full bg-yellow-100 text-xs font-semibold text-yellow-700 shadow-sm"
                   >
                     {(t('reviewHeat') || '热度')} {Math.round((clampedRating / 5) * 100)}%
                   </Badge>
@@ -808,7 +808,7 @@ const hasReviews = reviewCount > 0;
             </div>
 
             {/* 库存状态 */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
               {inStock ? (
                 <>
                   <Check className="h-5 w-5 text-green-600" />
@@ -829,7 +829,7 @@ const hasReviews = reviewCount > 0;
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('quantity') || 'Quantity'}:</label>
               <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-md border">
+                <div className="flex items-center rounded-md bg-white shadow-sm">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -877,7 +877,7 @@ const hasReviews = reviewCount > 0;
                 disabled={wishlistLoading}
                 aria-pressed={isWishlisted}
                 className={`transition-colors ${
-                  isWishlisted ? 'border-red-200 bg-red-50 text-red-600' : ''
+                  isWishlisted ? 'ring-1 ring-red-200 bg-red-50 text-red-600' : 'shadow-sm'
                 }`}
               >
                 <Heart
@@ -1130,7 +1130,7 @@ const hasReviews = reviewCount > 0;
 
       {/* 图片预览 */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="w-full max-w-6xl overflow-hidden border-0 bg-background p-0 shadow-lg sm:rounded-xl">
+        <DialogContent className="w-full max-w-6xl overflow-hidden bg-background p-0 shadow-2xl sm:rounded-xl">
           <div className="flex flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-6">
             <div className="flex max-h-[110px] shrink-0 flex-row gap-2 overflow-x-auto sm:max-h-[520px] sm:w-28 sm:flex-col sm:overflow-y-auto">
               {imageList.map((image, index) => (
@@ -1144,9 +1144,9 @@ const hasReviews = reviewCount > 0;
                   }}
                   onMouseEnter={() => setHoveredPreviewIndex(index)}
                   onMouseLeave={() => setHoveredPreviewIndex(null)}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden border-[3px] border-transparent transition-transform duration-200 focus:outline-none"
+                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md outline outline-[3px] outline-transparent transition-transform duration-200 focus:outline-black"
                   style={{
-                    borderColor:
+                    outlineColor:
                       previewIndex === index
                         ? '#000'
                         : hoveredPreviewIndex === index

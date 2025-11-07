@@ -31,7 +31,7 @@ export function Header() {
   const { isOpen, defaultTab, openModal, closeModal } = useAuthModal();
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
+    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full shadow-[0_4px_20px_rgba(15,23,42,0.08)] backdrop-blur">
       <AnnouncementBar />
 
       {/* Main Header */}
@@ -128,7 +128,7 @@ export function Header() {
 
         {/* Mobile Search */}
         {isSearchOpen && (
-          <div className="border-t py-4 lg:hidden">
+          <div className="py-4 shadow-sm lg:hidden">
             <div className="relative">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
@@ -142,7 +142,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="border-t py-4 md:hidden">
+          <div className="py-4 shadow-sm md:hidden">
             <nav className="flex flex-col space-y-3">
               {navigation.map(item => (
                 <Link
@@ -159,7 +159,7 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
-              <div className="mt-3 border-t pt-3">
+              <div className="mt-3 pt-3 shadow-sm">
                 <button
                   className="text-foreground/60 hover:text-primary block w-full px-2 py-1 text-left text-sm font-medium"
                   onClick={() => {

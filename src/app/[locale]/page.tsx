@@ -341,7 +341,7 @@ export default function HomePage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="space-y-3 rounded-2xl border-gray-100 bg-white p-3 shadow-sm"
+                  className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
                 >
                   <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
                   <div className="space-y-2">
@@ -401,7 +401,7 @@ export default function HomePage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="space-y-3 rounded-2xl border-gray-100 bg-white p-3 shadow-sm"
+                  className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
                 >
                   <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
                   <div className="space-y-2">
