@@ -583,3 +583,28 @@ model LoginRecord {
 
   @@map("login_records")
 }
+
+// 首页配置模型
+model HomeConfig {
+  id          String   @id @default(cuid())
+  isActive    Boolean  @default(true)
+  modules     Json     // 存储所有模块的配置信息
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("home_configs")
+}
+
+// 首页轮播图
+model HomeBanner {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  linkUrl   String?
+  altText   String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("home_banners")
+}

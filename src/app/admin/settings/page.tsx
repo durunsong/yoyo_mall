@@ -7,6 +7,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
+import { SettingsSkeleton } from '@/components/admin/admin-skeleton';
 import {
   Card,
   CardContent,
@@ -725,7 +726,10 @@ export default function SettingsPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      {settingsLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <div className="space-y-6">
         {/* 页面标题 */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">系统设置</h1>
@@ -1943,6 +1947,7 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </AdminLayout>
   );
 }

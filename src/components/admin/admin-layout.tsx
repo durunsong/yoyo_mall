@@ -17,6 +17,7 @@ import {
   LogOut,
   User,
   Home,
+  Layout,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,12 @@ const adminNavItems = [
     label: '仪表板',
     href: '/admin',
     icon: LayoutDashboard,
+  },
+  {
+    key: 'home-config',
+    label: '首页配置',
+    href: '/admin/home-config',
+    icon: Layout,
   },
   {
     key: 'products',

@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
+import { UserManagementSkeleton } from '@/components/admin/admin-skeleton';
 import {
   Card,
   CardContent,
@@ -310,7 +311,10 @@ export default function UsersPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      {loading ? (
+        <UserManagementSkeleton />
+      ) : (
+        <div className="space-y-6">
         {/* 页面标题 */}
         <div>
         <h1 className="text-3xl font-bold text-gray-900">用户管理</h1>
@@ -410,11 +414,7 @@ export default function UsersPage() {
             </div>
 
             {/* 用户表格 */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : users.length === 0 ? (
+            {users.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <Users className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-4">暂无用户数据</p>
@@ -710,6 +710,8 @@ export default function UsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </div>
+      )}
     </AdminLayout>
   );
 }

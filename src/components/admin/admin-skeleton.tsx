@@ -326,3 +326,190 @@ export function OrderDetailSkeleton() {
   );
 }
 
+/**
+ * 用户管理页面骨架屏
+ * 包含统计卡片和用户列表表格
+ */
+export function UserManagementSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* 页面标题 */}
+      <div>
+        <div className="skeleton-wave mb-1 h-9 w-32 rounded" />
+        <div className="skeleton-wave h-5 w-48 rounded" />
+      </div>
+
+      {/* 统计卡片 */}
+      <div className="grid gap-4 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div className="skeleton-wave h-4 w-20 rounded" />
+              <div className="skeleton-wave h-4 w-4 rounded" />
+            </CardHeader>
+            <CardContent>
+              <div className="skeleton-wave h-8 w-16 rounded" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* 用户列表卡片 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="skeleton-wave mb-2 h-6 w-32 rounded" />
+              <div className="skeleton-wave h-4 w-48 rounded" />
+            </div>
+            <div className="skeleton-wave h-10 w-28 rounded" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* 搜索和筛选 */}
+          <div className="mb-6 flex gap-4">
+            <div className="skeleton-wave h-10 flex-1 rounded" />
+            <div className="skeleton-wave h-10 w-[150px] rounded" />
+            <div className="skeleton-wave h-10 w-[150px] rounded" />
+          </div>
+
+          {/* 用户表格 */}
+          <div className="rounded-md border">
+            {/* 表头 */}
+            <div className="flex items-center gap-4 border-b bg-gray-50 px-4 py-3">
+              {['用户', '角色', '订单数', '注册时间', '操作'].map((_, i) => (
+                <div
+                  key={i}
+                  className={`skeleton-wave h-4 rounded ${i === 0 ? 'flex-[2]' : 'flex-1'}`}
+                />
+              ))}
+            </div>
+
+            {/* 表格行 */}
+            {Array.from({ length: 8 }).map((_, rowIndex) => (
+              <div
+                key={rowIndex}
+                className="flex items-center gap-4 border-b px-4 py-3 last:border-0"
+              >
+                {/* 用户信息（头像+姓名+邮箱） */}
+                <div className="flex flex-[2] items-center gap-3">
+                  <div className="skeleton-wave h-10 w-10 rounded-full" />
+                  <div className="space-y-2">
+                    <div className="skeleton-wave h-4 w-32 rounded" />
+                    <div className="skeleton-wave h-3 w-40 rounded" />
+                  </div>
+                </div>
+                {/* 角色 */}
+                <div className="flex-1">
+                  <div className="skeleton-wave h-6 w-16 rounded-full" />
+                </div>
+                {/* 订单数 */}
+                <div className="flex-1">
+                  <div className="skeleton-wave h-6 w-10 rounded-full" />
+                </div>
+                {/* 注册时间 */}
+                <div className="flex-1">
+                  <div className="skeleton-wave h-4 w-24 rounded" />
+                </div>
+                {/* 操作按钮 */}
+                <div className="flex flex-1 justify-end gap-2">
+                  <div className="skeleton-wave h-8 w-8 rounded" />
+                  <div className="skeleton-wave h-8 w-8 rounded" />
+                  <div className="skeleton-wave h-8 w-8 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 分页 */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="skeleton-wave h-4 w-48 rounded" />
+            <div className="flex gap-2">
+              <div className="skeleton-wave h-10 w-20 rounded" />
+              <div className="skeleton-wave h-10 w-20 rounded" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * 首页配置管理骨架屏
+ * 用于首页配置拖拽编辑页面
+ */
+export function HomeConfigSkeleton() {
+  return (
+    <div className="container mx-auto space-y-6 p-6">
+      {/* 页面头部 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="skeleton-wave mb-2 h-9 w-32 rounded" />
+          <div className="skeleton-wave h-5 w-64 rounded" />
+        </div>
+        <div className="flex gap-2">
+          <div className="skeleton-wave h-10 w-24 rounded" />
+          <div className="skeleton-wave h-10 w-28 rounded" />
+        </div>
+      </div>
+
+      {/* 主要内容 */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* 左侧：模块列表 */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-32 rounded" />
+              <div className="skeleton-wave h-4 w-40 rounded" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-lg bg-white p-4"
+                >
+                  <div className="skeleton-wave h-5 w-5 rounded" />
+                  <div className="flex-1">
+                    <div className="skeleton-wave h-5 w-32 rounded" />
+                  </div>
+                  <div className="skeleton-wave h-6 w-12 rounded-full" />
+                  <div className="skeleton-wave h-8 w-8 rounded" />
+                  <div className="skeleton-wave h-8 w-8 rounded" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 右侧：添加模块 */}
+        <div>
+          <Card>
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-24 rounded" />
+              <div className="skeleton-wave h-4 w-32 rounded" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton-wave h-10 w-full rounded" />
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-24 rounded" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="skeleton-wave h-10 w-full rounded" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
