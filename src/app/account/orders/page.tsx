@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Package,
   ChevronRight,
@@ -25,7 +26,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStaticTranslations } from '@/hooks/use-i18n';
-import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
 interface Order {
@@ -50,12 +50,20 @@ interface Order {
 export default function OrdersPage() {
   const router = useRouter();
   const { t } = useStaticTranslations('common');
-  const { user } = useAuthStore();
+  const { data: session, status } = useSession();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // 检查登录状态
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push('/');
+    }
+  }, [session, status, router]);
 
   // 获取订单列表
   useEffect(() => {
@@ -78,10 +86,10 @@ export default function OrdersPage() {
       }
     };
 
-    if (user) {
+    if (session) {
       fetchOrders();
     }
-  }, [user]);
+  }, [session]);
 
   // 订单状态颜色
   const getStatusColor = (status: string) => {
@@ -136,6 +144,76 @@ export default function OrdersPage() {
     DELIVERED: orders.filter((o) => o.status === 'DELIVERED').length,
   };
 
+  // 加载状态或未登录时显示
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* 标题骨架 */}
+          <div className="mb-8">
+            <div className="skeleton-wave mb-2 h-9 w-32 rounded" />
+            <div className="skeleton-wave h-5 w-64 rounded" />
+          </div>
+
+          {/* 搜索栏骨架 */}
+          <div className="mb-6">
+            <div className="skeleton-wave h-10 w-full max-w-md rounded" />
+          </div>
+
+          {/* 标签页骨架 */}
+          <div className="skeleton-wave mb-6 h-10 w-full max-w-2xl rounded" />
+
+          {/* 订单列表骨架 */}
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="bg-gray-50 py-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-2">
+                      <div className="skeleton-wave h-5 w-48 rounded" />
+                      <div className="skeleton-wave h-4 w-40 rounded" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="space-y-2">
+                        <div className="skeleton-wave h-4 w-16 rounded" />
+                        <div className="skeleton-wave h-6 w-20 rounded" />
+                      </div>
+                      <div className="skeleton-wave h-9 w-24 rounded" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    {Array.from({ length: 2 }).map((_, j) => (
+                      <div key={j} className="flex gap-4">
+                        <div className="skeleton-wave h-16 w-16 rounded-md" />
+                        <div className="flex flex-1 items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="skeleton-wave h-4 w-32 rounded" />
+                            <div className="skeleton-wave h-3 w-20 rounded" />
+                          </div>
+                          <div className="skeleton-wave h-5 w-16 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <div className="skeleton-wave h-9 w-24 rounded" />
+                    <div className="skeleton-wave h-9 w-24 rounded" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -180,17 +258,7 @@ export default function OrdersPage() {
         </Tabs>
 
         {/* 订单列表 */}
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <div className="skeleton-wave h-24 rounded" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : filteredOrders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
               <Package className="mx-auto mb-4 h-16 w-16 text-gray-400" />
