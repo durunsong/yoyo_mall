@@ -1620,7 +1620,7 @@ export default function SettingsPage() {
                     {announcementLoading ? (
                       <div className="space-y-3">
                         {[1, 2].map((item) => (
-                          <div key={item} className="h-24 animate-pulse rounded-md bg-muted" />
+                          <div key={item} className="skeleton-wave h-24 rounded-md" />
                         ))}
                       </div>
                     ) : announcements.length === 0 ? (

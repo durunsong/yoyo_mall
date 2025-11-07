@@ -456,12 +456,11 @@ export default function ProductDetailPage() {
         <div className="grid gap-8 md:grid-cols-2">
           {/* 左侧：主图与缩略图骨架 */}
           <div className="space-y-4">
-            <div className="aspect-square animate-pulse rounded-lg bg-gray-200" />
+            <div className="skeleton-wave aspect-square rounded-lg" />
             <div className="flex gap-2">
-              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-20 w-20 animate-pulse rounded-md bg-gray-200" />
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="skeleton-wave h-20 w-20 rounded-md" />
+              ))}
             </div>
           </div>
 
@@ -469,67 +468,65 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             {/* 标题与短描述 */}
             <div className="space-y-3">
-              <div className="h-7 w-3/4 animate-pulse rounded bg-gray-200" />
-              <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-gray-200" />
+              <div className="skeleton-wave h-7 w-3/4 rounded" />
+              <div className="skeleton-wave h-4 w-2/3 rounded" />
+              <div className="skeleton-wave h-4 w-1/3 rounded" />
             </div>
 
             {/* 评分与标签 */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="skeleton-wave h-5 w-5 rounded-full" />
+                ))}
               </div>
-              <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
-              <div className="h-5 w-16 animate-pulse rounded-full bg-gray-200" />
+              <div className="skeleton-wave h-4 w-24 rounded" />
+              <div className="skeleton-wave h-5 w-16 rounded-full" />
             </div>
 
             {/* 价格与划线价 */}
             <div className="space-y-2">
-              <div className="h-10 w-40 animate-pulse rounded bg-gray-200" />
-              <div className="h-5 w-28 animate-pulse rounded bg-gray-200" />
+              <div className="skeleton-wave h-10 w-40 rounded" />
+              <div className="skeleton-wave h-5 w-28 rounded" />
             </div>
 
             {/* 库存状态 */}
-            <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
+            <div className="skeleton-wave h-4 w-28 rounded" />
 
             {/* 数量步进器 */}
             <div className="flex items-center gap-3">
-              <div className="h-11 w-32 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
+              <div className="skeleton-wave h-11 w-32 rounded-md" />
+              <div className="skeleton-wave h-4 w-40 rounded" />
             </div>
 
             {/* 操作按钮：加入购物车 / 心愿单 / 分享 */}
             <div className="flex gap-3">
-              <div className="h-11 flex-1 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-11 w-11 animate-pulse rounded-md bg-gray-200" />
-              <div className="h-11 w-11 animate-pulse rounded-md bg-gray-200" />
+              <div className="skeleton-wave h-11 flex-1 rounded-md" />
+              <div className="skeleton-wave h-11 w-11 rounded-md" />
+              <div className="skeleton-wave h-11 w-11 rounded-md" />
             </div>
 
             {/* 保障信息卡片 */}
-            <div className="space-y-3 rounded-lg p-4">
+            <div className="space-y-3 rounded-lg bg-white/50 p-4">
               <div className="flex items-start gap-3">
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="skeleton-wave h-5 w-5 rounded" />
                 <div className="space-y-1 flex-1">
-                  <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
-                  <div className="h-3 w-48 animate-pulse rounded bg-gray-200" />
+                  <div className="skeleton-wave h-4 w-32 rounded" />
+                  <div className="skeleton-wave h-3 w-48 rounded" />
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="skeleton-wave h-5 w-5 rounded" />
                 <div className="space-y-1 flex-1">
-                  <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
-                  <div className="h-3 w-40 animate-pulse rounded bg-gray-200" />
+                  <div className="skeleton-wave h-4 w-28 rounded" />
+                  <div className="skeleton-wave h-3 w-40 rounded" />
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                <div className="skeleton-wave h-5 w-5 rounded" />
                 <div className="space-y-1 flex-1">
-                  <div className="h-4 w-36 animate-pulse rounded bg-gray-200" />
-                  <div className="h-3 w-44 animate-pulse rounded bg-gray-200" />
+                  <div className="skeleton-wave h-4 w-36 rounded" />
+                  <div className="skeleton-wave h-3 w-44 rounded" />
                 </div>
               </div>
             </div>

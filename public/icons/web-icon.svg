@@ -1,0 +1,28 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109 100" width="109" height="100">
+	<defs>
+		<linearGradient id="g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(90,100,-99.448,89.503,10,8)">
+			<stop offset="0" stop-color="#ff512f"/>
+			<stop offset=".2" stop-color="#dd2476"/>
+			<stop offset=".4" stop-color="#00c9ff"/>
+			<stop offset=".6" stop-color="#92fe9d"/>
+			<stop offset=".8" stop-color="#fcee21"/>
+			<stop offset="1" stop-color="#ff6a00"/>
+		</linearGradient>
+	</defs>
+	<style>
+		tspan { white-space:pre } 
+		.s0 { fill: url(#g1) } 
+		.t1 { font-size: 68px;fill: #000000;font-family: "Montserrat" } 
+	</style>
+	<g>
+		<path class="s0" d="m10 8h30v30l15 20 15-20v-30h30v100h-30l-15-30-15 30h-30z"/>
+	</g>
+	<text id="
+    obuy
+  " style="transform: matrix(1,0,0,1,115,72)" >
+		<tspan x="0" y="81.6" class="t1">    obuy
+</tspan>
+		<tspan x="0" y="163.2" class="t1">  
+</tspan>
+	</text>
+</svg>

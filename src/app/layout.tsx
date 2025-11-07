@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     title: 'YOYO Mall - 跨境电商购物平台',
     description: '专业的跨境电商平台，提供全球优质商品，安全便捷的购物体验',
   },
+  icons: {
+    icon: '/icons/web-icon.svg',
+    shortcut: '/icons/web-icon.svg',
+    apple: '/icons/web-icon.svg',
+  },
   robots: {
     index: true,
     follow: true,

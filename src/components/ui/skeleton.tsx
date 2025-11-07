@@ -12,7 +12,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn('animate-pulse rounded-md bg-gray-200', className)}
+      className={cn('skeleton-wave rounded-md', className)}
       {...props}
     />
   );
@@ -21,7 +21,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 // 卡片骨架屏
 export function CardSkeleton() {
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
+    <div className="rounded-lg bg-white p-6 shadow-sm">
       <div className="space-y-3">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
@@ -51,7 +51,7 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 // 产品卡片骨架屏
 export function ProductCardSkeleton() {
   return (
-    <div className="rounded-lg border bg-white overflow-hidden">
+    <div className="rounded-lg bg-white overflow-hidden shadow-sm">
       <Skeleton className="h-48 w-full" />
       <div className="p-4 space-y-3">
         <Skeleton className="h-4 w-3/4" />
@@ -68,7 +68,7 @@ export function ProductCardSkeleton() {
 // 订单卡片骨架屏
 export function OrderCardSkeleton() {
   return (
-    <div className="rounded-lg border bg-white p-6">
+    <div className="rounded-lg bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between mb-4">
         <div className="space-y-2 flex-1">
           <Skeleton className="h-5 w-40" />
@@ -85,7 +85,7 @@ export function OrderCardSkeleton() {
           </div>
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t flex items-center justify-between">
+      <div className="mt-4 pt-4 flex items-center justify-between border-t border-gray-100">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-6 w-28" />
       </div>
@@ -111,7 +111,7 @@ export function PageSkeleton() {
       </div>
 
       {/* 主要内容 */}
-      <div className="rounded-lg border bg-white p-6">
+      <div className="rounded-lg bg-white p-6 shadow-sm">
         <div className="space-y-4">
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-10 w-full" />

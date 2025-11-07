@@ -185,7 +185,7 @@ export default function OrdersPage() {
             {[...Array(3)].map((_, i) => (
               <Card key={i}>
                 <CardContent className="p-6">
-                  <div className="h-24 animate-pulse rounded bg-gray-200" />
+                  <div className="skeleton-wave h-24 rounded" />
                 </CardContent>
               </Card>
             ))}

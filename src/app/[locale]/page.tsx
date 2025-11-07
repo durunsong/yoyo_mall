@@ -339,20 +339,17 @@ export default function HomePage() {
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
-                >
-                  <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
+                <div key={i} className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
+                  <div className="skeleton-wave aspect-[3/4] w-full rounded-xl" />
                   <div className="space-y-2">
-                    <div className="h-4 w-3/4 rounded bg-gray-100 animate-pulse" />
-                    <div className="h-4 w-1/2 rounded bg-gray-100 animate-pulse" />
+                    <div className="skeleton-wave h-4 w-3/4 rounded" />
+                    <div className="skeleton-wave h-4 w-1/2 rounded" />
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <div className="h-5 w-20 rounded bg-gray-100 animate-pulse" />
-                    <div className="h-5 w-14 rounded bg-gray-100 animate-pulse" />
+                    <div className="skeleton-wave h-5 w-20 rounded" />
+                    <div className="skeleton-wave h-5 w-14 rounded" />
                   </div>
-                  <div className="h-9 w-full rounded-full bg-gray-100 animate-pulse" />
+                  <div className="skeleton-wave h-9 w-full rounded-full" />
                 </div>
               ))}
             </div>
@@ -399,20 +396,17 @@ export default function HomePage() {
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
-                >
-                  <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
+                <div key={i} className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
+                  <div className="skeleton-wave aspect-[3/4] w-full rounded-xl" />
                   <div className="space-y-2">
-                    <div className="h-4 w-3/4 rounded bg-gray-100 animate-pulse" />
-                    <div className="h-4 w-1/2 rounded bg-gray-100 animate-pulse" />
+                    <div className="skeleton-wave h-4 w-3/4 rounded" />
+                    <div className="skeleton-wave h-4 w-1/2 rounded" />
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <div className="h-5 w-20 rounded bg-gray-100 animate-pulse" />
-                    <div className="h-5 w-14 rounded bg-gray-100 animate-pulse" />
+                    <div className="skeleton-wave h-5 w-20 rounded" />
+                    <div className="skeleton-wave h-5 w-14 rounded" />
                   </div>
-                  <div className="h-9 w-full rounded-full bg-gray-100 animate-pulse" />
+                  <div className="skeleton-wave h-9 w-full rounded-full" />
                 </div>
               ))}
             </div>
@@ -430,24 +424,6 @@ export default function HomePage() {
               ))}
             </div>
           )}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-blue-600 py-16 text-white">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white">
-            {t('cta.title')}
-          </h2>
-          <p className="mb-8 text-xl text-blue-100">{t('cta.subtitle')}</p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-              <Link href="/register">{t('cta.register')}</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
-              <Link href="/products">{t('cta.browse')}</Link>
-            </Button>
-          </div>
         </div>
       </section>
     </div>

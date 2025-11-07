@@ -293,20 +293,17 @@ function ProductsPageContent() {
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 15 }).map((_, i) => (
-            <div
-              key={i}
-              className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
-            >
-              <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
+            <div key={i} className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">
+              <div className="skeleton-wave aspect-[3/4] w-full rounded-xl" />
               <div className="space-y-2">
-                <div className="h-4 w-3/4 rounded bg-gray-100 animate-pulse" />
-                <div className="h-4 w-1/2 rounded bg-gray-100 animate-pulse" />
+                <div className="skeleton-wave h-4 w-3/4 rounded" />
+                <div className="skeleton-wave h-4 w-1/2 rounded" />
               </div>
               <div className="flex items-center justify-between gap-3">
-                <div className="h-5 w-20 rounded bg-gray-100 animate-pulse" />
-                <div className="h-5 w-14 rounded bg-gray-100 animate-pulse" />
+                <div className="skeleton-wave h-5 w-20 rounded" />
+                <div className="skeleton-wave h-5 w-14 rounded" />
               </div>
-              <div className="h-9 w-full rounded-full bg-gray-100 animate-pulse" />
+              <div className="skeleton-wave h-9 w-full rounded-full" />
             </div>
           ))}
         </div>
