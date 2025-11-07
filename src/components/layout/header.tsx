@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,13 +40,16 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
-                <span className="text-xl font-bold text-white">Y</span>
-              </div>
-              <span className="hidden text-xl font-bold sm:block">
-                YOYO Mall
-              </span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/icons/web-logo.svg"
+                alt="YOYO Mall"
+                width={160}
+                height={50}
+                priority
+                className="h-8 w-auto"
+              />
+              <span className="sr-only">YOYO Mall</span>
             </Link>
           </div>
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   LayoutDashboard,
   Package,
@@ -103,11 +104,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
         {/* 侧边栏头部 */}
-        <div className="flex items-center justify-between h-16 px-6 border-b">
+        <div className="flex items-center justify-between h-16 px-6 shadow-sm">
           <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
-              <span className="text-lg font-bold text-white">Y</span>
-            </div>
+            <Image
+              src="/icons/web-logo.svg"
+              alt="YOYO Mall"
+              width={140}
+              height={44}
+              className="h-8 w-auto"
+            />
             <span className="text-lg font-semibold text-gray-900">管理后台</span>
           </div>
           <Button
@@ -152,7 +157,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </nav>
 
         {/* 侧边栏底部 */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+        <div className="absolute bottom-0 left-0 right-0 p-4 shadow-sm">
           <Button
             variant="outline"
             onClick={handleBackToFrontend}
@@ -167,7 +172,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* 主内容区域 */}
       <div className="lg:pl-64">
         {/* 顶部导航栏 */}
-        <header className="bg-white shadow-sm border-b">
+        <header className="bg-white shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
           <div className="flex items-center justify-between h-16 px-6">
             {/* 左侧：移动端菜单按钮 */}
             <div className="flex items-center">

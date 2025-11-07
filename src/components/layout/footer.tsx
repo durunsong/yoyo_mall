@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Mail,
   Phone,
@@ -178,11 +179,17 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Company Info */}
           <div className="lg:col-span-1">
-            <div className="mb-4 flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
-                <span className="text-xl font-bold text-white">Y</span>
-              </div>
-              <span className="text-xl font-bold">YOYO Mall</span>
+            <div className="mb-4">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/icons/web-logo.svg"
+                  alt="YOYO Mall"
+                  width={160}
+                  height={50}
+                  className="h-8 w-auto"
+                />
+                <span className="sr-only">YOYO Mall</span>
+              </Link>
             </div>
             <p className="mb-4 text-sm text-gray-300">
               {t('companyDescription')}

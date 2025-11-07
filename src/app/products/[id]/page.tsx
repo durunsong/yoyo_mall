@@ -708,14 +708,14 @@ const hasReviews = reviewCount > 0;
                       }}
                     onMouseEnter={() => handleThumbnailHover(index)}
                     onMouseLeave={handleThumbnailLeave}
-                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md outline outline-[3px] outline-transparent transition-transform duration-200 focus:outline-black"
+                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-black"
                     style={{
-                      outlineColor:
+                      boxShadow:
                         selectedImage === index
-                          ? '#000'
+                          ? '0 0 0 3px #000'
                           : hoveredThumbnail === index
-                            ? 'rgba(0,0,0,0.4)'
-                            : 'transparent',
+                            ? '0 0 0 3px rgba(0,0,0,0.4)'
+                            : 'none',
                     }}
                     >
                       <Image
@@ -1144,14 +1144,14 @@ const hasReviews = reviewCount > 0;
                   }}
                   onMouseEnter={() => setHoveredPreviewIndex(index)}
                   onMouseLeave={() => setHoveredPreviewIndex(null)}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md outline outline-[3px] outline-transparent transition-transform duration-200 focus:outline-black"
+                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-black"
                   style={{
-                    outlineColor:
+                    boxShadow:
                       previewIndex === index
-                        ? '#000'
+                        ? '0 0 0 3px #000'
                         : hoveredPreviewIndex === index
-                          ? 'rgba(0,0,0,0.4)'
-                          : 'transparent',
+                          ? '0 0 0 3px rgba(0,0,0,0.4)'
+                          : 'none',
                   }}
                 >
                   <Image
