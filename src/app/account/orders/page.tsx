@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,17 +14,16 @@ import {
   Package,
   ChevronRight,
   Search,
-  Filter,
   Clock,
   CheckCircle,
   XCircle,
   Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { toast } from 'sonner';
 
@@ -47,15 +46,26 @@ interface Order {
   }[];
 }
 
+// 前端展示用的订单状态列表，需与后端保持一致
+const ORDER_STATUS_LIST = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'] as const;
+
 export default function OrdersPage() {
   const router = useRouter();
-  const { t } = useStaticTranslations('common');
+  const { t, locale } = useStaticTranslations('orders');
   const { data: session, status } = useSession();
 
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    PENDING: 0,
+    PROCESSING: 0,
+    SHIPPED: 0,
+    DELIVERED: 0,
+  });
 
   // 检查登录状态
   useEffect(() => {
@@ -65,31 +75,60 @@ export default function OrdersPage() {
     }
   }, [session, status, router]);
 
-  // 获取订单列表
-  useEffect(() => {
-    const fetchOrders = async () => {
+  // 根据当前标签状态动态请求订单数据
+  const fetchOrders = useCallback(
+    async (statusValue: string) => {
+      if (!session) return;
+
       try {
-        setLoading(true);
-        const response = await fetch('/api/orders');
+        setListLoading(true);
+
+        const params = new URLSearchParams();
+        if (statusValue !== 'all') {
+          params.set('status', statusValue);
+        }
+
+        const queryString = params.toString();
+        const response = await fetch(`/api/orders${queryString ? `?${queryString}` : ''}`);
         const data = await response.json();
 
         if (data.success) {
           setOrders(data.data);
+
+          // 优先使用后端返回的统计数据，缺失时回退到前端计算
+          const fallbackCounts = ORDER_STATUS_LIST.reduce<Record<string, number>>((acc, currentStatus) => {
+            acc[currentStatus] = data.data.filter((order: Order) => order.status === currentStatus).length;
+            return acc;
+          }, {});
+
+          setStatusCounts({
+            all: data.counts?.all ?? data.data.length,
+            PENDING: data.counts?.PENDING ?? fallbackCounts.PENDING ?? 0,
+            PROCESSING: data.counts?.PROCESSING ?? fallbackCounts.PROCESSING ?? 0,
+            SHIPPED: data.counts?.SHIPPED ?? fallbackCounts.SHIPPED ?? 0,
+            DELIVERED: data.counts?.DELIVERED ?? fallbackCounts.DELIVERED ?? 0,
+          });
         } else {
-          toast.error('获取订单失败');
+          toast.error(t('toast.fetchFailed'));
         }
       } catch (error) {
         console.error('Failed to fetch orders:', error);
-        toast.error('加载订单失败');
+        toast.error(t('toast.loadFailed'));
       } finally {
-        setLoading(false);
+        setListLoading(false);
+        setInitialized(true);
       }
-    };
+    },
+    [session, t],
+  );
 
-    if (session) {
-      fetchOrders();
+  useEffect(() => {
+    if (!session) {
+      setInitialized(true);
+      return;
     }
-  }, [session]);
+    fetchOrders(statusFilter);
+  }, [session, statusFilter, fetchOrders]);
 
   // 订单状态颜色
   const getStatusColor = (status: string) => {
@@ -124,28 +163,43 @@ export default function OrdersPage() {
 
   // 过滤订单
   const filteredOrders = orders.filter((order) => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
     const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(lowerCaseQuery) ||
       order.items.some((item) =>
-        item.product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        item.product.name.toLowerCase().includes(lowerCaseQuery),
       );
 
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
-  // 统计各状态订单数量
-  const statusCounts = {
-    all: orders.length,
-    PENDING: orders.filter((o) => o.status === 'PENDING').length,
-    PROCESSING: orders.filter((o) => o.status === 'PROCESSING').length,
-    SHIPPED: orders.filter((o) => o.status === 'SHIPPED').length,
-    DELIVERED: orders.filter((o) => o.status === 'DELIVERED').length,
+  // 多语言状态名称映射
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return t('status.pending');
+      case 'PROCESSING':
+        return t('status.processing');
+      case 'SHIPPED':
+        return t('status.shipped');
+      case 'DELIVERED':
+        return t('status.delivered');
+      case 'CONFIRMED':
+        return t('status.confirmed');
+      case 'CANCELLED':
+        return t('status.cancelled');
+      case 'REFUNDED':
+        return t('status.refunded');
+      default:
+        return status;
+    }
   };
 
-  // 加载状态或未登录时显示
-  if (status === 'loading' || loading) {
+  const showInitialLoading = status === 'loading' || (!initialized && !!session);
+
+  // 初次加载时显示整页骨架屏
+  if (showInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
@@ -217,10 +271,10 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        {/* 标题 */}
+        {/* 标题区域，多语言展示页面主标题与副标题 */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">我的订单</h1>
-          <p className="text-gray-600">查看和管理您的所有订单</p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* 搜索和筛选 */}
@@ -230,7 +284,7 @@ export default function OrdersPage() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索订单号或商品..."
+              placeholder={t('search.placeholder')}
               className="pl-9"
             />
           </div>
@@ -240,32 +294,68 @@ export default function OrdersPage() {
         <Tabs value={statusFilter} onValueChange={setStatusFilter} className="mb-6">
           <TabsList>
             <TabsTrigger value="all">
-              全部 ({statusCounts.all})
+              {t('tabs.all', { count: statusCounts.all })}
             </TabsTrigger>
             <TabsTrigger value="PENDING">
-              待付款 ({statusCounts.PENDING})
+              {t('tabs.pending', { count: statusCounts.PENDING })}
             </TabsTrigger>
             <TabsTrigger value="PROCESSING">
-              处理中 ({statusCounts.PROCESSING})
+              {t('tabs.processing', { count: statusCounts.PROCESSING })}
             </TabsTrigger>
             <TabsTrigger value="SHIPPED">
-              已发货 ({statusCounts.SHIPPED})
+              {t('tabs.shipped', { count: statusCounts.SHIPPED })}
             </TabsTrigger>
             <TabsTrigger value="DELIVERED">
-              已完成 ({statusCounts.DELIVERED})
+              {t('tabs.delivered', { count: statusCounts.DELIVERED })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* 订单列表 */}
-        {filteredOrders.length === 0 ? (
+        {listLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <CardHeader className="bg-gray-50 py-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-2">
+                      <div className="h-4 w-40 rounded bg-gray-200 animate-pulse" />
+                      <div className="h-3 w-32 rounded bg-gray-100 animate-pulse" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="space-y-2 text-right">
+                        <div className="h-3 w-20 rounded bg-gray-100 animate-pulse" />
+                        <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
+                      </div>
+                      <div className="h-9 w-24 rounded bg-gray-100 animate-pulse" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 p-6">
+                  {Array.from({ length: 2 }).map((_, itemIndex) => (
+                    <div key={itemIndex} className="flex gap-4">
+                      <div className="h-16 w-16 rounded-md bg-gray-100 animate-pulse" />
+                      <div className="flex flex-1 items-center justify-between">
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 rounded bg-gray-100 animate-pulse" />
+                          <div className="h-3 w-24 rounded bg-gray-100 animate-pulse" />
+                        </div>
+                        <div className="h-4 w-16 rounded bg-gray-100 animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
               <Package className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">暂无订单</h3>
-              <p className="mb-6 text-gray-600">您还没有任何订单记录</p>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">{t('empty.title')}</h3>
+              <p className="mb-6 text-gray-600">{t('empty.description')}</p>
               <Link href="/products">
-                <Button>开始购物</Button>
+                <Button>{t('empty.cta')}</Button>
               </Link>
             </CardContent>
           </Card>
@@ -278,29 +368,31 @@ export default function OrdersPage() {
                     <div>
                       <div className="mb-1 flex items-center gap-2">
                         <span className="text-sm font-medium text-gray-900">
-                          订单号: {order.orderNumber}
+                          {t('order.orderNumber', { number: order.orderNumber })}
                         </span>
                         <Badge className={getStatusColor(order.status)}>
                           <span className="flex items-center gap-1">
                             {getStatusIcon(order.status)}
-                            {order.status}
+                            {getStatusLabel(order.status)}
                           </span>
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600">
-                        下单时间: {new Date(order.createdAt).toLocaleString('zh-CN')}
+                        {t('order.createdAt', {
+                          time: new Date(order.createdAt).toLocaleString(locale),
+                        })}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">订单金额</p>
+                        <p className="text-sm text-gray-600">{t('order.totalLabel')}</p>
                         <p className="text-lg font-bold text-gray-900">
                           ${order.totalAmount.toFixed(2)}
                         </p>
                       </div>
                       <Link href={`/account/orders/${order.id}`}>
                         <Button variant="outline" size="sm" className="gap-1">
-                          查看详情
+                          {t('order.viewDetail')}
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -327,7 +419,9 @@ export default function OrdersPage() {
                             <p className="font-medium text-gray-900 line-clamp-1">
                               {item.product.name}
                             </p>
-                            <p className="text-sm text-gray-600">数量: {item.quantity}</p>
+                            <p className="text-sm text-gray-600">
+                              {t('order.quantity', { count: item.quantity })}
+                            </p>
                           </div>
                           <p className="font-medium text-gray-900">
                             ${(item.unitPrice * item.quantity).toFixed(2)}
@@ -341,22 +435,22 @@ export default function OrdersPage() {
                   <div className="mt-4 flex gap-2">
                     {order.status === 'PENDING' && (
                       <Button variant="outline" size="sm">
-                        立即付款
+                        {t('actions.payNow')}
                       </Button>
                     )}
                     {order.status === 'SHIPPED' && (
                       <Button variant="outline" size="sm">
-                        查看物流
+                        {t('actions.trackShipment')}
                       </Button>
                     )}
                     {order.status === 'DELIVERED' && (
                       <Button variant="outline" size="sm">
-                        评价商品
+                        {t('actions.reviewProduct')}
                       </Button>
                     )}
                     {order.status === 'PENDING' && (
                       <Button variant="outline" size="sm" className="text-red-600">
-                        取消订单
+                        {t('actions.cancelOrder')}
                       </Button>
                     )}
                   </div>

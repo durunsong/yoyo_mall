@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -19,42 +19,42 @@ import {
 } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 
-// Footer链接配置函数 - 现在使用翻译
-const getFooterLinks = (t: (key: string) => string) => ({
+// Footer链接配置函数 - 使用 layout 命名空间
+const getFooterLinks = (t: (key: string, params?: Record<string, string | number>) => string) => ({
   company: {
-    title: t('companyInfo'),
+    title: t('footer.sections.company.title'),
     links: [
-      { name: t('aboutUs'), href: '/about' },
-      { name: t('contactUs'), href: '/contact' },
-      { name: t('careers'), href: '/careers' },
-      { name: t('news'), href: '/news' },
+      { name: t('footer.sections.company.links.about'), href: '/about' },
+      { name: t('footer.sections.company.links.contact'), href: '/contact' },
+      { name: t('footer.sections.company.links.careers'), href: '/careers' },
+      { name: t('footer.sections.company.links.news'), href: '/news' },
     ],
   },
   customer: {
-    title: t('customerService'),
+    title: t('footer.sections.customer.title'),
     links: [
-      { name: t('helpCenter'), href: '/help' },
-      { name: t('shippingInfo'), href: '/shipping' },
-      { name: t('returnPolicy'), href: '/returns' },
-      { name: t('faq'), href: '/faq' },
+      { name: t('footer.sections.customer.links.help'), href: '/help' },
+      { name: t('footer.sections.customer.links.shipping'), href: '/shipping' },
+      { name: t('footer.sections.customer.links.returns'), href: '/returns' },
+      { name: t('footer.sections.customer.links.faq'), href: '/faq' },
     ],
   },
   account: {
-    title: t('myAccount'),
+    title: t('footer.sections.account.title'),
     links: [
-      { name: t('myOrders'), href: '/account/orders' },
-      { name: t('myWishlist'), href: '/account/wishlist' },
-      { name: t('accountSettings'), href: '/account/settings' },
-      { name: t('addressManagement'), href: '/account/addresses' },
+      { name: t('footer.sections.account.links.orders'), href: '/account/orders' },
+      { name: t('footer.sections.account.links.wishlist'), href: '/account/wishlist' },
+      { name: t('footer.sections.account.links.settings'), href: '/account/settings' },
+      { name: t('footer.sections.account.links.addresses'), href: '/account/addresses' },
     ],
   },
   legal: {
-    title: t('legalTerms'),
+    title: t('footer.sections.legal.title'),
     links: [
-      { name: t('termsOfService'), href: '/terms' },
-      { name: t('privacyPolicy'), href: '/privacy' },
-      { name: t('cookiePolicy'), href: '/cookies' },
-      { name: t('disclaimer'), href: '/disclaimer' },
+      { name: t('footer.sections.legal.links.terms'), href: '/terms' },
+      { name: t('footer.sections.legal.links.privacy'), href: '/privacy' },
+      { name: t('footer.sections.legal.links.cookies'), href: '/cookies' },
+      { name: t('footer.sections.legal.links.disclaimer'), href: '/disclaimer' },
     ],
   },
 });
@@ -73,8 +73,8 @@ const socialLinks = [
 ];
 
 export function Footer() {
-  const { t } = useStaticTranslations('navigation');
-  const footerLinks = getFooterLinks(t);
+  const { t } = useStaticTranslations('layout');
+  const footerLinks = useMemo(() => getFooterLinks(t), [t]);
   
   // Newsletter 订阅状态
   const [email, setEmail] = useState('');
@@ -92,7 +92,7 @@ export function Footer() {
     e.preventDefault();
     
     if (!email) {
-      setMessage({ type: 'error', text: '请输入邮箱地址' });
+      setMessage({ type: 'error', text: t('footer.newsletter.message.emailRequired') });
       return;
     }
 
@@ -111,17 +111,20 @@ export function Footer() {
       const data = await response.json();
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message || '订阅成功！请查收验证邮件' });
+        setMessage({
+          type: 'success',
+          text: data.message || t('footer.newsletter.message.success'),
+        });
         setEmail(''); // 清空输入框
       } else {
         setMessage({ 
           type: 'error', 
-          text: data.message || '订阅失败，请稍后重试', 
+          text: data.message || t('footer.newsletter.message.error'), 
         });
       }
     } catch (error) {
       console.error('订阅失败:', error);
-      setMessage({ type: 'error', text: '订阅失败，请稍后重试' });
+      setMessage({ type: 'error', text: t('footer.newsletter.message.error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -135,10 +138,10 @@ export function Footer() {
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
               <h3 className="mb-2 text-2xl font-bold text-blue-400" suppressHydrationWarning>
-                {mounted ? t('subscribeNewsletter') : '订阅我们的新闻'}
+                {mounted ? t('footer.newsletter.title') : ''}
               </h3>
               <p className="text-blue-400" suppressHydrationWarning>
-                {mounted ? t('getLatestOffers') : '获取最新优惠和资讯'}
+                {mounted ? t('footer.newsletter.subtitle') : ''}
               </p>
             </div>
             <div className="w-full md:w-auto">
@@ -146,7 +149,7 @@ export function Footer() {
                 <div className="flex w-full md:w-auto">
                   <input
                     type="email"
-                    placeholder={mounted ? t('enterEmailAddress') : '输入您的邮箱地址'}
+                    placeholder={mounted ? t('footer.newsletter.inputPlaceholder') : ''}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isSubmitting}
@@ -160,7 +163,11 @@ export function Footer() {
                     disabled={isSubmitting}
                     className="rounded-r-lg bg-white px-8 py-3 font-semibold text-blue-600 transition-all hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed whitespace-nowrap"
                   >
-                    {isSubmitting ? '提交中...' : (mounted ? t('subscribe') : '订阅')}
+                    {isSubmitting
+                      ? t('footer.newsletter.buttonLoading')
+                      : mounted
+                        ? t('footer.newsletter.button')
+                        : ''}
                   </button>
                 </div>
                 {message && (
@@ -192,7 +199,7 @@ export function Footer() {
               </Link>
             </div>
             <p className="mb-4 text-sm text-gray-300">
-              {t('companyDescription')}
+              {t('footer.companyDescription')}
             </p>
 
             {/* Contact Info */}
@@ -238,13 +245,13 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 text-sm text-gray-300 md:mb-0">
-              © 2025 Yobuy. {t('allRightsReserved')}
+              © 2025 Yobuy. {t('footer.allRightsReserved')}
             </div>
 
             {/* Social Links */}
             <div className="flex items-center space-x-4">
               <span className="hidden text-sm text-gray-300 md:inline">
-                {t('followUs')}:
+                {t('footer.followUs')}:
               </span>
               {socialLinks.map(social => {
                 const Icon = social.icon;

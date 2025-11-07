@@ -1,0 +1,46 @@
+{
+  "title": "My Orders",
+  "subtitle": "Review and manage all of your orders",
+  "search": {
+    "placeholder": "Search by order number or product..."
+  },
+  "tabs": {
+    "all": "All ({{count}})",
+    "pending": "Pending Payment ({{count}})",
+    "processing": "Processing ({{count}})",
+    "shipped": "Shipped ({{count}})",
+    "delivered": "Completed ({{count}})"
+  },
+  "empty": {
+    "title": "No Orders Yet",
+    "description": "You have not placed any orders so far",
+    "cta": "Start Shopping"
+  },
+  "order": {
+    "orderNumber": "Order #: {{number}}",
+    "createdAt": "Placed on: {{time}}",
+    "totalLabel": "Order Total",
+    "viewDetail": "View Details",
+    "quantity": "Quantity: {{count}}"
+  },
+  "actions": {
+    "payNow": "Pay Now",
+    "trackShipment": "Track Shipment",
+    "reviewProduct": "Review Product",
+    "cancelOrder": "Cancel Order"
+  },
+  "status": {
+    "pending": "Pending Payment",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Completed",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded"
+  },
+  "toast": {
+    "fetchFailed": "Failed to fetch orders",
+    "loadFailed": "Failed to load orders"
+  }
+}
+

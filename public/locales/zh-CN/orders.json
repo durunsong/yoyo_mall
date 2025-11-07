@@ -1,0 +1,46 @@
+{
+  "title": "我的订单",
+  "subtitle": "查看和管理您的所有订单",
+  "search": {
+    "placeholder": "搜索订单号或商品..."
+  },
+  "tabs": {
+    "all": "全部 ({{count}})",
+    "pending": "待付款 ({{count}})",
+    "processing": "处理中 ({{count}})",
+    "shipped": "已发货 ({{count}})",
+    "delivered": "已完成 ({{count}})"
+  },
+  "empty": {
+    "title": "暂无订单",
+    "description": "您还没有任何订单记录",
+    "cta": "开始购物"
+  },
+  "order": {
+    "orderNumber": "订单号: {{number}}",
+    "createdAt": "下单时间: {{time}}",
+    "totalLabel": "订单金额",
+    "viewDetail": "查看详情",
+    "quantity": "数量: {{count}}"
+  },
+  "actions": {
+    "payNow": "立即付款",
+    "trackShipment": "查看物流",
+    "reviewProduct": "评价商品",
+    "cancelOrder": "取消订单"
+  },
+  "status": {
+    "pending": "待付款",
+    "processing": "处理中",
+    "shipped": "已发货",
+    "delivered": "已完成",
+    "confirmed": "已确认",
+    "cancelled": "已取消",
+    "refunded": "已退款"
+  },
+  "toast": {
+    "fetchFailed": "获取订单失败",
+    "loadFailed": "加载订单失败"
+  }
+}
+

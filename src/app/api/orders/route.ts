@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const skip = (query.page - 1) * query.limit;
 
     // 执行查询
-    const [orders, total] = await Promise.all([
+    const [orders, total, statusGroups] = await Promise.all([
       prisma.order.findMany({
         where,
         include: {
@@ -119,7 +119,20 @@ export async function GET(request: NextRequest) {
         take: query.limit,
       }),
       prisma.order.count({ where }),
+      prisma.order.groupBy({
+        by: ['status'],
+        where: { userId: session.user.id },
+        _count: {
+          status: true,
+        },
+      }),
     ]);
+
+    // 统计不同状态的订单数量，方便前端展示标签计数
+    const statusCounts = statusGroups.reduce<Record<string, number>>((acc, item) => {
+      acc[item.status] = item._count.status;
+      return acc;
+    }, {});
 
     // 分页信息
     const pagination = {
@@ -137,6 +150,10 @@ export async function GET(request: NextRequest) {
       pagination,
       filters: {
         status: query.status,
+      },
+      counts: {
+        all: total,
+        ...statusCounts,
       },
     });
   } catch (error) {

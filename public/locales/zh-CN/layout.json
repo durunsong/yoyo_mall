@@ -1,0 +1,87 @@
+{
+  "announcement": {
+    "defaultAlt": "公告",
+    "loadError": "加载公告失败"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "订阅我们的新闻",
+      "subtitle": "获取最新优惠和资讯",
+      "inputPlaceholder": "输入您的邮箱地址",
+      "button": "订阅",
+      "buttonLoading": "提交中...",
+      "message": {
+        "success": "订阅成功！请查收验证邮件",
+        "error": "订阅失败，请稍后重试",
+        "emailRequired": "请输入邮箱地址"
+      }
+    },
+    "sections": {
+      "company": {
+        "title": "公司信息",
+        "links": {
+          "about": "关于我们",
+          "contact": "联系我们",
+          "careers": "加入我们",
+          "news": "新闻中心"
+        }
+      },
+      "customer": {
+        "title": "客户服务",
+        "links": {
+          "help": "帮助中心",
+          "shipping": "配送信息",
+          "returns": "退货政策",
+          "faq": "常见问题"
+        }
+      },
+      "account": {
+        "title": "我的账户",
+        "links": {
+          "orders": "我的订单",
+          "wishlist": "收藏夹",
+          "settings": "账户设置",
+          "addresses": "地址管理"
+        }
+      },
+      "legal": {
+        "title": "条款与政策",
+        "links": {
+          "terms": "服务条款",
+          "privacy": "隐私政策",
+          "cookies": "Cookie 政策",
+          "disclaimer": "免责声明"
+        }
+      }
+    },
+    "companyDescription": "Yobuy 为全球用户提供精选商品与优质服务，致力于打造便捷、安全的购物体验。",
+    "allRightsReserved": "保留所有权利。",
+    "followUs": "关注我们"
+  },
+  "toolbar": {
+    "cartTitle": "购物车 ({{count}})",
+    "cartEmptyTitle": "购物车空空如也",
+    "cartEmptyDescription": "您的购物车还是空的。",
+    "cartEmptySuggestion": "去逛逛，给自己一点奖励吧。",
+    "cartMore": "还有 {{count}} 件商品...",
+    "cartItemsLabel": "商品数量",
+    "cartItemsValue": "{{count}} 件",
+    "cartTotalLabel": "总计",
+    "viewCart": "查看购物车",
+    "tooltip": {
+      "remove": "删除",
+      "decrease": "减少数量",
+      "increase": "增加数量",
+      "scrollTop": "返回顶部"
+    },
+    "toast": {
+      "loginWishlist": "请先登录后再查看心愿单",
+      "loginRequired": "请先登录",
+      "removed": "已从购物车移除",
+      "updateFailed": "更新失败，请稍后重试",
+      "deleteFailed": "删除失败，请稍后重试",
+      "discordComingSoon": "Discord 功能即将上线"
+    }
+  }
+}
+

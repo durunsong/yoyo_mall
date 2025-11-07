@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 import { toast } from 'sonner';
 import {
   HoverCard,
@@ -29,6 +30,7 @@ export function FloatingToolbar() {
   const router = useRouter();
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
+  const { t } = useStaticTranslations('layout');
   const [cartAnimation, setCartAnimation] = useState(false);
   const [wishlistAnimation, setWishlistAnimation] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null); // 初始为 null
@@ -116,7 +118,7 @@ export function FloatingToolbar() {
   const handleWishlistClick = () => {
     // 心愿单需要登录
     if (!session) {
-      toast.error('请先登录后再查看心愿单');
+      toast.error(t('toolbar.toast.loginWishlist'));
       openModal('login');
       return;
     }
@@ -126,7 +128,7 @@ export function FloatingToolbar() {
   // 更新购物车商品数量
   const handleUpdateQuantity = async (itemId: string, productId: string, newQuantity: number) => {
     if (!session?.user) {
-      toast.error('请先登录');
+      toast.error(t('toolbar.toast.loginRequired'));
       return;
     }
 
@@ -143,18 +145,18 @@ export function FloatingToolbar() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || '更新失败');
+        throw new Error(data.message || t('toolbar.toast.updateFailed'));
       }
 
       // 更新本地store
       updateQuantity(itemId, newQuantity);
       
       if (newQuantity === 0) {
-        toast.success('已从购物车移除');
+        toast.success(t('toolbar.toast.removed'));
       }
     } catch (error) {
       console.error('更新购物车失败:', error);
-      toast.error(error instanceof Error ? error.message : '更新失败');
+      toast.error(error instanceof Error ? error.message : t('toolbar.toast.updateFailed'));
     } finally {
       // 移除更新标记
       setUpdatingItems(prev => {
@@ -168,7 +170,7 @@ export function FloatingToolbar() {
   // 删除购物车商品
   const handleDeleteItem = async (itemId: string, productName: string) => {
     if (!session?.user) {
-      toast.error('请先登录');
+      toast.error(t('toolbar.toast.loginRequired'));
       return;
     }
 
@@ -183,15 +185,15 @@ export function FloatingToolbar() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || '删除失败');
+        throw new Error(data.message || t('toolbar.toast.deleteFailed'));
       }
 
       // 更新本地store
       removeItem(itemId);
-      toast.success('已从购物车移除');
+      toast.success(t('toolbar.toast.removed'));
     } catch (error) {
       console.error('删除购物车商品失败:', error);
-      toast.error(error instanceof Error ? error.message : '删除失败');
+      toast.error(error instanceof Error ? error.message : t('toolbar.toast.deleteFailed'));
     } finally {
       // 移除更新标记
       setUpdatingItems(prev => {
@@ -301,13 +303,22 @@ export function FloatingToolbar() {
           sideOffset={8}
         >
           <div className="p-4">
-            <h3 className="mb-3 text-lg font-semibold">Cart({cartCount})</h3>
+            <h3 className="mb-3 text-lg font-semibold">
+              {t('toolbar.cartTitle', { count: cartCount })}
+            </h3>
             
             {items.length === 0 ? (
               <div className="py-8 text-center">
                 <div className="mb-2 text-4xl">🛒</div>
-                <p className="text-sm text-gray-500">Your cart is currently empty.</p>
-                <p className="mt-1 text-xs text-gray-400">Reward yourself by going shopping.</p>
+                <p className="text-sm font-semibold text-gray-600">
+                  {t('toolbar.cartEmptyTitle')}
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {t('toolbar.cartEmptyDescription')}
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {t('toolbar.cartEmptySuggestion')}
+                </p>
               </div>
             ) : (
               <>
@@ -325,7 +336,7 @@ export function FloatingToolbar() {
                           onClick={() => handleDeleteItem(item.id, item.name)}
                           disabled={isUpdating}
                           className="absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-lg transition-opacity hover:bg-red-600 group-hover:opacity-100 disabled:opacity-50"
-                          title="删除"
+                          title={t('toolbar.tooltip.remove')}
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
@@ -354,7 +365,7 @@ export function FloatingToolbar() {
                                 onClick={() => handleUpdateQuantity(item.id, item.productId, Math.max(1, item.quantity - 1))}
                                 disabled={isUpdating || item.quantity <= 1}
                                 className="flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                title="减少数量"
+                                title={t('toolbar.tooltip.decrease')}
                               >
                                 <Minus className="h-3 w-3" />
                               </button>
@@ -367,7 +378,7 @@ export function FloatingToolbar() {
                                 onClick={() => handleUpdateQuantity(item.id, item.productId, item.quantity + 1)}
                                 disabled={isUpdating}
                                 className="flex h-6 w-6 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                title="增加数量"
+                                title={t('toolbar.tooltip.increase')}
                               >
                                 <Plus className="h-3 w-3" />
                               </button>
@@ -389,7 +400,7 @@ export function FloatingToolbar() {
                   })}
                   {items.length > 5 && (
                     <p className="text-center text-xs font-medium text-blue-600">
-                      还有 {items.length - 5} 件商品...
+                      {t('toolbar.cartMore', { count: items.length - 5 })}
                     </p>
                   )}
                 </div>
@@ -398,11 +409,13 @@ export function FloatingToolbar() {
                 
                 <div className="space-y-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 p-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">商品数量:</span>
-                    <span className="font-medium text-gray-800">{cartCount} 件</span>
+                    <span className="text-gray-600">{t('toolbar.cartItemsLabel')}:</span>
+                    <span className="font-medium text-gray-800">
+                      {t('toolbar.cartItemsValue', { count: cartCount })}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-semibold text-gray-800">总计:</span>
+                    <span className="text-base font-semibold text-gray-800">{t('toolbar.cartTotalLabel')}:</span>
                     <span className="text-xl font-bold text-blue-600">
                       {currencySymbol}{items.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0).toFixed(2)}
                     </span>
@@ -413,7 +426,7 @@ export function FloatingToolbar() {
                   className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold shadow-lg" 
                   onClick={handleCartClick}
                 >
-                  查看购物车
+                  {t('toolbar.viewCart')}
                 </Button>
               </>
             )}
@@ -460,7 +473,7 @@ export function FloatingToolbar() {
           <button
             onClick={scrollToTop}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-white shadow-md transition-all hover:bg-gray-50 hover:scale-105 animate-fade-in"
-            title="返回顶部"
+            title={t('toolbar.tooltip.scrollTop')}
           >
             <ArrowUp className="h-5 w-5 text-gray-700" />
           </button>
@@ -470,7 +483,7 @@ export function FloatingToolbar() {
       {/* Discord 按钮 - 底部 */}
       <div className={cn('w-16 bg-white shadow-md rounded-lg', !showScrollTop && 'rounded-b-xl')}>
         <button
-          onClick={() => toast.info('Discord 功能即将上线')}
+          onClick={() => toast.info(t('toolbar.toast.discordComingSoon'))}
           className={cn(
             'flex h-12 w-full items-center justify-center transition-all hover:bg-gray-50',
             !showScrollTop && 'rounded-b-xl',

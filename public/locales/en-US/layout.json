@@ -1,0 +1,87 @@
+{
+  "announcement": {
+    "defaultAlt": "Announcement",
+    "loadError": "Failed to load announcements"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Subscribe to our newsletter",
+      "subtitle": "Get the latest deals and updates",
+      "inputPlaceholder": "Enter your email address",
+      "button": "Subscribe",
+      "buttonLoading": "Submitting...",
+      "message": {
+        "success": "Subscription successful! Please check your email to verify.",
+        "error": "Subscription failed. Please try again later.",
+        "emailRequired": "Please enter an email address"
+      }
+    },
+    "sections": {
+      "company": {
+        "title": "Company",
+        "links": {
+          "about": "About Us",
+          "contact": "Contact Us",
+          "careers": "Careers",
+          "news": "Newsroom"
+        }
+      },
+      "customer": {
+        "title": "Customer Service",
+        "links": {
+          "help": "Help Center",
+          "shipping": "Shipping Information",
+          "returns": "Return Policy",
+          "faq": "FAQ"
+        }
+      },
+      "account": {
+        "title": "My Account",
+        "links": {
+          "orders": "My Orders",
+          "wishlist": "Wishlist",
+          "settings": "Account Settings",
+          "addresses": "Address Book"
+        }
+      },
+      "legal": {
+        "title": "Legal",
+        "links": {
+          "terms": "Terms of Service",
+          "privacy": "Privacy Policy",
+          "cookies": "Cookie Policy",
+          "disclaimer": "Disclaimer"
+        }
+      }
+    },
+    "companyDescription": "Yobuy delivers curated products and premium services worldwide, creating a convenient and secure shopping experience.",
+    "allRightsReserved": "All rights reserved.",
+    "followUs": "Follow us"
+  },
+  "toolbar": {
+    "cartTitle": "Cart ({{count}})",
+    "cartEmptyTitle": "Your cart is empty",
+    "cartEmptyDescription": "There are no items in your cart yet.",
+    "cartEmptySuggestion": "Treat yourself to something nice!",
+    "cartMore": "Plus {{count}} more item(s)...",
+    "cartItemsLabel": "Items",
+    "cartItemsValue": "{{count}} item(s)",
+    "cartTotalLabel": "Total",
+    "viewCart": "View Cart",
+    "tooltip": {
+      "remove": "Remove",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "scrollTop": "Back to top"
+    },
+    "toast": {
+      "loginWishlist": "Please sign in to view your wishlist",
+      "loginRequired": "Please sign in",
+      "removed": "Removed from cart",
+      "updateFailed": "Update failed. Please try again later.",
+      "deleteFailed": "Delete failed. Please try again later.",
+      "discordComingSoon": "Discord integration is coming soon"
+    }
+  }
+}
+

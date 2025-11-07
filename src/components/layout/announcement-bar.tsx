@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 type AnnouncementActionType = 'NONE' | 'URL' | 'OPEN_LOGIN_MODAL' | 'OPEN_REGISTER_MODAL';
 
@@ -35,6 +36,7 @@ export function AnnouncementBar() {
   const router = useRouter();
   const { openModal } = useAuthModal();
   const { data: session } = useSession();
+  const { t } = useStaticTranslations('layout');
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [rotationInterval, setRotationInterval] = useState(DEFAULT_ROTATION_INTERVAL);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,7 +54,7 @@ export function AnnouncementBar() {
         const data: AnnouncementResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error('加载公告失败');
+          throw new Error(t('announcement.loadError'));
         }
 
         if (Array.isArray(data.data)) {
@@ -64,14 +66,14 @@ export function AnnouncementBar() {
         }
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
-        console.error('加载公告失败:', error);
+        console.error(t('announcement.loadError'), error);
       }
     };
 
     loadAnnouncements();
 
     return () => controller.abort();
-  }, []);
+  }, [t]);
 
   // 轮播定时器 - 添加平滑过渡效果
   useEffect(() => {
@@ -187,7 +189,7 @@ export function AnnouncementBar() {
         {announcement.imageUrl ? (
           <img
             src={announcement.imageUrl}
-            alt={announcement.title ?? '公告'}
+            alt={announcement.title ?? t('announcement.defaultAlt')}
             className="max-h-10 w-auto object-contain"
           />
         ) : null}
