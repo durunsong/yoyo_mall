@@ -101,6 +101,7 @@ export default function ProductDetailPage() {
 
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const thumbnailListRef = useRef<HTMLDivElement | null>(null);
+  const mainImageContainerRef = useRef<HTMLDivElement | null>(null);
 
   const wishlistItems = useWishlistStore(state => state.items);
   const addWishlistItem = useWishlistStore(state => state.addItem);
@@ -477,18 +478,43 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 保障信息卡片 */}
-            <div className="space-y-3 rounded-lg p-4">
+            <div className="space-y-3 rounded-lg border p-4">
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
+                <div className="space-y-1 flex-1">
+                  <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-48 animate-pulse rounded bg-gray-200" />
+                </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-36 animate-pulse rounded bg-gray-200" />
+                <div className="space-y-1 flex-1">
+                  <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-40 animate-pulse rounded bg-gray-200" />
+                </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-44 animate-pulse rounded bg-gray-200" />
+                <div className="space-y-1 flex-1">
+                  <div className="h-4 w-36 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-44 animate-pulse rounded bg-gray-200" />
+                </div>
+              </div>
+            </div>
+
+            {/* 商品详情标签页骨架 */}
+            <div className="space-y-4">
+              <div className="flex gap-4 border-b">
+                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
+                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
+                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
+              </div>
+              <div className="space-y-3 rounded-lg border p-6">
+                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-5/6 animate-pulse rounded bg-gray-200" />
               </div>
             </div>
           </div>
@@ -560,22 +586,23 @@ const hasReviews = reviewCount > 0;
           {/* 左侧：图片画廊 */}
           <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
             {/* 主图 */}
-            <div className="relative">
+            <div className="relative" ref={mainImageContainerRef}>
               <button
                 type="button"
                 onClick={() => handleOpenPreview(selectedImage)}
-                className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 focus:outline-none"
+                className="relative aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
               >
                 <Image
+                  key={`main-${selectedImage}`}
                   src={primaryImageUrl}
                   alt={primaryImageAlt}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-opacity duration-300"
                   priority
                 />
                 <span className="sr-only">{t('previewImage') || '预览图片'}</span>
                 {discountPercent > 0 && (
-                  <Badge variant="destructive" className="absolute left-4 top-4">
+                  <Badge variant="destructive" className="absolute left-4 top-4 z-10">
                     -{discountPercent}%
                   </Badge>
                 )}
@@ -640,7 +667,7 @@ const hasReviews = reviewCount > 0;
                       type="button"
                       onClick={() => goToImage(index)}
                       onMouseEnter={() => handleThumbnailHover(index)}
-                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-[3px] transition-all focus:outline-none ${
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden border-[3px] transition-all focus:outline-none ${
                         selectedImage === index
                           ? 'border-black'
                           : 'border-transparent hover:border-black/40'
@@ -947,8 +974,41 @@ const hasReviews = reviewCount > 0;
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {relatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {relatedProducts.map((relProduct) => (
+                <ProductCard 
+                  key={relProduct.id} 
+                  product={relProduct}
+                  onAddToCart={async (prod) => {
+                    if (!session?.user) {
+                      openModal('login');
+                      toast.info('请先登录后再添加到购物车');
+                      return;
+                    }
+                    try {
+                      const response = await fetch('/api/cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId: prod.id, quantity: 1 }),
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        addItem({
+                          productId: prod.id,
+                          quantity: 1,
+                          price: prod.price,
+                          name: prod.name,
+                          image: prod.image || PLACEHOLDER_IMAGE,
+                        });
+                        toast.success('已添加到购物车');
+                      } else {
+                        toast.error(data.message || '添加失败');
+                      }
+                    } catch (error) {
+                      console.error('Add to cart failed:', error);
+                      toast.error('添加失败，请重试');
+                    }
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -965,7 +1025,7 @@ const hasReviews = reviewCount > 0;
                   key={`preview-${image.id ?? index}`}
                   type="button"
                   onClick={() => goToImage(index)}
-                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-[3px] transition-all focus:outline-none ${
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden border-[3px] transition-all focus:outline-none ${
                     previewIndex === index ? 'border-black' : 'border-transparent hover:border-black/40'
                   }`}
                 >
