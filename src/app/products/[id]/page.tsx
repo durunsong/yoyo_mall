@@ -98,10 +98,14 @@ export default function ProductDetailPage() {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [prevImageIndex, setPrevImageIndex] = useState<number | null>(null);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [hoveredThumbnail, setHoveredThumbnail] = useState<number | null>(null);
+  const [hoveredPreviewIndex, setHoveredPreviewIndex] = useState<number | null>(null);
 
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const thumbnailListRef = useRef<HTMLDivElement | null>(null);
-  const mainImageContainerRef = useRef<HTMLDivElement | null>(null);
 
   const wishlistItems = useWishlistStore(state => state.items);
   const addWishlistItem = useWishlistStore(state => state.addItem);
@@ -147,25 +151,46 @@ export default function ProductDetailPage() {
     }
   }, [selectedImage]);
 
+  useEffect(() => {
+    if (!isAnimating) return;
+    const timer = setTimeout(() => {
+      setIsAnimating(false);
+      setPrevImageIndex(null);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isAnimating]);
+
   const goToImage = useCallback(
-    (index: number) => {
+    (index: number, direction: 'left' | 'right' = 'left', animate = true) => {
       if (totalImages === 0) return;
       const normalized = ((index % totalImages) + totalImages) % totalImages;
+      if (normalized === selectedImage) return;
+
+      if (animate) {
+        setSlideDirection(direction);
+        setPrevImageIndex(selectedImage);
+        setIsAnimating(true);
+      } else {
+        setPrevImageIndex(null);
+        setIsAnimating(false);
+      }
+
       setSelectedImage(normalized);
       setPreviewIndex(normalized);
     },
-    [totalImages],
+    [selectedImage, totalImages],
   );
 
   const handlePrevImage = useCallback(() => {
     if (totalImages > 1) {
-      goToImage(selectedImage - 1);
+      goToImage(selectedImage - 1, 'right');
     }
   }, [goToImage, selectedImage, totalImages]);
 
   const handleNextImage = useCallback(() => {
     if (totalImages > 1) {
-      goToImage(selectedImage + 1);
+      goToImage(selectedImage + 1, 'left');
     }
   }, [goToImage, selectedImage, totalImages]);
 
@@ -184,25 +209,32 @@ export default function ProductDetailPage() {
 
   const handleThumbnailHover = useCallback(
     (index: number) => {
-      goToImage(index);
+      setHoveredThumbnail(index);
+      if (index === selectedImage) return;
+      const direction = index > selectedImage ? 'left' : 'right';
+      goToImage(index, direction);
     },
-    [goToImage],
+    [goToImage, selectedImage],
   );
+
+  const handleThumbnailLeave = useCallback(() => {
+    setHoveredThumbnail(null);
+  }, []);
 
   const handleOpenPreview = useCallback(
     (index: number) => {
-      goToImage(index);
+      goToImage(index, index > selectedImage ? 'left' : 'right', false);
       setPreviewOpen(true);
     },
-    [goToImage],
+    [goToImage, selectedImage],
   );
 
   const handlePreviewPrev = useCallback(() => {
-    goToImage(previewIndex - 1);
+    goToImage(previewIndex - 1, 'right');
   }, [goToImage, previewIndex]);
 
   const handlePreviewNext = useCallback(() => {
-    goToImage(previewIndex + 1);
+    goToImage(previewIndex + 1, 'left');
   }, [goToImage, previewIndex]);
 
   const primaryImage = imageList[selectedImage] ?? imageList[0];
@@ -478,7 +510,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 保障信息卡片 */}
-            <div className="space-y-3 rounded-lg border p-4">
+            <div className="space-y-3 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
                 <div className="space-y-1 flex-1">
@@ -499,22 +531,6 @@ export default function ProductDetailPage() {
                   <div className="h-4 w-36 animate-pulse rounded bg-gray-200" />
                   <div className="h-3 w-44 animate-pulse rounded bg-gray-200" />
                 </div>
-              </div>
-            </div>
-
-            {/* 商品详情标签页骨架 */}
-            <div className="space-y-4">
-              <div className="flex gap-4 border-b">
-                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
-                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
-                <div className="h-10 w-24 animate-pulse rounded-t bg-gray-200" />
-              </div>
-              <div className="space-y-3 rounded-lg border p-6">
-                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
-                <div className="h-4 w-5/6 animate-pulse rounded bg-gray-200" />
               </div>
             </div>
           </div>
@@ -586,18 +602,38 @@ const hasReviews = reviewCount > 0;
           {/* 左侧：图片画廊 */}
           <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
             {/* 主图 */}
-            <div className="relative" ref={mainImageContainerRef}>
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => handleOpenPreview(selectedImage)}
                 className="relative aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
               >
+                {prevImageIndex !== null && isAnimating && (
+                  <Image
+                    key={`prev-${prevImageIndex}-${slideDirection}`}
+                    src={imageList[prevImageIndex]?.url || PLACEHOLDER_IMAGE}
+                    alt={imageList[prevImageIndex]?.alt || product?.name || 'Product image'}
+                    fill
+                    className={`absolute inset-0 object-cover ${
+                      slideDirection === 'left'
+                        ? 'animate-product-slide-out-left'
+                        : 'animate-product-slide-out-right'
+                    }`}
+                    priority
+                  />
+                )}
                 <Image
                   key={`main-${selectedImage}`}
                   src={primaryImageUrl}
                   alt={primaryImageAlt}
                   fill
-                  className="object-cover transition-opacity duration-300"
+                  className={`absolute inset-0 object-cover ${
+                    isAnimating
+                      ? slideDirection === 'left'
+                        ? 'animate-product-slide-in-left'
+                        : 'animate-product-slide-in-right'
+                      : ''
+                  }`}
                   priority
                 />
                 <span className="sr-only">{t('previewImage') || '预览图片'}</span>
@@ -658,20 +694,29 @@ const hasReviews = reviewCount > 0;
                   ref={thumbnailListRef}
                   className={`flex gap-2 overflow-x-auto ${showThumbnailNav ? 'px-10' : ''}`}
                 >
-                  {imageList.map((image, index) => (
+                {imageList.map((image, index) => (
                     <button
                       key={image.id ?? `${product.id}-image-${index}`}
                       ref={(el) => {
                         thumbnailRefs.current[index] = el;
                       }}
                       type="button"
-                      onClick={() => goToImage(index)}
-                      onMouseEnter={() => handleThumbnailHover(index)}
-                      className={`relative h-20 w-20 shrink-0 overflow-hidden border-[3px] transition-all focus:outline-none ${
+                      onClick={() => {
+                        if (index === selectedImage) return;
+                        const direction = index > selectedImage ? 'left' : 'right';
+                        goToImage(index, direction);
+                      }}
+                    onMouseEnter={() => handleThumbnailHover(index)}
+                    onMouseLeave={handleThumbnailLeave}
+                    className="relative h-20 w-20 shrink-0 overflow-hidden border-[3px] border-transparent transition-transform duration-200 focus:outline-none"
+                    style={{
+                      borderColor:
                         selectedImage === index
-                          ? 'border-black'
-                          : 'border-transparent hover:border-black/40'
-                      }`}
+                          ? '#000'
+                          : hoveredThumbnail === index
+                            ? 'rgba(0,0,0,0.4)'
+                            : 'transparent',
+                    }}
                     >
                       <Image
                         src={image.url || PLACEHOLDER_IMAGE}
@@ -1008,6 +1053,74 @@ const hasReviews = reviewCount > 0;
                       toast.error('添加失败，请重试');
                     }
                   }}
+                  onAddToWishlist={async (productId) => {
+                    if (!session?.user) {
+                      openModal('login');
+                      toast.info('请先登录后再添加到心愿单');
+                      return;
+                    }
+
+                    const existingItem = wishlistItems.find(
+                      item => item.productId === productId,
+                    );
+
+                    try {
+                      setWishlistLoading(true);
+
+                      if (existingItem) {
+                        const response = await fetch(`/api/wishlist/${existingItem.id}`, {
+                          method: 'DELETE',
+                        });
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                          removeWishlistItem(existingItem.id);
+                          toast.success('已从心愿单移除');
+                        } else {
+                          toast.error(data.error || '移除心愿单失败');
+                        }
+                      } else {
+                        const response = await fetch('/api/wishlist', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ productId }),
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                          const wishlistItem = data.data;
+                          const imageUrl =
+                            relProduct.images?.[0]?.url ||
+                            (relProduct as any)?.image ||
+                            wishlistItem?.product?.images?.[0]?.url ||
+                            PLACEHOLDER_IMAGE;
+
+                          addWishlistItem({
+                            id: wishlistItem?.id,
+                            productId,
+                            name: relProduct.name,
+                            price: Number(relProduct.price ?? 0),
+                            image: imageUrl,
+                            addedAt: wishlistItem?.createdAt
+                              ? new Date(wishlistItem.createdAt)
+                              : undefined,
+                          });
+
+                          toast.success('已加入心愿单');
+                        } else {
+                          toast.error(data.error || '加入心愿单失败');
+                        }
+                      }
+                    } catch (error) {
+                      console.error('心愿单操作失败:', error);
+                      toast.error('操作失败，请稍后重试');
+                    } finally {
+                      setWishlistLoading(false);
+                    }
+                  }}
+                  isWishlisted={wishlistItems.some(item => item.productId === relProduct.id)}
+                  wishlistLoading={wishlistLoading}
                 />
               ))}
             </div>
@@ -1024,10 +1137,22 @@ const hasReviews = reviewCount > 0;
                 <button
                   key={`preview-${image.id ?? index}`}
                   type="button"
-                  onClick={() => goToImage(index)}
-                  className={`relative h-20 w-20 shrink-0 overflow-hidden border-[3px] transition-all focus:outline-none ${
-                    previewIndex === index ? 'border-black' : 'border-transparent hover:border-black/40'
-                  }`}
+                  onClick={() => {
+                    if (index === selectedImage) return;
+                    const direction = index > selectedImage ? 'left' : 'right';
+                    goToImage(index, direction);
+                  }}
+                  onMouseEnter={() => setHoveredPreviewIndex(index)}
+                  onMouseLeave={() => setHoveredPreviewIndex(null)}
+                  className="relative h-20 w-20 shrink-0 overflow-hidden border-[3px] border-transparent transition-transform duration-200 focus:outline-none"
+                  style={{
+                    borderColor:
+                      previewIndex === index
+                        ? '#000'
+                        : hoveredPreviewIndex === index
+                          ? 'rgba(0,0,0,0.4)'
+                          : 'transparent',
+                  }}
                 >
                   <Image
                     src={image.url || PLACEHOLDER_IMAGE}

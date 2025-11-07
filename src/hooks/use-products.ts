@@ -117,7 +117,7 @@ interface ProductDetailResponse {
 export function useProducts(query: ProductQuery = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 将query转换为稳定的字符串key，避免对象引用变化导致的无限循环

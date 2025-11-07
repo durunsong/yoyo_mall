@@ -13,6 +13,7 @@ import ProductCard from '@/components/products/product-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/store/cart-store';
+import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
 
@@ -33,8 +34,10 @@ export default function DealsPage() {
   const { addItem } = useCartStore();
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
+  const wishlistStore = useWishlistStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -106,33 +109,95 @@ export default function DealsPage() {
     }
   };
 
-  // 添加到心愿单
-  const handleAddToWishlist = async (productId: string) => {
+  const handleToggleWishlist = async (productId: string) => {
+    if (!session?.user) {
+      openModal('login');
+      toast.info('请先登录后再操作心愿单');
+      return;
+    }
+
+    const existingItem = wishlistStore.items.find(item => item.productId === productId);
+
     try {
-      const response = await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('已添加到心愿单');
+      setWishlistLoadingId(productId);
+
+      if (existingItem) {
+        const response = await fetch(`/api/wishlist/${existingItem.id}`, {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          wishlistStore.removeItem(existingItem.id);
+          toast.success('已从心愿单移除');
+        } else {
+          toast.error(data.error || '移除心愿单失败');
+        }
       } else {
-        toast.error(data.message || '添加失败');
+        const response = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const product = products.find(p => p.id === productId);
+          const wishlistItem = data.data;
+
+          if (product) {
+            wishlistStore.addItem({
+              id: wishlistItem?.id,
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              image:
+                product.image ||
+                wishlistItem?.product?.images?.[0]?.url ||
+                'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
+              addedAt: wishlistItem?.createdAt
+                ? new Date(wishlistItem.createdAt)
+                : undefined,
+            });
+          }
+          toast.success('已添加到心愿单');
+        } else {
+          toast.error(data.message || data.error || '添加失败');
+        }
       }
     } catch (error) {
-      console.error('Add to wishlist failed:', error);
-      toast.error('添加失败，请重试');
+      console.error('Wishlist operation failed:', error);
+      toast.error('操作失败，请重试');
+    } finally {
+      setWishlistLoadingId(null);
     }
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8 space-y-8">
+          <div className="h-48 rounded-3xl bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse" />
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="space-y-3 rounded-2xl bg-white p-3 shadow-sm"
+              >
+                <div className="aspect-[3/4] w-full rounded-xl bg-gray-100 animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-4 w-3/4 rounded bg-gray-100 animate-pulse" />
+                  <div className="h-4 w-1/2 rounded bg-gray-100 animate-pulse" />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="h-5 w-20 rounded bg-gray-100 animate-pulse" />
+                  <div className="h-5 w-14 rounded bg-gray-100 animate-pulse" />
+                </div>
+                <div className="h-9 w-full rounded-full bg-gray-100 animate-pulse" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -234,7 +299,9 @@ export default function DealsPage() {
                 key={product.id} 
                 product={product} 
                 onAddToCart={handleAddToCart}
-                onAddToWishlist={handleAddToWishlist}
+                onAddToWishlist={handleToggleWishlist}
+                isWishlisted={wishlistStore.items.some(item => item.productId === product.id)}
+                wishlistLoading={wishlistLoadingId === product.id}
               />
             ))}
           </div>

@@ -22,7 +22,7 @@ interface ProductCardProps {
     image?: string;
     images?: Array<{ url: string }>;
     rating?: number;
-    reviews?: number;
+    reviews?: number | Array<{ rating: number }>;
     inStock?: boolean;
     featured?: boolean;
   };
@@ -33,6 +33,8 @@ interface ProductCardProps {
     image?: string;
   }) => void;
   onAddToWishlist?: (productId: string) => void;
+  isWishlisted?: boolean;
+  wishlistLoading?: boolean;
   className?: string;
 }
 
@@ -40,6 +42,8 @@ export default function ProductCard({
   product, 
   onAddToCart,
   onAddToWishlist,
+  isWishlisted = false,
+  wishlistLoading = false,
   className = '', 
 }: ProductCardProps) {
   const { t } = useStaticTranslations('common');
@@ -57,6 +61,7 @@ export default function ProductCard({
   } = product;
 
   const primaryImage = image || images?.[0]?.url;
+  const reviewCount = Array.isArray(reviews) ? reviews.length : reviews ?? 0;
   
   // 获取系统设置的货币符号
   const { settings } = useSystemSettings();
@@ -136,10 +141,22 @@ export default function ProductCard({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 rounded-full bg-white/90 backdrop-blur-sm opacity-0 shadow-lg transition-all duration-300 hover:bg-red-50 hover:scale-110 group-hover:opacity-100"
+            aria-pressed={isWishlisted}
+            disabled={wishlistLoading}
+            className={`absolute top-2 right-2 rounded-full backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${
+              isWishlisted
+                ? 'bg-red-100 text-red-500 opacity-100'
+                : 'bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-red-50'
+            }`}
             onClick={handleWishlist}
           >
-            <Heart className="h-4 w-4 transition-colors hover:fill-red-500 hover:text-red-500" />
+            <Heart
+              className={`h-4 w-4 transition-colors ${
+                isWishlisted
+                  ? 'fill-red-500 text-red-500'
+                  : 'text-gray-600 group-hover:text-red-500 group-hover:fill-red-500'
+              }`}
+            />
           </Button>
         </div>
         </Link>
@@ -168,7 +185,7 @@ export default function ProductCard({
                 ))}
               </div>
               <span className="ml-1 text-xs text-gray-600 font-medium">
-                {rating} ({reviews})
+                {rating} ({reviewCount})
               </span>
             </div>
           )}

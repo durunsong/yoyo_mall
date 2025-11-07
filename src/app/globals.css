@@ -561,3 +561,55 @@ img[loading="lazy"]:not([src]) {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes product-slide-in-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes product-slide-out-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes product-slide-in-right {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes product-slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.animate-product-slide-in-left {
+  animation: product-slide-in-left 0.3s ease forwards;
+}
+
+.animate-product-slide-out-left {
+  animation: product-slide-out-left 0.3s ease forwards;
+}
+
+.animate-product-slide-in-right {
+  animation: product-slide-in-right 0.3s ease forwards;
+}
+
+.animate-product-slide-out-right {
+  animation: product-slide-out-right 0.3s ease forwards;
+}
