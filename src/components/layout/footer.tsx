@@ -129,14 +129,14 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 py-12">
+      <div className="bg-gradient-to-r from-blue-100 to-indigo-400 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
-              <h3 className="mb-2 text-2xl font-bold text-white" suppressHydrationWarning>
+              <h3 className="mb-2 text-2xl font-bold text-blue-400" suppressHydrationWarning>
                 {mounted ? t('subscribeNewsletter') : '订阅我们的新闻'}
               </h3>
-              <p className="text-blue-100" suppressHydrationWarning>
+              <p className="text-blue-400" suppressHydrationWarning>
                 {mounted ? t('getLatestOffers') : '获取最新优惠和资讯'}
               </p>
             </div>

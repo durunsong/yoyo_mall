@@ -233,7 +233,7 @@ function ProductsPageContent() {
       </div>
 
       {/* 工具栏 */}
-      <div className="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+      <div className="mb-6 flex flex-col gap-4 rounded-lg bg-card p-4 shadow-sm">
         <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
           {/* 搜索框 */}
           <div className="relative w-full md:max-w-md">
