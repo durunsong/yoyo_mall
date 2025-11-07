@@ -183,12 +183,12 @@ export function Footer() {
               <Link href="/" className="flex items-center">
                 <Image
                   src="/icons/web-logo.svg"
-                  alt="YOYO Mall"
+                  alt="Yobuy"
                   width={160}
                   height={50}
                   className="h-8 w-auto"
                 />
-                <span className="sr-only">YOYO Mall</span>
+                <span className="sr-only">Yobuy</span>
               </Link>
             </div>
             <p className="mb-4 text-sm text-gray-300">
@@ -238,7 +238,7 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 text-sm text-gray-300 md:mb-0">
-              © 2025 YOYO Mall. {t('allRightsReserved')}
+              © 2025 Yobuy. {t('allRightsReserved')}
             </div>
 
             {/* Social Links */}

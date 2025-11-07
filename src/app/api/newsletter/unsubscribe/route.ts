@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     // 发送取消订阅确认邮件
     await sendEmail({
       to: subscriber.email,
-      subject: 'YOYO Mall - 取消订阅确认',
+      subject: 'Yobuy - 取消订阅确认',
       html: UnsubscribeEmailTemplate({}),
     });
 

@@ -65,7 +65,7 @@ Response:
 {
   "success": true,
   "data": {
-    "siteName": "YoYo Mall",
+    "siteName": "Yobuy",
     "siteDescription": "...",
     "defaultCurrency": "CNY",
     // ... 所有设置字段
@@ -103,7 +103,7 @@ Response:
 {
   "success": true,
   "data": {
-    "siteName": "YoYo Mall",
+    "siteName": "Yobuy",
     "defaultCurrency": "CNY",
     "stripeEnabled": true,
     // 只包含公开字段，不包含密钥等敏感信息
@@ -186,7 +186,7 @@ model SystemSettings {
   id              String   @id @default("global")
   
   // 网站基本信息
-  siteName        String   @default("YoYo Mall")
+  siteName        String   @default("Yobuy")
   siteDescription String?
   siteUrl         String?
   contactEmail    String?

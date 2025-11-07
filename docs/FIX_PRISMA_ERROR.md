@@ -75,7 +75,7 @@ http://localhost:3000/api/admin/settings
   "success": true,
   "data": {
     "id": "global",
-    "siteName": "YoYo Mall",
+    "siteName": "Yobuy",
     "defaultCurrency": "CNY",
     ...
   }

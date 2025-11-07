@@ -21,7 +21,7 @@ async function main() {
       type: 'SHIPPING',
       firstName: '张',
       lastName: '三',
-      company: 'YOYO Mall',
+      company: 'Yobuy',
       addressLine1: '上海市浦东新区世纪大道100号',
       addressLine2: 'A 座 18 楼',
       city: '上海',

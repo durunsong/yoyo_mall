@@ -16,7 +16,7 @@ interface EmailTemplateProps {
 export function WelcomeEmailTemplate({
   verifyUrl,
   unsubscribeUrl,
-  companyName = 'YOYO Mall',
+  companyName = 'Yobuy',
   logoUrl,
 }: EmailTemplateProps) {
   return `
@@ -111,7 +111,7 @@ export function WelcomeEmailTemplate({
  */
 export function ConfirmationEmailTemplate({
   unsubscribeUrl,
-  companyName = 'YOYO Mall',
+  companyName = 'Yobuy',
   logoUrl,
 }: EmailTemplateProps) {
   return `
@@ -174,7 +174,7 @@ export function ConfirmationEmailTemplate({
  * 取消订阅确认邮件模板
  */
 export function UnsubscribeEmailTemplate({
-  companyName = 'YOYO Mall',
+  companyName = 'Yobuy',
   logoUrl,
 }: EmailTemplateProps) {
   return `
@@ -229,7 +229,7 @@ export function CampaignEmailTemplate({
   subject,
   content,
   unsubscribeUrl,
-  companyName = 'YOYO Mall',
+  companyName = 'Yobuy',
   logoUrl,
 }: {
   subject: string;

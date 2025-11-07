@@ -154,7 +154,7 @@
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 
 # 发件人邮箱（必需）
-RESEND_FROM_EMAIL="YOYO Mall <noreply@yourdomain.com>"
+RESEND_FROM_EMAIL="Yobuy <noreply@yourdomain.com>"
 
 # 应用 URL（必需）
 NEXT_PUBLIC_APP_URL=https://yourdomain.com
@@ -164,7 +164,7 @@ NEXT_PUBLIC_APP_URL=https://yourdomain.com
 
 ```bash
 # 使用 Resend 测试域名
-RESEND_FROM_EMAIL="YOYO Mall <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="Yobuy <onboarding@resend.dev>"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -233,7 +233,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | 变量名 | 值 | 环境 |
 |--------|-----|------|
 | RESEND_API_KEY | `re_xxx...` | Production |
-| RESEND_FROM_EMAIL | `YOYO Mall <noreply@yourdomain.com>` | Production |
+| RESEND_FROM_EMAIL | `Yobuy <noreply@yourdomain.com>` | Production |
 | NEXT_PUBLIC_APP_URL | `https://yourdomain.com` | Production |
 
 ### 部署后测试

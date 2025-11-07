@@ -26,7 +26,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 
 export const metadata: Metadata = {
   title: '管理后台',
-  description: 'YOYO Mall 管理后台',
+  description: 'Yobuy 管理后台',
 };
 
 export default function AdminDashboard() {

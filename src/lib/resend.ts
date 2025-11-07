@@ -13,7 +13,7 @@ if (!process.env.RESEND_API_KEY) {
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 默认发件人配置
-export const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'YOYO Mall <noreply@yoyomall.com>';
+export const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Yobuy <noreply@yoyomall.com>';
 
 /**
  * 发送邮件的辅助函数

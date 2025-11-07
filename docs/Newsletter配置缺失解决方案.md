@@ -23,7 +23,7 @@
 1. 登录后进入 Dashboard
 2. 点击左侧菜单 "API Keys"
 3. 点击 "Create API Key"
-4. 输入名称（如 "YOYO Mall Dev"）
+4. 输入名称（如 "Yobuy Dev"）
 5. 复制生成的 API Key（格式：`re_xxxxxxxxxxxxx`）
 
 ### 步骤 3: 配置环境变量
@@ -35,7 +35,7 @@
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 
 # 发件人邮箱（测试阶段使用）
-RESEND_FROM_EMAIL="YOYO Mall <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="Yobuy <onboarding@resend.dev>"
 
 # 应用 URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -83,7 +83,7 @@ Resend 免费计划包括：
 4. 更新环境变量：
 
 ```bash
-RESEND_FROM_EMAIL="YOYO Mall <noreply@yourdomain.com>"
+RESEND_FROM_EMAIL="Yobuy <noreply@yourdomain.com>"
 ```
 
 ---

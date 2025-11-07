@@ -74,7 +74,7 @@ SMTP_HOST="smtp.example.com"
 SMTP_PORT="587"
 SMTP_USER="noreply@yourdomain.com"
 SMTP_PASSWORD="your_password"
-SMTP_FROM="YOYO Mall <noreply@yourdomain.com>"
+SMTP_FROM="Yobuy <noreply@yourdomain.com>"
 ```
 
 #### 4. 功能特性

@@ -1,4 +1,4 @@
-# YOYO Mall - 跨境电商网站完整开发方案
+# Yobuy - 跨境电商网站完整开发方案
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-19.1-blue?style=for-the-badge&logo=react)

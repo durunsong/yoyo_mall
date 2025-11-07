@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# YOYO Mall 完整数据设置脚本
+# Yobuy 完整数据设置脚本
 # 用于快速创建包含完整订单流程的测试数据
 
-echo "🚀 开始设置YOYO Mall完整测试数据..."
+echo "🚀 开始设置Yobuy完整测试数据..."
 echo ""
 
 # 1. 检查环境

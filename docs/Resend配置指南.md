@@ -6,7 +6,7 @@
 
 ```bash
 RESEND_API_KEY="re_BfZdEMtp_G6oxMvGaC1f3k1sNSszEifkY"
-RESEND_FROM_EMAIL="YOYO Mall <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="Yobuy <onboarding@resend.dev>"
 ```
 
 ---
@@ -61,7 +61,7 @@ npm run dev
 ### 6. 查收验证邮件
 
 - 打开你注册 Resend 的邮箱
-- 查找来自 "YOYO Mall" 的邮件
+- 查找来自 "Yobuy" 的邮件
 - 主题：订阅确认 / Newsletter Subscription Confirmation
 - 点击邮件中的验证链接
 
@@ -161,10 +161,10 @@ Value: v=DMARC1; p=none
 
 ```bash
 # 注释掉测试邮箱
-# RESEND_FROM_EMAIL="YOYO Mall <onboarding@resend.dev>"
+# RESEND_FROM_EMAIL="Yobuy <onboarding@resend.dev>"
 
 # 使用自定义域名邮箱
-RESEND_FROM_EMAIL="YOYO Mall <noreply@your-domain.com>"
+RESEND_FROM_EMAIL="Yobuy <noreply@your-domain.com>"
 ```
 
 #### 5. 重启应用

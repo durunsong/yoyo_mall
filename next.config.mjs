@@ -122,7 +122,7 @@ const nextConfig = {
 
   // 环境变量
   env: {
-    NEXT_PUBLIC_APP_NAME: 'YOYO Mall',
+    NEXT_PUBLIC_APP_NAME: 'Yobuy',
     NEXT_PUBLIC_APP_VERSION: '1.5.0',
   },
 

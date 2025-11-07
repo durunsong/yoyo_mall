@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "system_settings" (
     "id" TEXT NOT NULL DEFAULT 'global',
-    "siteName" TEXT NOT NULL DEFAULT 'YoYo Mall',
+    "siteName" TEXT NOT NULL DEFAULT 'Yobuy',
     "siteDescription" TEXT,
     "siteUrl" TEXT,
     "contactEmail" TEXT,

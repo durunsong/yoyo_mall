@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         await sendEmail({
           to: email,
-          subject: '欢迎订阅 YOYO Mall 新闻通讯',
+          subject: '欢迎订阅 Yobuy 新闻通讯',
           html: WelcomeEmailTemplate({
             verifyUrl,
             unsubscribeUrl,
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 
         await sendEmail({
           to: email,
-          subject: '欢迎订阅 YOYO Mall 新闻通讯',
+          subject: '欢迎订阅 Yobuy 新闻通讯',
           html: WelcomeEmailTemplate({
             verifyUrl,
             unsubscribeUrl,
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     const emailResult = await sendEmail({
       to: email,
-      subject: '欢迎订阅 YOYO Mall 新闻通讯',
+      subject: '欢迎订阅 Yobuy 新闻通讯',
       html: WelcomeEmailTemplate({
         verifyUrl,
         unsubscribeUrl,

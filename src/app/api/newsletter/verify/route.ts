@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
       await sendEmail({
         to: subscriber.email,
-        subject: 'YOYO Mall - 订阅确认成功',
+        subject: 'Yobuy - 订阅确认成功',
         html: ConfirmationEmailTemplate({
           unsubscribeUrl,
         }),

@@ -43,13 +43,13 @@ export function Header() {
             <Link href="/" className="flex items-center">
               <Image
                 src="/icons/web-logo.svg"
-                alt="YOYO Mall"
+                alt="Yobuy"
                 width={160}
                 height={50}
                 priority
                 className="h-8 w-auto"
               />
-              <span className="sr-only">YOYO Mall</span>
+              <span className="sr-only">Yobuy</span>
             </Link>
           </div>
 

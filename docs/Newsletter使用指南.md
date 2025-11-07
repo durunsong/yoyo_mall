@@ -110,7 +110,7 @@ src/
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 
 # 发件人邮箱（必需）
-RESEND_FROM_EMAIL="YOYO Mall <noreply@your-domain.com>"
+RESEND_FROM_EMAIL="Yobuy <noreply@your-domain.com>"
 
 # 应用 URL（必需，用于生成验证链接）
 NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -163,7 +163,7 @@ Resend 提供 `onboarding@resend.dev` 测试域名，无需验证即可使用，
 export function WelcomeEmailTemplate({
   verifyUrl,
   unsubscribeUrl,
-  companyName = 'YOYO Mall',
+  companyName = 'Yobuy',
   logoUrl,
 }: EmailTemplateProps) {
   // 自定义你的HTML邮件模板

@@ -25,7 +25,7 @@ export function generateSEOMetadata({
   canonicalUrl,
   noindex = false,
 }: SEOMetadataProps): Metadata {
-  const siteName = 'YOYO Mall';
+  const siteName = 'Yobuy';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yoyomall.com';
   
   const fullTitle = title.includes(siteName) ? title : `${title} - ${siteName}`;
@@ -94,7 +94,7 @@ export function generateSEOMetadata({
 
     // 其他元数据
     applicationName: siteName,
-    authors: [{ name: 'YOYO Mall Team' }],
+    authors: [{ name: 'Yobuy Team' }],
     generator: 'Next.js',
     formatDetection: {
       email: false,
@@ -116,7 +116,7 @@ export function generateProductSEO(product: {
   category?: string;
   sku?: string;
 }): Metadata {
-  const siteName = 'YOYO Mall';
+  const siteName = 'Yobuy';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yoyomall.com';
 
   const title = `${product.name} - ${siteName}`;
@@ -183,7 +183,7 @@ export function generateArticleSEO(article: {
  * 默认 SEO 配置
  */
 export const defaultSEOConfig = {
-  title: 'YOYO Mall - 跨境电商独立站',
+  title: 'Yobuy - 跨境电商独立站',
   description: '专业的跨境电商平台，提供优质商品和完善的购物体验。支持多语言、多币种、多种支付方式。',
   keywords: [
     '跨境电商',
@@ -191,7 +191,7 @@ export const defaultSEOConfig = {
     '独立站',
     '电商平台',
     '国际购物',
-    'YOYO Mall',
+    'Yobuy',
   ],
 };
 

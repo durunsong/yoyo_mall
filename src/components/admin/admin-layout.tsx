@@ -108,7 +108,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center space-x-2">
             <Image
               src="/icons/web-logo.svg"
-              alt="YOYO Mall"
+              alt="Yobuy"
               width={140}
               height={44}
               className="h-8 w-auto"

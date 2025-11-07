@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       settings = await prisma.systemSettings.create({
         data: {
           id: 'global',
-          siteName: 'YoYo Mall',
+          siteName: 'Yobuy',
           siteDescription: '您的跨境电商平台',
           siteUrl: 'https://yoyomall.com',
           contactEmail: 'support@yoyomall.com',
@@ -158,7 +158,7 @@ export async function PUT(request: NextRequest) {
       update: updateData,
       create: {
         id: 'global',
-        siteName: body.siteName || 'YoYo Mall',
+        siteName: body.siteName || 'Yobuy',
         siteDescription: body.siteDescription || null,
         siteUrl: body.siteUrl || null,
         contactEmail: body.contactEmail || null,

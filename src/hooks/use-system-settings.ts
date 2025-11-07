@@ -36,7 +36,7 @@ interface SettingsStore {
 
 // 默认设置
 const defaultSettings: SystemSettings = {
-  siteName: 'YoYo Mall',
+  siteName: 'Yobuy',
   siteDescription: '您的跨境电商平台',
   siteUrl: 'https://yoyomall.com',
   contactEmail: 'support@yoyomall.com',

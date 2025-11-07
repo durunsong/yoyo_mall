@@ -12,13 +12,13 @@ const fontSans = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'YOYO Mall - 跨境电商购物平台',
-    template: '%s | YOYO Mall',
+    default: 'Yobuy - 跨境电商购物平台',
+    template: '%s | Yobuy',
   },
   description: '专业的跨境电商平台，提供全球优质商品，安全便捷的购物体验',
   keywords: ['跨境电商', '网上购物', '全球商品', '安全支付', '电子商务'],
-  authors: [{ name: 'YOYO Mall Team' }],
-  creator: 'YOYO Mall',
+  authors: [{ name: 'Yobuy Team' }],
+  creator: 'Yobuy',
   // 动态获取应用URL，优先使用环境变量，其次使用 Vercel URL，最后才用 localhost
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || 
@@ -28,13 +28,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     url: './',
-    title: 'YOYO Mall - 跨境电商购物平台',
+    title: 'Yobuy - 跨境电商购物平台',
     description: '专业的跨境电商平台，提供全球优质商品，安全便捷的购物体验',
-    siteName: 'YOYO Mall',
+    siteName: 'Yobuy',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'YOYO Mall - 跨境电商购物平台',
+    title: 'Yobuy - 跨境电商购物平台',
     description: '专业的跨境电商平台，提供全球优质商品，安全便捷的购物体验',
   },
   icons: {

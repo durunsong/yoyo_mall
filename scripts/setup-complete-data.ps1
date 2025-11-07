@@ -1,7 +1,7 @@
-# YOYO Mall 完整数据设置脚本 (PowerShell版本)
+# Yobuy 完整数据设置脚本 (PowerShell版本)
 # 用于快速创建包含完整订单流程的测试数据
 
-Write-Host "🚀 开始设置YOYO Mall完整测试数据..." -ForegroundColor Green
+Write-Host "🚀 开始设置Yobuy完整测试数据..." -ForegroundColor Green
 Write-Host ""
 
 # 1. 检查环境

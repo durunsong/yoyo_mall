@@ -119,7 +119,7 @@ export default function SettingsPage() {
 
   // 网站基本设置
   const [siteSettings, setSiteSettings] = useState({
-    siteName: 'YoYo Mall',
+    siteName: 'Yobuy',
     siteDescription: '您的跨境电商平台',
     siteUrl: 'https://yoyomall.com',
     contactEmail: 'support@yoyomall.com',
@@ -240,7 +240,7 @@ export default function SettingsPage() {
       if (data.data) {
         // 网站基本信息
         setSiteSettings({
-          siteName: data.data.siteName || 'YoYo Mall',
+          siteName: data.data.siteName || 'Yobuy',
           siteDescription: data.data.siteDescription || '',
           siteUrl: data.data.siteUrl || '',
           contactEmail: data.data.contactEmail || '',
@@ -1104,7 +1104,7 @@ export default function SettingsPage() {
                         onChange={(e) =>
                           setEmailSettings({ ...emailSettings, emailFromName: e.target.value })
                         }
-                        placeholder="YoYo Mall"
+                        placeholder="Yobuy"
                       />
                     </div>
                   </div>
