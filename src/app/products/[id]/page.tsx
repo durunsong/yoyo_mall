@@ -705,16 +705,17 @@ const hasReviews = reviewCount > 0;
                       }}
                     onMouseEnter={() => handleThumbnailHover(index)}
                     onMouseLeave={handleThumbnailLeave}
-                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-black"
+                    className="relative h-20 w-20 shrink-0 overflow-hidden transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
                     style={{
-                      boxShadow:
+                      border:
                         selectedImage === index
-                          ? '0 0 0 3px #000'
+                          ? '3px solid #000'
                           : hoveredThumbnail === index
-                            ? '0 0 0 3px rgba(0,0,0,0.4)'
-                            : 'none',
+                            ? '3px solid rgba(0,0,0,0.5)'
+                            : '3px solid transparent',
                     }}
                     >
+                      {/* 缩略图按钮移除圆角，避免选中态描边显示异常 */}
                       <Image
                         src={image.url || PLACEHOLDER_IMAGE}
                         alt={image.alt || `${product.name} ${index + 1}`}
@@ -1141,16 +1142,17 @@ const hasReviews = reviewCount > 0;
                   }}
                   onMouseEnter={() => setHoveredPreviewIndex(index)}
                   onMouseLeave={() => setHoveredPreviewIndex(null)}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-black"
+                  className="relative h-20 w-20 shrink-0 overflow-hidden transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
                   style={{
-                    boxShadow:
+                    border:
                       previewIndex === index
-                        ? '0 0 0 3px #000'
+                        ? '3px solid #000'
                         : hoveredPreviewIndex === index
-                          ? '0 0 0 3px rgba(0,0,0,0.4)'
-                          : 'none',
+                          ? '3px solid rgba(0,0,0,0.5)'
+                          : '3px solid transparent',
                   }}
                 >
+                  {/* 预览弹窗缩略图同样移除圆角，保持视觉一致 */}
                   <Image
                     src={image.url || PLACEHOLDER_IMAGE}
                     alt={image.alt || `${product.name} ${index + 1}`}
