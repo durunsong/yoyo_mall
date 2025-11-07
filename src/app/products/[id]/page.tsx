@@ -22,6 +22,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +38,7 @@ import { ProductReviews } from '@/components/products/product-reviews';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 import { ShareMenu } from '@/components/common/share-menu';
 import { useWishlistStore } from '@/store/wishlist-store';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 
 interface Product {
   id: string;
@@ -1126,11 +1127,27 @@ const hasReviews = reviewCount > 0;
         )}
       </div>
 
-      {/* 图片预览 */}
+      {/* 图片预览：带黑色半透明蒙层的全屏预览模式 */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="w-full max-w-6xl overflow-hidden bg-background p-0 shadow-2xl sm:rounded-xl">
-          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-6">
-            <div className="flex max-h-[110px] shrink-0 flex-row gap-2 overflow-x-auto sm:max-h-[520px] sm:w-28 sm:flex-col sm:overflow-y-auto">
+        <DialogContent className="h-screen w-screen max-w-none overflow-hidden border-none bg-transparent p-0 shadow-none [&>button[data-radix-dialog-close]]:hidden">
+          {/* 隐藏的标题，用于无障碍访问 */}
+          <DialogTitle className="sr-only">
+            {t('previewImage') || '预览图片'}
+          </DialogTitle>
+          
+          {/* 自定义关闭按钮：简洁的白色 X 图标 */}
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(false)}
+            className="absolute right-6 top-6 z-50 text-white transition-all hover:scale-110 hover:opacity-80 focus:outline-none"
+            aria-label={tCommon('close') || 'Close'}
+          >
+            <X className="h-8 w-8" strokeWidth={2} />
+          </button>
+          
+          <div className="flex h-full flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-6">
+            {/* 左侧/顶部缩略图列表 */}
+            <div className="flex max-h-[100px] shrink-0 flex-row gap-2 overflow-x-auto sm:max-h-full sm:w-28 sm:flex-col sm:overflow-y-auto">
               {imageList.map((image, index) => (
                 <button
                   key={`preview-${image.id ?? index}`}
@@ -1142,17 +1159,16 @@ const hasReviews = reviewCount > 0;
                   }}
                   onMouseEnter={() => setHoveredPreviewIndex(index)}
                   onMouseLeave={() => setHoveredPreviewIndex(null)}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                  className="relative h-20 w-20 shrink-0 overflow-hidden transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   style={{
                     border:
                       previewIndex === index
-                        ? '3px solid #000'
+                        ? '3px solid #fff'
                         : hoveredPreviewIndex === index
-                          ? '3px solid rgba(0,0,0,0.5)'
+                          ? '3px solid rgba(255,255,255,0.6)'
                           : '3px solid transparent',
                   }}
                 >
-                  {/* 预览弹窗缩略图同样移除圆角，保持视觉一致 */}
                   <Image
                     src={image.url || PLACEHOLDER_IMAGE}
                     alt={image.alt || `${product.name} ${index + 1}`}
@@ -1164,34 +1180,38 @@ const hasReviews = reviewCount > 0;
               ))}
             </div>
 
+            {/* 右侧/底部大图展示区 */}
             <div className="relative flex-1">
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+              <div className="relative h-full w-full overflow-hidden bg-transparent">
                 <Image
                   key={`preview-main-${previewIndex}`}
                   src={imageList[previewIndex]?.url || PLACEHOLDER_IMAGE}
                   alt={imageList[previewIndex]?.alt || product.name}
                   fill
                   className="object-contain"
+                  sizes="100vw"
+                  priority
                 />
               </div>
 
+              {/* 图片切换按钮 */}
               {totalImages > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={handlePreviewPrev}
-                    className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50"
                     aria-label={t('previousImage') || '上一张'}
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-6 w-6" />
                   </button>
                   <button
                     type="button"
                     onClick={handlePreviewNext}
-                    className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                    className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50"
                     aria-label={t('nextImage') || '下一张'}
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-6 w-6" />
                   </button>
                 </>
               )}
