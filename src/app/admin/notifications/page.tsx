@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { TableSkeleton } from '@/components/admin/admin-skeleton';
 
 /**
  * 通知类型
@@ -183,9 +184,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <TableSkeleton rows={8} cols={4} />
       </AdminLayout>
     );
   }

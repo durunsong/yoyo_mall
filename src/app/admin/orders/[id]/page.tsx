@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { OrderDetailSkeleton } from '@/components/admin/admin-skeleton';
 
 // 订单状态类型
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
@@ -209,9 +210,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <OrderDetailSkeleton />
       </AdminLayout>
     );
   }

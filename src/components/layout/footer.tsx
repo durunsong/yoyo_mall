@@ -42,10 +42,10 @@ const getFooterLinks = (t: (key: string) => string) => ({
   account: {
     title: t('myAccount'),
     links: [
-      { name: t('myOrders'), href: '/orders' },
-      { name: t('myWishlist'), href: '/wishlist' },
-      { name: t('accountSettings'), href: '/account' },
-      { name: t('addressManagement'), href: '/addresses' },
+      { name: t('myOrders'), href: '/account/orders' },
+      { name: t('myWishlist'), href: '/account/wishlist' },
+      { name: t('accountSettings'), href: '/account/settings' },
+      { name: t('addressManagement'), href: '/account/addresses' },
     ],
   },
   legal: {

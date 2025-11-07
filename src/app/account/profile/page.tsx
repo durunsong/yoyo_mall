@@ -211,8 +211,50 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <div className="mb-8">
+          <div className="skeleton-wave mb-2 h-9 w-32 rounded" />
+          <div className="skeleton-wave h-5 w-64 rounded" />
+        </div>
+
+        {/* 标签页骨架 */}
+        <div className="space-y-6">
+          <div className="skeleton-wave h-10 w-64 rounded" />
+
+          {/* 头像卡片骨架 */}
+          <Card>
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-16 rounded" />
+              <div className="skeleton-wave h-4 w-40 rounded" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-6">
+                <div className="skeleton-wave h-24 w-24 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="skeleton-wave h-10 w-32 rounded" />
+                  <div className="skeleton-wave h-4 w-48 rounded" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 基本信息表单骨架 */}
+          <Card>
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-24 rounded" />
+              <div className="skeleton-wave h-4 w-48 rounded" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="skeleton-wave h-4 w-20 rounded" />
+                  <div className="skeleton-wave h-10 w-full rounded" />
+                </div>
+              ))}
+              <div className="flex justify-end pt-4">
+                <div className="skeleton-wave h-10 w-32 rounded" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

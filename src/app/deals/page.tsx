@@ -178,7 +178,25 @@ export default function DealsPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8 space-y-8">
-          <div className="skeleton-wave h-48 rounded-3xl" />
+          {/* Banner 骨架 */}
+          <div className="skeleton-wave h-48 rounded-lg" />
+          
+          {/* 统计卡片骨架 */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="pb-3">
+                  <div className="skeleton-wave h-4 w-24 rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="skeleton-wave mb-2 h-8 w-20 rounded" />
+                  <div className="skeleton-wave h-3 w-32 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          {/* 商品卡片骨架 */}
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="space-y-3 rounded-2xl bg-white p-3 shadow-sm">

@@ -74,9 +74,58 @@ export default function AccountPage() {
 
   if (status === 'loading') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center">
-          <div className="text-lg">{t('loading') || '加载中...'}</div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* 用户信息卡片骨架 */}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                <div className="skeleton-wave h-20 w-20 rounded-full" />
+                <div className="flex-1 space-y-2 text-center sm:text-left">
+                  <div className="skeleton-wave h-7 w-32 rounded" />
+                  <div className="skeleton-wave h-5 w-48 rounded" />
+                  <div className="skeleton-wave h-6 w-16 rounded-full" />
+                </div>
+                <div className="skeleton-wave h-10 w-28 rounded" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 订单统计骨架 */}
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="skeleton-wave h-6 w-32 rounded" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="rounded-lg border p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton-wave h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <div className="skeleton-wave h-4 w-16 rounded" />
+                        <div className="skeleton-wave h-7 w-12 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="skeleton-wave mt-4 h-10 w-full rounded" />
+            </CardContent>
+          </Card>
+
+          {/* 快捷入口骨架 */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="skeleton-wave mb-4 h-12 w-12 rounded-lg" />
+                  <div className="skeleton-wave mb-1 h-5 w-24 rounded" />
+                  <div className="skeleton-wave h-4 w-32 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );

@@ -174,7 +174,7 @@ export function ShadcnHeader() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => router.push('/account')}>{tNav('profile')}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/orders')}>{tNav('orders')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/account/orders')}>{tNav('orders')}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut({ 
                       callbackUrl: typeof window !== 'undefined' ? window.location.origin : '/', 

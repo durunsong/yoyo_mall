@@ -33,6 +33,7 @@ import {
 import { LineChart, PieChart } from '@/components/admin/charts';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { DashboardSkeleton } from '@/components/admin/admin-skeleton';
 
 interface DashboardData {
   overview: {
@@ -153,9 +154,7 @@ export default function DashboardPage() {
   if (loading || !data) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <DashboardSkeleton />
       </AdminLayout>
     );
   }
@@ -409,5 +408,6 @@ export default function DashboardPage() {
     </AdminLayout>
   );
 }
+
 
 

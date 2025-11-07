@@ -45,6 +45,7 @@ import {
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { LineChart, BarChart, PieChart } from '@/components/admin/charts';
+import { AnalyticsSkeleton } from '@/components/admin/admin-skeleton';
 
 // 数据类型定义
 interface AnalyticsData {
@@ -169,9 +170,7 @@ export default function AnalyticsPage() {
   if (loading || !data) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <AnalyticsSkeleton />
       </AdminLayout>
     );
   }
