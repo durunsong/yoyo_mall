@@ -24,11 +24,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { Loader2, User, Lock, Bell, Globe, Upload, Camera } from 'lucide-react';
+import { Loader2, User, Lock, Bell, Globe, Camera } from 'lucide-react';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 export default function AccountSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
+  const { t } = useStaticTranslations('account');
+  const { t: tCommon } = useStaticTranslations('common');
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
@@ -72,7 +75,7 @@ export default function AccountSettingsPage() {
             });
           }
         } catch (error) {
-          console.error('获取用户资料失败:', error);
+          console.error('Failed to fetch profile:', error);
         }
       }
     };
@@ -93,13 +96,13 @@ export default function AccountSettingsPage() {
 
     // 验证文件类型
     if (!file.type.startsWith('image/')) {
-      toast.error('请上传图片文件');
+      toast.error(t('settings.toasts.invalidFile'));
       return;
     }
 
     // 验证文件大小 (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('图片大小不能超过 10MB');
+      toast.error(t('settings.toasts.fileTooLarge'));
       return;
     }
 
@@ -129,13 +132,13 @@ export default function AccountSettingsPage() {
         });
         
         // 不再强刷页面，依赖 updateSession 触发全局重渲染
-        toast.success('头像上传成功');
+        toast.success(t('settings.toasts.avatarUploadSuccess'));
       } else {
-        toast.error(data.error || '头像上传失败');
+        toast.error(data.error || t('settings.toasts.avatarUploadFailed'));
       }
     } catch (error) {
-      console.error('头像上传错误:', error);
-      toast.error('头像上传失败');
+      console.error('Avatar upload error:', error);
+      toast.error(t('settings.toasts.avatarUploadFailed'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -165,15 +168,15 @@ export default function AccountSettingsPage() {
       if (data.success) {
         // 更新 session，使用 user 字段
         await updateSession({ user: { name: profileForm.name } });
-        toast.success('个人资料更新成功');
+        toast.success(t('settings.toasts.profileUpdateSuccess'));
         
         // 不再强刷页面，由 next-auth 的 update 触发 Header 与页面重渲染
       } else {
-        toast.error(data.error || '更新失败');
+        toast.error(data.error || t('settings.toasts.profileUpdateFailed'));
       }
     } catch (error) {
       console.error('Update profile error:', error);
-      toast.error('更新个人资料失败');
+      toast.error(t('settings.toasts.profileUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -184,12 +187,12 @@ export default function AccountSettingsPage() {
     e.preventDefault();
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('两次输入的密码不一致');
+      toast.error(t('settings.toasts.passwordMismatch'));
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      toast.error('密码长度至少为6位');
+      toast.error(t('settings.toasts.passwordTooShort'));
       return;
     }
 
@@ -208,18 +211,18 @@ export default function AccountSettingsPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('密码修改成功');
+        toast.success(t('settings.toasts.passwordUpdateSuccess'));
         setPasswordForm({
           currentPassword: '',
           newPassword: '',
           confirmPassword: '',
         });
       } else {
-        toast.error(data.error || '修改失败');
+        toast.error(data.error || t('settings.toasts.passwordUpdateFailed'));
       }
     } catch (error) {
       console.error('Change password error:', error);
-      toast.error('修改密码失败');
+      toast.error(t('settings.toasts.passwordUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -238,8 +241,8 @@ export default function AccountSettingsPage() {
       <div className="mx-auto max-w-4xl">
         {/* 页面标题 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">账户设置</h1>
-          <p className="text-gray-600 mt-2">管理您的个人信息和偏好设置</p>
+          <h1 className="text-3xl font-bold">{t('settings.pageTitle')}</h1>
+          <p className="text-gray-600 mt-2">{t('settings.pageSubtitle')}</p>
         </div>
 
         {/* 设置选项卡 */}
@@ -247,19 +250,19 @@ export default function AccountSettingsPage() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">个人资料</span>
+              <span className="hidden sm:inline">{t('settings.tabs.profile')}</span>
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">安全设置</span>
+              <span className="hidden sm:inline">{t('settings.tabs.password')}</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">通知设置</span>
+              <span className="hidden sm:inline">{t('settings.tabs.notifications')}</span>
             </TabsTrigger>
             <TabsTrigger value="preferences" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">偏好设置</span>
+              <span className="hidden sm:inline">{t('settings.tabs.preferences')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -267,8 +270,8 @@ export default function AccountSettingsPage() {
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>个人资料</CardTitle>
-                <CardDescription>更新您的个人信息</CardDescription>
+                <CardTitle>{t('settings.profile.title')}</CardTitle>
+                <CardDescription>{t('settings.profile.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -293,12 +296,12 @@ export default function AccountSettingsPage() {
                               {uploadingAvatar ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  上传中...
+                                  {t('settings.profile.uploading')}
                                 </>
                               ) : (
                                 <>
                                   <Camera className="mr-2 h-4 w-4" />
-                                  更换头像
+                                  {t('settings.profile.avatarUpload')}
                                 </>
                               )}
                             </span>
@@ -314,7 +317,7 @@ export default function AccountSettingsPage() {
                         disabled={uploadingAvatar}
                       />
                       <p className="mt-2 text-sm text-gray-500">
-                        支持 JPG、PNG、GIF 格式，最大 10MB
+                        {t('settings.profile.avatarHint')}
                       </p>
                     </div>
                   </div>
@@ -328,11 +331,11 @@ export default function AccountSettingsPage() {
                         <User className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">账户角色</p>
+                        <p className="text-sm text-gray-600">{t('settings.profile.accountRole')}</p>
                         <p className="font-medium text-blue-600">
-                          {(session?.user as any)?.role === 'ADMIN' && '管理员'}
-                          {(session?.user as any)?.role === 'SUPER_ADMIN' && '超级管理员'}
-                          {(session?.user as any)?.role === 'CUSTOMER' && '普通用户'}
+                          {(session?.user as any)?.role === 'ADMIN' && t('settings.profile.roles.admin')}
+                          {(session?.user as any)?.role === 'SUPER_ADMIN' && t('settings.profile.roles.superAdmin')}
+                          {(session?.user as any)?.role === 'CUSTOMER' && t('settings.profile.roles.customer')}
                         </p>
                       </div>
                     </div>
@@ -343,20 +346,20 @@ export default function AccountSettingsPage() {
                   {/* 基本信息 */}
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="name">昵称 *</Label>
+                      <Label htmlFor="name">{`${t('settings.profile.fields.name')} *`}</Label>
                       <Input
                         id="name"
                         value={profileForm.name}
                         onChange={(e) =>
                           setProfileForm({ ...profileForm, name: e.target.value })
                         }
-                        placeholder="请输入昵称"
+                        placeholder={t('settings.profile.placeholders.name')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">邮箱</Label>
+                      <Label htmlFor="email">{t('settings.profile.fields.email')}</Label>
                       <Input
                         id="email"
                         type="email"
@@ -364,11 +367,11 @@ export default function AccountSettingsPage() {
                         disabled
                         className="bg-gray-50"
                       />
-                      <p className="text-xs text-gray-500">邮箱不可修改</p>
+                      <p className="text-xs text-gray-500">{t('settings.profile.emailHint')}</p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">手机号</Label>
+                      <Label htmlFor="phone">{t('settings.profile.fields.phone')}</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -376,12 +379,12 @@ export default function AccountSettingsPage() {
                         onChange={(e) =>
                           setProfileForm({ ...profileForm, phone: e.target.value })
                         }
-                        placeholder="请输入手机号"
+                        placeholder={t('settings.profile.placeholders.phone')}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="gender">性别</Label>
+                      <Label htmlFor="gender">{t('settings.profile.fields.gender')}</Label>
                       <Select
                         value={profileForm.gender}
                         onValueChange={(value) =>
@@ -389,30 +392,33 @@ export default function AccountSettingsPage() {
                         }
                       >
                         <SelectTrigger id="gender">
-                          <SelectValue placeholder="选择性别" />
+                          <SelectValue placeholder={t('settings.profile.genderPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="MALE">男</SelectItem>
-                          <SelectItem value="FEMALE">女</SelectItem>
-                          <SelectItem value="OTHER">其他</SelectItem>
+                          <SelectItem value="MALE">{t('settings.profile.genderOptions.male')}</SelectItem>
+                          <SelectItem value="FEMALE">{t('settings.profile.genderOptions.female')}</SelectItem>
+                          <SelectItem value="OTHER">{t('settings.profile.genderOptions.other')}</SelectItem>
+                          <SelectItem value="PREFER_NOT_TO_SAY">
+                            {t('settings.profile.genderOptions.preferNotToSay')}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="country">国家/地区</Label>
+                      <Label htmlFor="country">{t('settings.profile.fields.country')}</Label>
                       <Input
                         id="country"
                         value={profileForm.country}
                         onChange={(e) =>
                           setProfileForm({ ...profileForm, country: e.target.value })
                         }
-                        placeholder="例如: 中国"
+                        placeholder={t('settings.profile.placeholders.country')}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">生日</Label>
+                      <Label htmlFor="dateOfBirth">{t('settings.profile.fields.dateOfBirth')}</Label>
                       <Input
                         id="dateOfBirth"
                         type="date"
@@ -426,19 +432,19 @@ export default function AccountSettingsPage() {
 
                   {/* 个人简介 */}
                   <div className="space-y-2">
-                    <Label htmlFor="bio">个人简介</Label>
+                    <Label htmlFor="bio">{t('settings.profile.fields.bio')}</Label>
                     <Textarea
                       id="bio"
                       value={profileForm.bio}
                       onChange={(e) =>
                         setProfileForm({ ...profileForm, bio: e.target.value })
                       }
-                      placeholder="介绍一下自己..."
+                      placeholder={t('settings.profile.placeholders.bio')}
                       rows={4}
                       maxLength={500}
                     />
                     <p className="text-xs text-gray-500">
-                      {profileForm.bio.length}/500 字符
+                      {t('settings.profile.bioCount', { used: profileForm.bio.length })}
                     </p>
                   </div>
 
@@ -450,11 +456,11 @@ export default function AccountSettingsPage() {
                       variant="outline"
                       onClick={() => router.push('/account')}
                     >
-                      取消
+                      {tCommon('cancel')}
                     </Button>
                     <Button type="submit" disabled={loading}>
                       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      保存更改
+                      {tCommon('saveChanges')}
                     </Button>
                   </div>
                 </form>
@@ -466,13 +472,13 @@ export default function AccountSettingsPage() {
           <TabsContent value="security">
             <Card>
               <CardHeader>
-                <CardTitle>安全设置</CardTitle>
-                <CardDescription>修改密码和安全选项</CardDescription>
+                <CardTitle>{t('settings.password.title')}</CardTitle>
+                <CardDescription>{t('settings.password.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">当前密码</Label>
+                    <Label htmlFor="currentPassword">{t('settings.password.fields.current')}</Label>
                     <Input
                       id="currentPassword"
                       type="password"
@@ -483,12 +489,12 @@ export default function AccountSettingsPage() {
                           currentPassword: e.target.value,
                         })
                       }
-                      placeholder="请输入当前密码"
+                      placeholder={t('settings.password.placeholders.current')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">新密码</Label>
+                    <Label htmlFor="newPassword">{t('settings.password.fields.new')}</Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -499,12 +505,12 @@ export default function AccountSettingsPage() {
                           newPassword: e.target.value,
                         })
                       }
-                      placeholder="请输入新密码(至少6位)"
+                      placeholder={t('settings.password.placeholders.new')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">确认新密码</Label>
+                    <Label htmlFor="confirmPassword">{t('settings.password.fields.confirm')}</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -515,7 +521,7 @@ export default function AccountSettingsPage() {
                           confirmPassword: e.target.value,
                         })
                       }
-                      placeholder="请再次输入新密码"
+                      placeholder={t('settings.password.placeholders.confirm')}
                     />
                   </div>
 
@@ -533,11 +539,11 @@ export default function AccountSettingsPage() {
                         })
                       }
                     >
-                      重置
+                      {tCommon('reset')}
                     </Button>
                     <Button type="submit" disabled={loading}>
                       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      修改密码
+                      {t('settings.password.submit')}
                     </Button>
                   </div>
                 </form>
@@ -549,18 +555,18 @@ export default function AccountSettingsPage() {
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
-                <CardTitle>通知设置</CardTitle>
-                <CardDescription>管理您接收的通知类型</CardDescription>
+                <CardTitle>{t('settings.notifications.title')}</CardTitle>
+                <CardDescription>{t('settings.notifications.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">订单通知</p>
-                      <p className="text-sm text-gray-500">接收订单状态更新通知</p>
+                      <p className="font-medium">{t('settings.notifications.orderUpdates')}</p>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.orderUpdatesDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      开启
+                      {t('settings.notifications.enable')}
                     </Button>
                   </div>
 
@@ -568,11 +574,11 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">促销通知</p>
-                      <p className="text-sm text-gray-500">接收优惠活动和促销信息</p>
+                      <p className="font-medium">{t('settings.notifications.promotions')}</p>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.promotionsDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      开启
+                      {t('settings.notifications.enable')}
                     </Button>
                   </div>
 
@@ -580,11 +586,11 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">邮件通知</p>
-                      <p className="text-sm text-gray-500">通过邮件接收重要通知</p>
+                      <p className="font-medium">{t('settings.notifications.newsletter')}</p>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.newsletterDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      开启
+                      {t('settings.notifications.enable')}
                     </Button>
                   </div>
                 </div>
@@ -596,18 +602,18 @@ export default function AccountSettingsPage() {
           <TabsContent value="preferences">
             <Card>
               <CardHeader>
-                <CardTitle>偏好设置</CardTitle>
-                <CardDescription>自定义您的使用体验</CardDescription>
+              <CardTitle>{t('settings.preferences.title')}</CardTitle>
+              <CardDescription>{t('settings.preferences.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">语言</p>
-                      <p className="text-sm text-gray-500">选择界面显示语言</p>
+                    <p className="font-medium">{t('settings.preferences.language')}</p>
+                    <p className="text-sm text-gray-500">{t('settings.preferences.languageDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      中文
+                    {t('settings.preferences.languageValue')}
                     </Button>
                   </div>
 
@@ -615,11 +621,11 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">货币</p>
-                      <p className="text-sm text-gray-500">选择价格显示货币</p>
+                    <p className="font-medium">{t('settings.preferences.currency')}</p>
+                    <p className="text-sm text-gray-500">{t('settings.preferences.currencyDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      CNY ¥
+                    {t('settings.preferences.currencyValue')}
                     </Button>
                   </div>
 
@@ -627,11 +633,11 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">主题</p>
-                      <p className="text-sm text-gray-500">选择界面主题</p>
+                    <p className="font-medium">{t('settings.preferences.theme')}</p>
+                    <p className="text-sm text-gray-500">{t('settings.preferences.themeDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      浅色
+                    {t('settings.preferences.themeValue')}
                     </Button>
                   </div>
                 </div>

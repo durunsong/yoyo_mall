@@ -160,7 +160,11 @@ export function ShadcnHeader() {
               {session?.user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="hidden sm:flex">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hidden sm:flex border-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    >
                       <Avatar className="mr-2 h-6 w-6">
                         <AvatarImage
                           key={(session.user as any).avatar || (session.user as any).image || Date.now()}

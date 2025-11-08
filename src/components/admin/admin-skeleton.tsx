@@ -102,9 +102,9 @@ export function TableSkeleton({ rows = 10, cols = 6 }: { rows?: number; cols?: n
         </div>
 
         {/* 表格 */}
-        <div className="rounded-md border">
+        <div className="rounded-md">
           {/* 表头 */}
-          <div className="flex items-center gap-4 border-b bg-gray-50 px-4 py-3">
+          <div className="flex items-center gap-4 bg-gray-50 px-4 py-3">
             <div className="skeleton-wave h-4 w-4 rounded" />
             {Array.from({ length: cols }).map((_, i) => (
               <div key={i} className="skeleton-wave h-4 flex-1 rounded" />
@@ -115,7 +115,7 @@ export function TableSkeleton({ rows = 10, cols = 6 }: { rows?: number; cols?: n
           {Array.from({ length: rows }).map((_, rowIndex) => (
             <div
               key={rowIndex}
-              className="flex items-center gap-4 border-b px-4 py-3 last:border-0"
+              className="flex items-center gap-4 px-4 py-3"
             >
               <div className="skeleton-wave h-4 w-4 rounded" />
               {Array.from({ length: cols }).map((_, colIndex) => (
@@ -374,9 +374,9 @@ export function UserManagementSkeleton() {
           </div>
 
           {/* 用户表格 */}
-          <div className="rounded-md border">
+          <div className="rounded-md">
             {/* 表头 */}
-            <div className="flex items-center gap-4 border-b bg-gray-50 px-4 py-3">
+            <div className="flex items-center gap-4 bg-gray-50 px-4 py-3">
               {['用户', '角色', '订单数', '注册时间', '操作'].map((_, i) => (
                 <div
                   key={i}
@@ -389,7 +389,7 @@ export function UserManagementSkeleton() {
             {Array.from({ length: 8 }).map((_, rowIndex) => (
               <div
                 key={rowIndex}
-                className="flex items-center gap-4 border-b px-4 py-3 last:border-0"
+                className="flex items-center gap-4 px-4 py-3"
               >
                 {/* 用户信息（头像+姓名+邮箱） */}
                 <div className="flex flex-[2] items-center gap-3">

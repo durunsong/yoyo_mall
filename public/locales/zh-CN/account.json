@@ -148,6 +148,7 @@
   },
   "settings": {
     "pageTitle": "账户设置",
+    "pageSubtitle": "管理您的个人信息和偏好设置",
     "tabs": {
       "profile": "个人资料",
       "password": "密码与安全",
@@ -157,7 +158,15 @@
     "profile": {
       "title": "个人资料",
       "description": "管理您的个人信息",
-      "avatarUpload": "上传头像",
+      "avatarUpload": "更换头像",
+      "uploading": "上传中...",
+      "avatarHint": "支持 JPG、PNG、GIF 格式，最大 10MB",
+      "accountRole": "账户角色",
+      "roles": {
+        "admin": "管理员",
+        "superAdmin": "超级管理员",
+        "customer": "普通用户"
+      },
       "fields": {
         "name": "显示名称",
         "email": "邮箱地址",
@@ -167,6 +176,16 @@
         "dateOfBirth": "出生日期",
         "bio": "个人简介"
       },
+      "placeholders": {
+        "name": "请输入昵称",
+        "phone": "请输入手机号",
+        "country": "例如：中国",
+        "bio": "介绍一下自己..."
+      },
+      "emailHint": "邮箱不可修改",
+      "genderPlaceholder": "选择性别",
+      "datePlaceholder": "选择日期",
+      "bioCount": "{{used}}/500 字符",
       "genderOptions": {
         "male": "男",
         "female": "女",
@@ -181,7 +200,14 @@
         "current": "当前密码",
         "new": "新密码",
         "confirm": "确认新密码"
-      }
+      },
+      "placeholders": {
+        "current": "请输入当前密码",
+        "new": "请输入新密码（至少6位）",
+        "confirm": "请再次输入新密码"
+      },
+      "reset": "重置",
+      "submit": "修改密码"
     },
     "notifications": {
       "title": "通知偏好",
@@ -191,14 +217,21 @@
       "promotions": "促销活动",
       "promotionsDesc": "接收特别优惠和促销信息",
       "newsletter": "新闻通讯",
-      "newsletterDesc": "接收新品和行业资讯"
+      "newsletterDesc": "接收新品和行业资讯",
+      "enable": "启用"
     },
     "preferences": {
       "title": "其他设置",
       "description": "自定义您的体验",
       "language": "语言",
+      "languageDesc": "选择界面显示语言",
       "currency": "货币",
-      "timezone": "时区"
+      "currencyDesc": "选择价格显示货币",
+      "theme": "主题",
+      "themeDesc": "选择界面主题",
+      "languageValue": "中文",
+      "currencyValue": "CNY ¥",
+      "themeValue": "浅色"
     },
     "toasts": {
       "invalidFile": "请上传图片文件",

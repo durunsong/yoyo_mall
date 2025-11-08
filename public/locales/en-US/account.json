@@ -148,6 +148,7 @@
   },
   "settings": {
     "pageTitle": "Account Settings",
+    "pageSubtitle": "Manage your personal information and preferences",
     "tabs": {
       "profile": "Profile",
       "password": "Password & Security",
@@ -157,7 +158,15 @@
     "profile": {
       "title": "Personal Profile",
       "description": "Manage your personal information",
-      "avatarUpload": "Upload Avatar",
+      "avatarUpload": "Change Avatar",
+      "uploading": "Uploading...",
+      "avatarHint": "Supports JPG, PNG, GIF up to 10MB",
+      "accountRole": "Account Role",
+      "roles": {
+        "admin": "Administrator",
+        "superAdmin": "Super Administrator",
+        "customer": "Customer"
+      },
       "fields": {
         "name": "Display Name",
         "email": "Email Address",
@@ -167,6 +176,16 @@
         "dateOfBirth": "Date of Birth",
         "bio": "Bio"
       },
+      "placeholders": {
+        "name": "Enter your display name",
+        "phone": "Enter your phone number",
+        "country": "For example: United States",
+        "bio": "Tell us a bit about yourself..."
+      },
+      "emailHint": "Email cannot be changed",
+      "genderPlaceholder": "Select gender",
+      "datePlaceholder": "Select a date",
+      "bioCount": "{{used}}/500 characters",
       "genderOptions": {
         "male": "Male",
         "female": "Female",
@@ -181,7 +200,14 @@
         "current": "Current Password",
         "new": "New Password",
         "confirm": "Confirm New Password"
-      }
+      },
+      "placeholders": {
+        "current": "Enter current password",
+        "new": "Enter a new password (min 6 characters)",
+        "confirm": "Re-enter the new password"
+      },
+      "reset": "Reset",
+      "submit": "Change Password"
     },
     "notifications": {
       "title": "Notification Preferences",
@@ -191,14 +217,21 @@
       "promotions": "Promotions",
       "promotionsDesc": "Receive special offers and promotions",
       "newsletter": "Newsletter",
-      "newsletterDesc": "Receive news about new products and industry insights"
+      "newsletterDesc": "Get news about new arrivals and tips",
+      "enable": "Enable"
     },
     "preferences": {
       "title": "Other Settings",
       "description": "Customize your experience",
       "language": "Language",
+      "languageDesc": "Choose your interface language",
       "currency": "Currency",
-      "timezone": "Timezone"
+      "currencyDesc": "Choose the currency used for prices",
+      "theme": "Theme",
+      "themeDesc": "Choose an interface theme",
+      "languageValue": "Chinese",
+      "currencyValue": "CNY ¥",
+      "themeValue": "Light"
     },
     "toasts": {
       "invalidFile": "Please upload an image file",
