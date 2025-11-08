@@ -60,6 +60,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { BulkActions } from '@/components/admin/bulk-actions';
 import { ExportButton } from '@/components/admin/export-button';
 import { useRouter } from 'next/navigation';
+import { OrdersPageSkeleton } from '@/components/admin/admin-skeleton';
 
 // 订单接口定义
 interface Order {
@@ -288,6 +289,14 @@ export default function OrdersPage() {
       .reduce((sum, o) => sum + o.totalAmount, 0),
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <OrdersPageSkeleton />
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -418,11 +427,7 @@ export default function OrdersPage() {
             ) : null}
 
             {/* 订单表格 */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : filteredOrders.length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <div className="py-12 text-center text-gray-500">
                 <FileText className="mx-auto mb-3 h-12 w-12 text-gray-400" />
                 <p>暂无订单</p>

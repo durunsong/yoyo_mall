@@ -94,47 +94,74 @@ export function TableSkeleton({ rows = 10, cols = 6 }: { rows?: number; cols?: n
         </div>
       </CardHeader>
       <CardContent>
-        {/* 搜索和筛选栏 */}
-        <div className="mb-4 flex items-center gap-4">
+        <TableContentSkeleton rows={rows} cols={cols} />
+      </CardContent>
+    </Card>
+  );
+}
+
+type TableContentSkeletonProps = {
+  rows?: number;
+  cols?: number;
+  filterItems?: number;
+  showFilters?: boolean;
+  showPagination?: boolean;
+  firstColumnType?: 'text' | 'media';
+};
+
+export function TableContentSkeleton({
+  rows = 10,
+  cols = 6,
+  filterItems = 2,
+  showFilters = true,
+  showPagination = true,
+  firstColumnType = 'text',
+}: TableContentSkeletonProps) {
+  return (
+    <div className="space-y-4">
+      {showFilters && (
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div className="skeleton-wave h-10 flex-1 rounded" />
-          <div className="skeleton-wave h-10 w-32 rounded" />
-          <div className="skeleton-wave h-10 w-32 rounded" />
+          {Array.from({ length: filterItems }).map((_, i) => (
+            <div key={i} className="skeleton-wave h-10 w-[160px] rounded" />
+          ))}
         </div>
+      )}
 
-        {/* 表格 */}
-        <div className="rounded-md">
-          {/* 表头 */}
-          <div className="flex items-center gap-4 bg-gray-50 px-4 py-3">
-            <div className="skeleton-wave h-4 w-4 rounded" />
-            {Array.from({ length: cols }).map((_, i) => (
-              <div key={i} className="skeleton-wave h-4 flex-1 rounded" />
-            ))}
-          </div>
-
-          {/* 表格行 */}
-          {Array.from({ length: rows }).map((_, rowIndex) => (
-            <div
-              key={rowIndex}
-              className="flex items-center gap-4 px-4 py-3"
-            >
-              <div className="skeleton-wave h-4 w-4 rounded" />
-              {Array.from({ length: cols }).map((_, colIndex) => (
-                <div key={colIndex} className="flex-1">
-                  {colIndex === 0 ? (
-                    <div className="flex items-center gap-3">
-                      <div className="skeleton-wave h-10 w-10 rounded" />
-                      <div className="skeleton-wave h-4 w-32 rounded" />
-                    </div>
-                  ) : (
-                    <div className="skeleton-wave h-4 w-24 rounded" />
-                  )}
-                </div>
-              ))}
-            </div>
+      <div className="overflow-hidden rounded-md bg-muted/30 shadow-sm">
+        <div className="flex items-center gap-4 bg-muted/40 px-4 py-3">
+          <div className="skeleton-wave h-4 w-4 rounded" />
+          {Array.from({ length: cols }).map((_, i) => (
+            <div key={i} className="skeleton-wave h-4 flex-1 rounded" />
           ))}
         </div>
 
-        {/* 分页 */}
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="flex items-center gap-4 px-4 py-3 odd:bg-muted/20"
+          >
+            <div className="skeleton-wave h-4 w-4 rounded" />
+            {Array.from({ length: cols }).map((_, colIndex) => (
+              <div key={colIndex} className="flex-1">
+                {colIndex === 0 && firstColumnType === 'media' ? (
+                  <div className="flex items-center gap-3">
+                    <div className="skeleton-wave h-10 w-10 rounded" />
+                    <div className="space-y-2">
+                      <div className="skeleton-wave h-4 w-32 rounded" />
+                      <div className="skeleton-wave h-3 w-24 rounded" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="skeleton-wave h-4 w-24 rounded" />
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {showPagination && (
         <div className="mt-4 flex items-center justify-between">
           <div className="skeleton-wave h-4 w-40 rounded" />
           <div className="flex gap-2">
@@ -142,8 +169,115 @@ export function TableSkeleton({ rows = 10, cols = 6 }: { rows?: number; cols?: n
             <div className="skeleton-wave h-10 w-20 rounded" />
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
+  );
+}
+
+export function ProductsPageSkeleton() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(200px,240px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr]">
+      <div className="space-y-4">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="skeleton-wave mb-1 h-6 w-24 rounded" />
+                <div className="skeleton-wave h-4 w-40 rounded" />
+              </div>
+              <div className="skeleton-wave h-8 w-20 rounded" />
+            </div>
+            <div className="skeleton-wave mt-3 h-8 w-full rounded" />
+          </CardHeader>
+          <CardContent className="flex-1 space-y-2 overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 rounded-lg bg-muted/30 px-3 py-2"
+              >
+                <div className="skeleton-wave h-4 w-4 rounded" />
+                <div className="flex-1 space-y-2">
+                  <div className="skeleton-wave h-4 w-32 rounded" />
+                  <div className="skeleton-wave h-3 w-24 rounded" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
+            <div className="skeleton-wave h-8 w-40 rounded" />
+            <div className="skeleton-wave h-4 w-64 rounded" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="skeleton-wave h-10 w-28 rounded" />
+            <div className="skeleton-wave h-10 w-32 rounded" />
+          </div>
+        </div>
+
+        <div className="grid gap-2 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                <div className="skeleton-wave h-4 w-20 rounded" />
+                <div className="skeleton-wave h-4 w-4 rounded" />
+              </CardHeader>
+              <CardContent className="px-3 py-2">
+                <div className="skeleton-wave h-6 w-12 rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader>
+            <div className="skeleton-wave h-5 w-32 rounded" />
+            <div className="skeleton-wave h-4 w-48 rounded" />
+          </CardHeader>
+          <CardContent>
+            <TableContentSkeleton rows={8} cols={7} filterItems={2} firstColumnType="media" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export function OrdersPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="skeleton-wave h-8 w-36 rounded" />
+        <div className="skeleton-wave mt-2 h-4 w-72 rounded" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="skeleton-wave h-4 w-20 rounded" />
+              <div className="skeleton-wave h-4 w-4 rounded" />
+            </CardHeader>
+            <CardContent>
+              <div className="skeleton-wave h-8 w-16 rounded" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="skeleton-wave h-5 w-32 rounded" />
+          <div className="skeleton-wave h-4 w-48 rounded" />
+        </CardHeader>
+        <CardContent>
+          <TableContentSkeleton rows={8} cols={6} filterItems={1} firstColumnType="text" />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

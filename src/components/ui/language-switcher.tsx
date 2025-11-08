@@ -32,7 +32,7 @@ export default function LanguageSwitcher({
       <Button 
         variant="ghost" 
         size="icon"
-        className={className}
+        className={`border-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 ${className}`}
         onClick={toggleLocale}
         suppressHydrationWarning
       >
@@ -45,7 +45,12 @@ export default function LanguageSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className={className} suppressHydrationWarning>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`border-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 ${className}`}
+          suppressHydrationWarning
+        >
           <Globe className="h-4 w-4" />
           <span className="ml-2" suppressHydrationWarning>{language.flag}</span>
           <span className="ml-1" suppressHydrationWarning>{language.name}</span>

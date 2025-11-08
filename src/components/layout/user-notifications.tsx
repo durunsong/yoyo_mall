@@ -8,28 +8,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import {
-  Bell,
-  Package,
-  ShoppingCart,
-  Heart,
-  MessageCircle,
-  Gift,
-  AlertCircle,
-  CheckCircle,
-  Truck,
-  X,
-} from 'lucide-react';
+import { Bell, Package, Heart, Gift, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 // 通知类型
 type NotificationType = 'order' | 'system' | 'promotion' | 'wishlist';
@@ -46,7 +35,7 @@ interface Notification {
 }
 
 // 通知图标映射
-const notificationIcons: Record<NotificationType, any> = {
+const notificationIcons: Record<NotificationType, LucideIcon> = {
   order: Package,
   system: Bell,
   promotion: Gift,
@@ -65,7 +54,6 @@ export function UserNotifications() {
   const router = useRouter();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // 从localStorage初始化通知（持久化）
@@ -74,9 +62,9 @@ export function UserNotifications() {
     const saved = localStorage.getItem('user-notifications');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
+        const parsed = JSON.parse(saved) as Array<Notification & { createdAt: string }>;
         // 将字符串日期转换为Date对象
-        return parsed.map((n: any) => ({
+        return parsed.map((n) => ({
           ...n,
           createdAt: new Date(n.createdAt),
         }));
@@ -99,9 +87,9 @@ export function UserNotifications() {
       const saved = localStorage.getItem('user-notifications');
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
+          const parsed = JSON.parse(saved) as Array<Notification & { createdAt: string }>;
           // 将字符串日期转换为Date对象
-          const withDates = parsed.map((n: any) => ({
+          const withDates = parsed.map((n) => ({
             ...n,
             createdAt: new Date(n.createdAt),
           }));
@@ -214,7 +202,7 @@ export function UserNotifications() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative hover:bg-gray-100 transition-colors"
+          className="relative hover:bg-gray-100 transition-colors border-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
@@ -229,7 +217,7 @@ export function UserNotifications() {
 
       <DropdownMenuContent align="end" className="w-96 p-0">
         {/* 头部 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+        <div className="flex items-center justify-between px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-gray-600" />
             <h3 className="font-semibold text-sm">通知</h3>
@@ -267,7 +255,7 @@ export function UserNotifications() {
                 <div
                   key={notification.id}
                   className={cn(
-                    'px-4 py-3 border-b cursor-pointer transition-all hover:bg-gray-50 relative group',
+                    'px-4 py-3 cursor-pointer transition-all hover:bg-gray-50 relative group shadow-sm',
                     !notification.read && 'bg-blue-50/50',
                   )}
                   onClick={() => handleNotificationClick(notification)}

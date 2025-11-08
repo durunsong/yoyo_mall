@@ -63,6 +63,7 @@ import Image from 'next/image';
 import { ImageUpload } from '@/components/admin/image-upload';
 import { BulkActions } from '@/components/admin/bulk-actions';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+import { ProductsPageSkeleton } from '@/components/admin/admin-skeleton';
 
 const OSS_BASE_URL = process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL;
 const OSS_FOLDER = process.env.OSS_FOLDER && process.env.OSS_FOLDER !== 'root' ? process.env.OSS_FOLDER : undefined;
@@ -1309,6 +1310,14 @@ export default function ProductsPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <ProductsPageSkeleton />
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       {/* 商品管理主容器，左侧分类面板在大屏保持窄列，移动端自动换行 */}
@@ -1479,11 +1488,7 @@ export default function ProductsPage() {
             )}
 
             {/* 商品表格 */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : filteredProducts.length === 0 ? (
+            {filteredProducts.length === 0 ? (
               <div className="py-12 text-center text-gray-500">
                 <Package className="mx-auto mb-3 h-12 w-12 text-gray-400" />
                 <p>暂无商品</p>
@@ -1626,7 +1631,7 @@ export default function ProductsPage() {
             )}
 
             {/* 新增：分页控件（同一行显示） */}
-            {!loading && filteredProducts.length > 0 && (
+            {filteredProducts.length > 0 && (
               <div className="mt-4 flex w-full items-center justify-between gap-4">
                 <PaginationControls
                   currentPage={currentPage}

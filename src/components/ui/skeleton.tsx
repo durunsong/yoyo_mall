@@ -85,7 +85,7 @@ export function OrderCardSkeleton() {
           </div>
         </div>
       </div>
-      <div className="mt-4 pt-4 flex items-center justify-between border-t border-gray-100">
+      <div className="mt-4 flex items-center justify-between pt-4">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-6 w-28" />
       </div>
