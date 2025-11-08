@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Loader2, TrendingDown, Percent } from 'lucide-react';
+import { TrendingDown, Percent } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import ProductCard from '@/components/products/product-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 
 interface Product {
   id: string;
@@ -31,6 +32,7 @@ interface Product {
 
 export default function DealsPage() {
   const { t } = useStaticTranslations('common');
+  const { t: tProduct } = useStaticTranslations('product');
   const { addItem } = useCartStore();
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
@@ -38,6 +40,8 @@ export default function DealsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -73,7 +77,7 @@ export default function DealsPage() {
     // 检查登录状态
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再添加到购物车');
+      toast.info(tProduct('toast.loginRequired'));
       return;
     }
 
@@ -99,20 +103,20 @@ export default function DealsPage() {
           name: product.name,
           image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
-        toast.success('已添加到购物车');
+        toast.success(tProduct('toast.addSuccess'));
       } else {
-        toast.error(data.message || '添加失败');
+        toast.error(data.message || tProduct('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
-      toast.error('添加失败，请重试');
+      toast.error(tProduct('toast.networkError'));
     }
   };
 
   const handleToggleWishlist = async (productId: string) => {
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再操作心愿单');
+      toast.info(tProduct('toast.wishlistLogin'));
       return;
     }
 
@@ -129,9 +133,9 @@ export default function DealsPage() {
 
         if (response.ok && data.success) {
           wishlistStore.removeItem(existingItem.id);
-          toast.success('已从心愿单移除');
+          toast.success(tProduct('toast.wishlistRemoved'));
         } else {
-          toast.error(data.error || '移除心愿单失败');
+          toast.error(data.error || tProduct('toast.wishlistFailed'));
         }
       } else {
         const response = await fetch('/api/wishlist', {
@@ -161,14 +165,14 @@ export default function DealsPage() {
                 : undefined,
             });
           }
-          toast.success('已添加到心愿单');
+          toast.success(tProduct('toast.wishlistAdded'));
         } else {
-          toast.error(data.message || data.error || '添加失败');
+          toast.error(data.message || data.error || tProduct('toast.wishlistFailed'));
         }
       }
     } catch (error) {
       console.error('Wishlist operation failed:', error);
-      toast.error('操作失败，请重试');
+      toast.error(tProduct('toast.operationFailed'));
     } finally {
       setWishlistLoadingId(null);
     }
@@ -224,17 +228,17 @@ export default function DealsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <TrendingDown className="h-8 w-8" />
                 <h1 className="text-3xl font-bold">
-                  {t('deals') || '优惠活动'}
+                  {t('deals')}
                 </h1>
               </div>
               <p className="text-lg text-red-100">
-                精选优惠商品，超值折扣等你来抢！
+                {t('dealsDescription')}
               </p>
             </div>
             <div className="hidden md:block">
               <Badge variant="secondary" className="bg-white px-6 py-3 text-2xl font-bold text-red-600">
                 <Percent className="mr-2 h-6 w-6" />
-                限时特惠
+                {t('dealsLimitedOffer')}
               </Badge>
             </div>
           </div>
@@ -244,16 +248,22 @@ export default function DealsPage() {
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">促销商品</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {t('dealsStats.totalDeals')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900">{products.length}</div>
-              <p className="text-xs text-gray-600">个商品正在促销</p>
+              <p className="text-xs text-gray-600">
+                {t('dealsStats.totalDealsDesc', { count: products.length })}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">平均折扣</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {t('dealsStats.averageDiscount')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
@@ -266,12 +276,14 @@ export default function DealsPage() {
                     )
                   : 0}%
               </div>
-              <p className="text-xs text-gray-600">OFF</p>
+              <p className="text-xs text-gray-600">{t('dealsStats.offLabel')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">最高折扣</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {t('dealsStats.maxDiscount')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
@@ -283,21 +295,24 @@ export default function DealsPage() {
                     )
                   : 0}%
               </div>
-              <p className="text-xs text-gray-600">OFF</p>
+              <p className="text-xs text-gray-600">{t('dealsStats.offLabel')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">可节省金额</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {t('dealsStats.savings')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                ¥{products
+                {currencySymbol}
+                {products
                   .filter(p => p.comparePrice && p.comparePrice > p.price)
                   .reduce((sum, p) => sum + (p.comparePrice! - p.price), 0)
                   .toFixed(0)}
               </div>
-              <p className="text-xs text-gray-600">最高可省</p>
+              <p className="text-xs text-gray-600">{t('dealsStats.savingsDesc')}</p>
             </CardContent>
           </Card>
         </div>
@@ -320,10 +335,10 @@ export default function DealsPage() {
           <div className="py-16 text-center">
             <div className="mb-4 text-4xl text-gray-300">🎁</div>
             <h3 className="mb-2 text-lg font-semibold text-gray-900">
-              暂无优惠活动
+              {t('dealsEmptyTitle')}
             </h3>
             <p className="text-gray-600">
-              目前还没有促销商品，敬请期待！
+              {t('dealsEmptyDescription')}
             </p>
           </div>
         )}

@@ -86,10 +86,10 @@ export default function CategoriesPage() {
         {/* 标题 */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            {t('categories') || '商品分类'}
+            {t('categories')}
           </h1>
           <p className="text-gray-600">
-            浏览所有商品分类，找到您想要的产品
+            {t('categoriesDescription')}
           </p>
         </div>
 
@@ -113,7 +113,7 @@ export default function CategoriesPage() {
                     )}
                     {category._count && (
                       <Badge variant="secondary">
-                        {category._count.products} 个商品
+                        {t('productsCount', { count: category._count.products })}
                       </Badge>
                     )}
                   </CardContent>
@@ -125,10 +125,10 @@ export default function CategoriesPage() {
           <div className="py-16 text-center">
             <div className="mb-4 text-4xl text-gray-300">📦</div>
             <h3 className="mb-2 text-lg font-semibold text-gray-900">
-              暂无分类
+              {t('categoriesEmptyTitle')}
             </h3>
             <p className="text-gray-600">
-              目前还没有任何分类
+              {t('categoriesEmptyDescription')}
             </p>
           </div>
         )}

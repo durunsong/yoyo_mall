@@ -35,6 +35,7 @@ export default function CartPage() {
   const { data: session } = useSession();
   const { t } = useStaticTranslations('cart');
   const { t: tCommon } = useStaticTranslations('common');
+  const { t: tProduct } = useStaticTranslations('product');
   
   const { items, updateQuantity, removeItem, _hasHydrated } = useCartStore();
   const [couponCode, setCouponCode] = useState('');
@@ -51,7 +52,9 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const shipping = subtotal >= 99 ? 0 : 10; // 满99免运费
+  const shippingThreshold = 99;
+  const shippingCost = 10;
+  const shipping = subtotal >= shippingThreshold ? 0 : shippingCost; // 满99免运费
   const tax = subtotal * 0.08; // 8%税率
   const discount = couponDiscount;
   const total = subtotal + shipping + tax - discount;
@@ -59,7 +62,7 @@ export default function CartPage() {
   // 应用优惠券
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
-      toast.error(t('enterCouponCode') || 'Please enter a coupon code');
+      toast.error(t('enterCouponCode'));
       return;
     }
 
@@ -70,12 +73,12 @@ export default function CartPage() {
       if (couponCode.toUpperCase() === 'WELCOME10') {
         const discountAmount = subtotal * 0.1; // 10% 折扣
         setCouponDiscount(discountAmount);
-        toast.success(t('couponApplied') || 'Coupon applied successfully!');
+        toast.success(t('couponApplied'));
       } else {
-        toast.error(t('invalidCoupon') || 'Invalid coupon code');
+        toast.error(t('invalidCoupon'));
       }
     } catch (error) {
-      toast.error(t('couponError') || 'Failed to apply coupon');
+      toast.error(t('couponError'));
     } finally {
       setApplyingCoupon(false);
     }
@@ -85,7 +88,7 @@ export default function CartPage() {
   const handleRemoveCoupon = () => {
     setCouponCode('');
     setCouponDiscount(0);
-    toast.success(t('couponRemoved') || 'Coupon removed');
+    toast.success(t('couponRemoved'));
   };
 
   // 更新数量
@@ -93,7 +96,7 @@ export default function CartPage() {
     if (newQuantity < 1) return;
     
     if (!session?.user) {
-      toast.error('请先登录');
+      toast.error(tProduct('toast.loginRequired'));
       return;
     }
 
@@ -110,18 +113,18 @@ export default function CartPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || '更新失败');
+        throw new Error(data.message || t('updateFailed'));
       }
 
       // 更新本地store
       updateQuantity(itemId, newQuantity);
       
       if (newQuantity === 0) {
-        toast.success('已从购物车移除');
+        toast.success(t('itemRemoved'));
       }
     } catch (error) {
       console.error('更新购物车失败:', error);
-      toast.error(error instanceof Error ? error.message : t('updateFailed') || 'Failed to update quantity');
+      toast.error(error instanceof Error ? error.message : t('updateFailed'));
     } finally {
       // 移除更新标记
       setUpdatingItems(prev => {
@@ -135,7 +138,7 @@ export default function CartPage() {
   // 删除商品
   const handleRemoveItem = async (itemId: string, productName: string) => {
     if (!session?.user) {
-      toast.error('请先登录');
+      toast.error(tProduct('toast.loginRequired'));
       return;
     }
 
@@ -150,15 +153,15 @@ export default function CartPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || '删除失败');
+        throw new Error(data.message || t('removeFailed'));
       }
 
       // 更新本地store
       removeItem(itemId);
-      toast.success(t('itemRemoved') || 'Item removed from cart');
+      toast.success(t('itemRemoved'));
     } catch (error) {
       console.error('删除购物车商品失败:', error);
-      toast.error(error instanceof Error ? error.message : t('removeFailed') || 'Failed to remove item');
+      toast.error(error instanceof Error ? error.message : t('removeFailed'));
     } finally {
       // 移除更新标记
       setUpdatingItems(prev => {
@@ -172,7 +175,7 @@ export default function CartPage() {
   // 结算
   const handleCheckout = () => {
     if (items.length === 0) {
-      toast.error(t('emptyCart') || 'Your cart is empty');
+      toast.error(t('empty'));
       return;
     }
     router.push('/checkout');
@@ -191,7 +194,7 @@ export default function CartPage() {
               </div>
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              {t('loading') || 'Loading...'}
+              {t('loading')}
             </h2>
           </div>
         </div>
@@ -210,15 +213,15 @@ export default function CartPage() {
               </div>
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              {t('emptyCart') || 'Your cart is empty'}
+              {t('empty')}
             </h2>
             <p className="mb-6 text-gray-600">
-              {t('emptyCartDesc') || 'Add some products to get started!'}
+              {t('emptyCartDesc')}
             </p>
             <Link href="/products">
               <Button size="lg" className="gap-2">
                 <ShoppingBag className="h-5 w-5" />
-                {t('continueShopping') || 'Continue Shopping'}
+                {t('continueShopping')}
               </Button>
             </Link>
           </div>
@@ -233,10 +236,10 @@ export default function CartPage() {
         {/* 标题 */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            {t('shoppingCart') || 'Shopping Cart'}
+            {t('shoppingCart')}
           </h1>
           <p className="text-gray-600">
-            {items.length} {t('items') || 'items'} {t('inCart') || 'in your cart'}
+            {t('itemsCount', { count: items.length })}
           </p>
         </div>
 
@@ -341,7 +344,7 @@ export default function CartPage() {
               <Link href="/products">
                 <Button variant="outline" className="gap-2">
                   <ArrowRight className="h-4 w-4 rotate-180" />
-                  {t('continueShopping') || 'Continue Shopping'}
+                  {t('continueShopping')}
                 </Button>
               </Link>
             </div>
@@ -355,7 +358,7 @@ export default function CartPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Tag className="h-5 w-5" />
-                    {t('coupon') || 'Coupon Code'}
+                    {t('coupon')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -383,14 +386,14 @@ export default function CartPage() {
                       <Input
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder={t('enterCouponCode') || 'Enter code'}
+                        placeholder={t('enterCouponCode')}
                         className="flex-1"
                       />
                       <Button
                         onClick={handleApplyCoupon}
                         disabled={applyingCoupon || !couponCode.trim()}
                       >
-                        {t('apply') || 'Apply'}
+                        {t('apply')}
                       </Button>
                     </div>
                   )}
@@ -401,31 +404,31 @@ export default function CartPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    {t('orderSummary') || 'Order Summary'}
+                    {t('orderSummary')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-gray-600">
-                    <span>{tCommon('subtotal') || 'Subtotal'}</span>
+                    <span>{tCommon('subtotal')}</span>
                     <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>{tCommon('shipping') || 'Shipping'}</span>
-                    <span>{shipping === 0 ? 'FREE' : `${currencySymbol}${shipping.toFixed(2)}`}</span>
+                    <span>{tCommon('shipping')}</span>
+                    <span>{shipping === 0 ? t('freeLabel') : `${currencySymbol}${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>{tCommon('tax') || 'Tax'}</span>
+                    <span>{tCommon('tax')}</span>
                     <span>{currencySymbol}{tax.toFixed(2)}</span>
                   </div>
                   {couponDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>{tCommon('discount') || 'Discount'}</span>
+                      <span>{t('couponDiscount')}</span>
                       <span>-{currencySymbol}{couponDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold text-gray-900">
-                    <span>{tCommon('total') || 'Total'}</span>
+                    <span>{tCommon('total')}</span>
                     <span>{currencySymbol}{total.toFixed(2)}</span>
                   </div>
                   <Button
@@ -434,18 +437,18 @@ export default function CartPage() {
                     onClick={handleCheckout}
                     disabled={items.length === 0}
                   >
-                    {t('proceedToCheckout') || 'Proceed to Checkout'}
+                    {t('proceedToCheckout')}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                   <p className="text-center text-xs text-gray-500">
-                    {t('freeShippingNote') || 'Free shipping on orders over $99'}
+                    {t('freeShippingNote', { amount: `${currencySymbol}${shippingThreshold}` })}
                   </p>
                 </CardContent>
               </Card>
 
               {/* 安全提示 */}
               <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
-                🔒 {t('secureCheckout') || 'Secure checkout with SSL encryption'}
+                🔒 {t('secureCheckout')}
               </div>
             </div>
           </div>

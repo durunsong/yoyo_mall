@@ -1,0 +1,62 @@
+{
+  "pageTitle": "结算",
+  "steps": {
+    "shipping": "配送信息",
+    "payment": "支付方式",
+    "review": "确认订单"
+  },
+  "actions": {
+    "continueToPayment": "继续支付",
+    "viewOrders": "查看订单详情"
+  },
+  "fields": {
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "email": "邮箱",
+    "phone": "电话",
+    "address": "地址",
+    "city": "城市",
+    "state": "州/省",
+    "postalCode": "邮编",
+    "country": "国家"
+  },
+  "validation": {
+    "missingField": "请填写 {{field}}"
+  },
+  "toast": {
+    "createPaymentFailed": "创建支付失败",
+    "paymentInitFailed": "支付初始化失败",
+    "paymentFailed": "支付失败",
+    "paymentProcessingFailed": "支付处理失败",
+    "paymentSuccess": "支付成功！"
+  },
+  "shipping": {
+    "title": "配送地址"
+  },
+  "payment": {
+    "title": "支付方式",
+    "processing": "支付处理中...",
+    "payAmount": "支付 {{amount}}"
+  },
+  "review": {
+    "title": "订单确认",
+    "successTitle": "支付成功！",
+    "successDescription": "您的订单已确认，我们将尽快为您发货。",
+    "viewOrders": "查看订单详情"
+  },
+  "summary": {
+    "title": "订单摘要",
+    "itemsCount": "{{count}} 件商品",
+    "quantityLabel": "数量: {{count}}",
+    "subtotal": "小计",
+    "shipping": "运费",
+    "tax": "税费",
+    "total": "总计",
+    "freeLabel": "免运费",
+    "standardShipping": "标准配送",
+    "deliveryEstimate": "预计送达：{{range}}",
+    "securePayment": "安全支付保障"
+  },
+  "freeShippingNote": "满 {{amount}} 可享免运费"
+}
+

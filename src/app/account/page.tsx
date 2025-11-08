@@ -30,7 +30,7 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 export default function AccountPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { t } = useStaticTranslations('common');
+  const { t } = useStaticTranslations('account');
 
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -139,32 +139,32 @@ export default function AccountPage() {
   const quickLinks = [
     {
       icon: Package,
-      title: '我的订单',
-      description: `${stats.totalOrders} 个订单`,
+      title: t('dashboard.quickLinks.orders.title'),
+      description: t('dashboard.quickLinks.orders.description', { count: stats.totalOrders }),
       href: '/account/orders',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
       icon: MapPin,
-      title: '收货地址',
-      description: `${stats.addressCount} 个地址`,
+      title: t('dashboard.quickLinks.addresses.title'),
+      description: t('dashboard.quickLinks.addresses.description', { count: stats.addressCount }),
       href: '/account/addresses',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
       icon: Heart,
-      title: '我的心愿单',
-      description: `${stats.wishlistCount} 件商品`,
+      title: t('dashboard.quickLinks.wishlist.title'),
+      description: t('dashboard.quickLinks.wishlist.description', { count: stats.wishlistCount }),
       href: '/account/wishlist',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
     },
     {
       icon: Settings,
-      title: '账户设置',
-      description: '管理个人信息',
+      title: t('dashboard.quickLinks.settings.title'),
+      description: t('dashboard.quickLinks.settings.description'),
       href: '/account/settings',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -175,19 +175,19 @@ export default function AccountPage() {
   const orderStats = [
     {
       icon: Clock,
-      label: '待付款',
+      label: t('dashboard.orderStats.pending'),
       count: stats.pendingOrders,
       color: 'text-yellow-600',
     },
     {
       icon: Truck,
-      label: '待收货',
+      label: t('dashboard.orderStats.shipped'),
       count: stats.shippedOrders,
       color: 'text-blue-600',
     },
     {
       icon: CheckCircle,
-      label: '已完成',
+      label: t('dashboard.orderStats.completed'),
       count: stats.completedOrders,
       color: 'text-green-600',
     },
@@ -208,15 +208,15 @@ export default function AccountPage() {
               </Avatar>
               <div className="flex-1 text-center sm:text-left">
                 <h1 className="mb-1 text-2xl font-bold text-gray-900">
-                  {session.user?.name || '用户'}
+                  {session.user?.name || t('dashboard.defaultUserName')}
                 </h1>
                 <p className="mb-2 text-gray-600">{session.user?.email}</p>
-                <Badge variant="outline">会员</Badge>
+                <Badge variant="outline">{t('dashboard.memberBadge')}</Badge>
               </div>
               <Link href="/account/settings">
                 <Button variant="outline" className="gap-2">
                   <Settings className="h-4 w-4" />
-                  编辑资料
+                  {t('dashboard.editProfile')}
                 </Button>
               </Link>
             </div>
@@ -228,7 +228,7 @@ export default function AccountPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              我的订单
+              {t('dashboard.ordersTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -254,7 +254,7 @@ export default function AccountPage() {
             </div>
             <Link href="/account/orders">
               <Button variant="outline" className="mt-4 w-full gap-2">
-                查看所有订单
+                {t('dashboard.viewAllOrders')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -290,11 +290,11 @@ export default function AccountPage() {
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
-                最近订单
+                {t('dashboard.recentOrders.title')}
               </span>
               <Link href="/account/orders">
                 <Button variant="ghost" size="sm" className="gap-1">
-                  查看全部
+                  {t('dashboard.recentOrders.viewAll')}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -303,10 +303,10 @@ export default function AccountPage() {
           <CardContent>
             <div className="text-center py-8 text-gray-500">
               <Package className="mx-auto mb-2 h-12 w-12 text-gray-300" />
-              <p>暂无最近订单</p>
+              <p>{t('dashboard.recentOrders.empty')}</p>
               <Link href="/products">
                 <Button variant="outline" className="mt-4">
-                  去购物
+                  {t('dashboard.recentOrders.cta')}
                 </Button>
               </Link>
             </div>

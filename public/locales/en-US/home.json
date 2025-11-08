@@ -1,0 +1,14 @@
+{
+  "toast": {
+    "loginRequired": "Please sign in before adding to cart",
+    "addSuccess": "Added to cart successfully",
+    "addFailed": "Failed to add to cart",
+    "networkError": "Failed to add, please try again",
+    "loginWishlist": "Please sign in before managing your wishlist",
+    "wishlistAdded": "Added to wishlist",
+    "wishlistRemoved": "Removed from wishlist",
+    "wishlistFailed": "Wishlist operation failed",
+    "operationFailed": "Operation failed, please try again"
+  }
+}
+

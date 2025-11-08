@@ -86,5 +86,21 @@
   "specialPrice": "Special Price",
   "addToCart": "Add to Cart",
   "previousPage": "Previous",
-  "nextPage": "Next"
+  "nextPage": "Next",
+  "rangeText": "Showing {{start}} - {{end}} of {{total}} results",
+  "loadingProducts": "Loading products...",
+  "toast": {
+    "listFailed": "Failed to load product list",
+    "networkError": "Network error, please try again",
+    "detailFailed": "Failed to load product details",
+    "searchFailed": "Search failed, please try again",
+    "loginRequired": "Please sign in before adding to cart",
+    "addSuccess": "Added to cart successfully",
+    "addFailed": "Failed to add to cart",
+    "wishlistLogin": "Please sign in before managing your wishlist",
+    "wishlistAdded": "Added to wishlist",
+    "wishlistRemoved": "Removed from wishlist",
+    "wishlistFailed": "Wishlist operation failed",
+    "operationFailed": "Operation failed, please try again"
+  }
 }

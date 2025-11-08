@@ -45,6 +45,7 @@ import {
   Building,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 // 地址类型枚举
 type AddressType = 'SHIPPING' | 'BILLING';
@@ -68,6 +69,7 @@ interface Address {
 
 export default function AddressesPage() {
   const { data: session } = useSession();
+  const { t } = useStaticTranslations('account');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -106,7 +108,7 @@ export default function AddressesPage() {
       }
     } catch (error) {
       console.error('Failed to fetch addresses:', error);
-      toast.error('加载地址列表失败');
+      toast.error(t('addresses.toasts.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -169,7 +171,7 @@ export default function AddressesPage() {
         !formData.postalCode ||
         !formData.country
       ) {
-        toast.error('请填写所有必填字段');
+        toast.error(t('addresses.toasts.missingFields'));
         return;
       }
 
@@ -182,16 +184,16 @@ export default function AddressesPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('地址添加成功');
+        toast.success(t('addresses.toasts.addSuccess'));
         setIsAddDialogOpen(false);
         resetForm();
         fetchAddresses();
       } else {
-        toast.error(data.error || '添加地址失败');
+        toast.error(data.error || t('addresses.toasts.addFailed'));
       }
     } catch (error) {
       console.error('Failed to add address:', error);
-      toast.error('添加地址失败');
+      toast.error(t('addresses.toasts.addFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -213,17 +215,17 @@ export default function AddressesPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('地址更新成功');
+        toast.success(t('addresses.toasts.updateSuccess'));
         setIsEditDialogOpen(false);
         setSelectedAddress(null);
         resetForm();
         fetchAddresses();
       } else {
-        toast.error(data.error || '更新地址失败');
+        toast.error(data.error || t('addresses.toasts.updateFailed'));
       }
     } catch (error) {
       console.error('Failed to update address:', error);
-      toast.error('更新地址失败');
+      toast.error(t('addresses.toasts.updateFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -231,7 +233,7 @@ export default function AddressesPage() {
 
   // 删除地址
   const handleDeleteAddress = async (id: string) => {
-    if (!confirm('确定要删除这个地址吗?')) {
+    if (!confirm(t('addresses.deleteConfirm'))) {
       return;
     }
 
@@ -243,14 +245,14 @@ export default function AddressesPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('地址删除成功');
+        toast.success(t('addresses.toasts.deleteSuccess'));
         fetchAddresses();
       } else {
-        toast.error(data.error || '删除地址失败');
+        toast.error(data.error || t('addresses.toasts.deleteFailed'));
       }
     } catch (error) {
       console.error('Failed to delete address:', error);
-      toast.error('删除地址失败');
+      toast.error(t('addresses.toasts.deleteFailed'));
     }
   };
 
@@ -264,29 +266,29 @@ export default function AddressesPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('已设为默认地址');
+        toast.success(t('addresses.toasts.setDefaultSuccess'));
         fetchAddresses();
       } else {
-        toast.error(data.error || '设置默认地址失败');
+        toast.error(data.error || t('addresses.toasts.setDefaultFailed'));
       }
     } catch (error) {
       console.error('Failed to set default address:', error);
-      toast.error('设置默认地址失败');
+      toast.error(t('addresses.toasts.setDefaultFailed'));
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">地址管理</h1>
-        <p className="mt-1 text-gray-600">管理您的收货和账单地址</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t('addresses.pageTitle')}</h1>
+        <p className="mt-1 text-gray-600">{t('addresses.pageSubtitle')}</p>
       </div>
 
       {/* 添加地址按钮 */}
       <div className="mb-6">
         <Button onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" />
-          添加新地址
+          {t('addresses.addAddress')}
         </Button>
       </div>
 
@@ -299,7 +301,10 @@ export default function AddressesPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <MapPin className="mx-auto mb-3 h-12 w-12 text-gray-400" />
-            <p className="text-gray-500">暂无地址,点击上方按钮添加新地址</p>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              {t('addresses.emptyTitle')}
+            </h3>
+            <p className="text-gray-500">{t('addresses.emptyDescription')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -315,13 +320,13 @@ export default function AddressesPage() {
                       <Building className="h-4 w-4 text-purple-600" />
                     )}
                     <CardTitle className="text-base">
-                      {address.type === 'SHIPPING' ? '收货地址' : '账单地址'}
+                      {t(`addresses.types.${address.type.toLowerCase() as 'shipping' | 'billing'}`)}
                     </CardTitle>
                   </div>
                   {address.isDefault && (
                     <Badge variant="default" className="gap-1">
                       <Star className="h-3 w-3" />
-                      默认
+                      {t('addresses.defaultBadge')}
                     </Badge>
                   )}
                 </div>
@@ -343,7 +348,7 @@ export default function AddressesPage() {
                   </p>
                   <p className="text-gray-600">{address.country}</p>
                   {address.phone && (
-                    <p className="text-gray-600">电话: {address.phone}</p>
+                    <p className="text-gray-600">{t('addresses.fields.phone')}: {address.phone}</p>
                   )}
                 </div>
 
@@ -356,7 +361,7 @@ export default function AddressesPage() {
                       onClick={() => handleSetDefault(address.id)}
                     >
                       <Star className="mr-1 h-3 w-3" />
-                      设为默认
+                      {t('addresses.setDefault')}
                     </Button>
                   )}
                   <Button
@@ -365,7 +370,7 @@ export default function AddressesPage() {
                     onClick={() => handleOpenEditDialog(address)}
                   >
                     <Edit className="mr-1 h-3 w-3" />
-                    编辑
+                    {t('addresses.edit')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -373,7 +378,7 @@ export default function AddressesPage() {
                     onClick={() => handleDeleteAddress(address.id)}
                   >
                     <Trash2 className="mr-1 h-3 w-3 text-red-600" />
-                    删除
+                    {t('addresses.delete')}
                   </Button>
                 </div>
               </CardContent>
@@ -386,12 +391,12 @@ export default function AddressesPage() {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>添加新地址</DialogTitle>
-            <DialogDescription>填写地址信息</DialogDescription>
+            <DialogTitle>{t('addresses.addAddress')}</DialogTitle>
+            <DialogDescription>{t('addresses.pageSubtitle')}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="type">地址类型</Label>
+              <Label htmlFor="type">{t('addresses.fields.type')}</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value: AddressType) =>
@@ -410,104 +415,96 @@ export default function AddressesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="firstName">名 *</Label>
+                <Label htmlFor="firstName">{t('addresses.fields.firstName')} *</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  placeholder="张"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="lastName">姓 *</Label>
+                <Label htmlFor="lastName">{t('addresses.fields.lastName')} *</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  placeholder="三"
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="company">公司(可选)</Label>
+              <Label htmlFor="company">{t('addresses.fields.company')}</Label>
               <Input
                 id="company"
                 value={formData.company}
                 onChange={(e) =>
                   setFormData({ ...formData, company: e.target.value })
                 }
-                placeholder="公司名称"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="addressLine1">地址行1 *</Label>
+              <Label htmlFor="addressLine1">{t('addresses.fields.addressLine1')} *</Label>
               <Input
                 id="addressLine1"
                 value={formData.addressLine1}
                 onChange={(e) =>
                   setFormData({ ...formData, addressLine1: e.target.value })
                 }
-                placeholder="街道地址"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="addressLine2">地址行2(可选)</Label>
+              <Label htmlFor="addressLine2">{t('addresses.fields.addressLine2')}</Label>
               <Input
                 id="addressLine2"
                 value={formData.addressLine2}
                 onChange={(e) =>
                   setFormData({ ...formData, addressLine2: e.target.value })
                 }
-                placeholder="公寓、套房等"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="city">城市 *</Label>
+                <Label htmlFor="city">{t('addresses.fields.city')} *</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) =>
                     setFormData({ ...formData, city: e.target.value })
                   }
-                  placeholder="城市"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="state">省/州 *</Label>
+                <Label htmlFor="state">{t('addresses.fields.state')} *</Label>
                 <Input
                   id="state"
                   value={formData.state}
                   onChange={(e) =>
                     setFormData({ ...formData, state: e.target.value })
                   }
-                  placeholder="省份或州"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="postalCode">邮编 *</Label>
+                <Label htmlFor="postalCode">{t('addresses.fields.postalCode')} *</Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) =>
                     setFormData({ ...formData, postalCode: e.target.value })
                   }
-                  placeholder="邮政编码"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="country">国家 *</Label>
+                <Label htmlFor="country">{t('addresses.fields.country')} *</Label>
                 <Select
                   value={formData.country}
                   onValueChange={(value) =>
@@ -529,7 +526,7 @@ export default function AddressesPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="phone">电话(可选)</Label>
+              <Label htmlFor="phone">{t('addresses.fields.phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -537,7 +534,6 @@ export default function AddressesPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                placeholder="+86 138 0000 0000"
               />
             </div>
           </div>
@@ -547,16 +543,16 @@ export default function AddressesPage() {
               onClick={() => setIsAddDialogOpen(false)}
               disabled={submitting}
             >
-              取消
+              {t('common.cancel', { defaultValue: 'Cancel' })}
             </Button>
             <Button onClick={handleAddAddress} disabled={submitting}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  添加中...
+                  {t('common.submitting', { defaultValue: 'Submitting...' })}
                 </>
               ) : (
-                '添加地址'
+                t('addresses.addAddress')
               )}
             </Button>
           </DialogFooter>
@@ -567,12 +563,12 @@ export default function AddressesPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>编辑地址</DialogTitle>
-            <DialogDescription>修改地址信息</DialogDescription>
+            <DialogTitle>{t('addresses.editAddress')}</DialogTitle>
+            <DialogDescription>{t('addresses.pageSubtitle')}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-type">地址类型</Label>
+              <Label htmlFor="edit-type">{t('addresses.fields.type')}</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value: AddressType) =>
@@ -583,112 +579,104 @@ export default function AddressesPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SHIPPING">收货地址</SelectItem>
-                  <SelectItem value="BILLING">账单地址</SelectItem>
+                  <SelectItem value="SHIPPING">{t('addresses.types.shipping')}</SelectItem>
+                  <SelectItem value="BILLING">{t('addresses.types.billing')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-firstName">名 *</Label>
+                <Label htmlFor="edit-firstName">{t('addresses.fields.firstName')} *</Label>
                 <Input
                   id="edit-firstName"
                   value={formData.firstName}
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  placeholder="张"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-lastName">姓 *</Label>
+                <Label htmlFor="edit-lastName">{t('addresses.fields.lastName')} *</Label>
                 <Input
                   id="edit-lastName"
                   value={formData.lastName}
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  placeholder="三"
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="edit-company">公司(可选)</Label>
+              <Label htmlFor="edit-company">{t('addresses.fields.company')}</Label>
               <Input
                 id="edit-company"
                 value={formData.company}
                 onChange={(e) =>
                   setFormData({ ...formData, company: e.target.value })
                 }
-                placeholder="公司名称"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="edit-addressLine1">地址行1 *</Label>
+              <Label htmlFor="edit-addressLine1">{t('addresses.fields.addressLine1')} *</Label>
               <Input
                 id="edit-addressLine1"
                 value={formData.addressLine1}
                 onChange={(e) =>
                   setFormData({ ...formData, addressLine1: e.target.value })
                 }
-                placeholder="街道地址"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="edit-addressLine2">地址行2(可选)</Label>
+              <Label htmlFor="edit-addressLine2">{t('addresses.fields.addressLine2')}</Label>
               <Input
                 id="edit-addressLine2"
                 value={formData.addressLine2}
                 onChange={(e) =>
                   setFormData({ ...formData, addressLine2: e.target.value })
                 }
-                placeholder="公寓、套房等"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-city">城市 *</Label>
+                <Label htmlFor="edit-city">{t('addresses.fields.city')} *</Label>
                 <Input
                   id="edit-city"
                   value={formData.city}
                   onChange={(e) =>
                     setFormData({ ...formData, city: e.target.value })
                   }
-                  placeholder="城市"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-state">省/州 *</Label>
+                <Label htmlFor="edit-state">{t('addresses.fields.state')} *</Label>
                 <Input
                   id="edit-state"
                   value={formData.state}
                   onChange={(e) =>
                     setFormData({ ...formData, state: e.target.value })
                   }
-                  placeholder="省份或州"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-postalCode">邮编 *</Label>
+                <Label htmlFor="edit-postalCode">{t('addresses.fields.postalCode')} *</Label>
                 <Input
                   id="edit-postalCode"
                   value={formData.postalCode}
                   onChange={(e) =>
                     setFormData({ ...formData, postalCode: e.target.value })
                   }
-                  placeholder="邮政编码"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-country">国家 *</Label>
+                <Label htmlFor="edit-country">{t('addresses.fields.country')} *</Label>
                 <Select
                   value={formData.country}
                   onValueChange={(value) =>
@@ -699,18 +687,18 @@ export default function AddressesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="US">美国</SelectItem>
-                    <SelectItem value="CN">中国</SelectItem>
-                    <SelectItem value="GB">英国</SelectItem>
-                    <SelectItem value="CA">加拿大</SelectItem>
-                    <SelectItem value="AU">澳大利亚</SelectItem>
+                    <SelectItem value="US">United States</SelectItem>
+                    <SelectItem value="CN">China</SelectItem>
+                    <SelectItem value="GB">United Kingdom</SelectItem>
+                    <SelectItem value="CA">Canada</SelectItem>
+                    <SelectItem value="AU">Australia</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="edit-phone">电话(可选)</Label>
+              <Label htmlFor="edit-phone">{t('addresses.fields.phone')}</Label>
               <Input
                 id="edit-phone"
                 type="tel"
@@ -718,7 +706,6 @@ export default function AddressesPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                placeholder="+86 138 0000 0000"
               />
             </div>
           </div>
@@ -728,16 +715,16 @@ export default function AddressesPage() {
               onClick={() => setIsEditDialogOpen(false)}
               disabled={submitting}
             >
-              取消
+              {t('common.cancel', { defaultValue: 'Cancel' })}
             </Button>
             <Button onClick={handleUpdateAddress} disabled={submitting}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  更新中...
+                  {t('common.updating', { defaultValue: 'Updating...' })}
                 </>
               ) : (
-                '更新地址'
+                t('common.save', { defaultValue: 'Save' })
               )}
             </Button>
           </DialogFooter>

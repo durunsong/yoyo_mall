@@ -1,0 +1,62 @@
+{
+  "pageTitle": "Checkout",
+  "steps": {
+    "shipping": "Shipping Details",
+    "payment": "Payment Method",
+    "review": "Order Review"
+  },
+  "actions": {
+    "continueToPayment": "Continue to Payment",
+    "viewOrders": "View Order Details"
+  },
+  "fields": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "state": "State / Province",
+    "postalCode": "Postal Code",
+    "country": "Country"
+  },
+  "validation": {
+    "missingField": "Please complete {{field}}"
+  },
+  "toast": {
+    "createPaymentFailed": "Failed to create payment intent",
+    "paymentInitFailed": "Failed to initialize payment",
+    "paymentFailed": "Payment failed",
+    "paymentProcessingFailed": "Payment processing failed",
+    "paymentSuccess": "Payment successful!"
+  },
+  "shipping": {
+    "title": "Shipping Address"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "processing": "Processing payment...",
+    "payAmount": "Pay {{amount}}"
+  },
+  "review": {
+    "title": "Order Confirmation",
+    "successTitle": "Payment successful!",
+    "successDescription": "Your order has been confirmed. We'll ship it out as soon as possible.",
+    "viewOrders": "View Order Details"
+  },
+  "summary": {
+    "title": "Order Summary",
+    "itemsCount": "{{count}} item(s)",
+    "quantityLabel": "Qty: {{count}}",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total",
+    "freeLabel": "FREE",
+    "standardShipping": "Standard Shipping",
+    "deliveryEstimate": "Estimated delivery: {{range}}",
+    "securePayment": "Secure payment protected by SSL"
+  },
+  "freeShippingNote": "Free shipping on orders over {{amount}}"
+}
+

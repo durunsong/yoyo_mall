@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
+import { useStaticTranslations } from '@/hooks/use-i18n';
 
 // 商品类型定义
 export interface Product {
@@ -119,6 +120,7 @@ export function useProducts(query: ProductQuery = {}) {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useStaticTranslations('product');
 
   // 将query转换为稳定的字符串key，避免对象引用变化导致的无限循环
   const queryKey = useMemo(() => JSON.stringify(query), [query]);
@@ -150,22 +152,23 @@ export function useProducts(query: ProductQuery = {}) {
         setProducts(result.data);
         setPagination(result.pagination);
       } else {
-        setError('获取商品列表失败');
-        toast.error('获取商品列表失败');
+        const message = t('toast.listFailed');
+        setError(message);
+        toast.error(message);
       }
     } catch (error) {
-      const errorMessage = '网络错误，请重试';
+      const errorMessage = t('toast.networkError');
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('获取商品列表失败:', error);
+      console.error(t('toast.listFailed'), error);
     } finally {
       setLoading(false);
     }
-  }, [queryKey]);
+  }, [queryKey, t]);
 
   useEffect(() => {
     fetchProducts();
-  }, [queryKey]); // 直接依赖queryKey，避免fetchProducts变化
+  }, [fetchProducts]);
 
   const refetch = useCallback((newQuery?: ProductQuery) => {
     fetchProducts(newQuery);
@@ -186,6 +189,7 @@ export function useProduct(productId: string) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useStaticTranslations('product');
 
   const fetchProduct = useCallback(async () => {
     if (!productId) return;
@@ -200,18 +204,18 @@ export function useProduct(productId: string) {
       if (result.success) {
         setProduct(result.data);
       } else {
-        const errorMsg = '获取商品详情失败';
+        const errorMsg = t('toast.detailFailed');
         setError(errorMsg);
         toast.error(errorMsg);
       }
     } catch (error) {
-      const errorMessage = '网络错误，请重试';
+      const errorMessage = t('toast.networkError');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  }, [productId, t]);
 
   useEffect(() => {
     fetchProduct();
@@ -234,6 +238,7 @@ export function useProductSearch() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useStaticTranslations('product');
 
   const search = useCallback(async (searchTerm: string, filters: Partial<ProductQuery> = {}) => {
     if (!searchTerm.trim()) {
@@ -259,16 +264,17 @@ export function useProductSearch() {
       if (result.success) {
         setResults(result.data);
       } else {
-        setError('搜索失败');
+        const message = t('toast.searchFailed');
+        setError(message);
         setResults([]);
       }
     } catch (error) {
-      setError('搜索失败');
+      setError(t('toast.searchFailed'));
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const clearResults = useCallback(() => {
     setResults([]);

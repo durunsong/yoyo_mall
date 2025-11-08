@@ -92,7 +92,9 @@ export default function ProductCard({
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 animate-pulse">
-                <span className="text-xs text-gray-600 font-medium">商品图片</span>
+                <span className="text-xs text-gray-600 font-medium">
+                  {t('productImagePlaceholder')}
+                </span>
               </div>
             </div>
           )}
@@ -133,7 +135,7 @@ export default function ProductCard({
                 }}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                加入购物车
+                {t('addToCart')}
               </Button>
             </div>
           </div>

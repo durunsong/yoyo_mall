@@ -122,6 +122,7 @@
   "inStock": "有货",
   "featured": "精选",
   "specialOffer": "特价",
+  "productImagePlaceholder": "商品图片",
   "viewAll": "查看全部",
   "viewMore": "查看更多",
   "featuredProducts": "热门商品",
@@ -139,5 +140,23 @@
   "categoriesDescription": "浏览所有商品分类，找到您想要的产品",
   "brandsDescription": "浏览所有品牌，发现优质产品",
   "dealsDescription": "精选优惠商品，超值折扣等你来抢！",
-  "productsCount": "{{count}} 个商品"
+  "dealsLimitedOffer": "限时特惠",
+  "dealsStats": {
+    "totalDeals": "促销商品",
+    "totalDealsDesc": "{{count}} 个商品正在促销",
+    "averageDiscount": "平均折扣",
+    "averageDiscountDesc": "平均折扣",
+    "maxDiscount": "最高折扣",
+    "maxDiscountDesc": "最高折扣",
+    "savings": "可节省金额",
+    "savingsDesc": "最高可省",
+    "offLabel": "OFF"
+  },
+  "dealsEmptyTitle": "暂无优惠活动",
+  "dealsEmptyDescription": "目前还没有促销商品，敬请期待！",
+  "productsCount": "{{count}} 个商品",
+  "categoriesEmptyTitle": "暂无分类",
+  "categoriesEmptyDescription": "目前还没有任何分类",
+  "submitting": "提交中...",
+  "updating": "更新中..."
 }

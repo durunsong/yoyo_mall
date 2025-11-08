@@ -31,7 +31,6 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 
 function ProductsPageContent() {
   const { t } = useStaticTranslations('product');
-  const { t: tCommon } = useStaticTranslations('common');
   const searchParams = useSearchParams();
   const wishlistStore = useWishlistStore();
   const { data: session } = useSession(); // 添加session
@@ -58,7 +57,7 @@ function ProductsPageContent() {
     // 检查登录状态
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再添加到购物车');
+      toast.info(t('toast.loginRequired'));
       return;
     }
 
@@ -84,13 +83,13 @@ function ProductsPageContent() {
           name: product.name,
           image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
-        toast.success('已添加到购物车');
+        toast.success(t('toast.addSuccess'));
       } else {
-        toast.error(data.message || '添加失败');
+        toast.error(data.message || t('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
-      toast.error('添加失败，请重试');
+      toast.error(t('toast.networkError'));
     }
   };
 
@@ -98,7 +97,7 @@ function ProductsPageContent() {
   const handleToggleWishlist = async (productId: string) => {
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再操作心愿单');
+      toast.info(t('toast.wishlistLogin'));
       return;
     }
 
@@ -115,9 +114,9 @@ function ProductsPageContent() {
 
         if (response.ok && data.success) {
           wishlistStore.removeItem(existingItem.id);
-          toast.success('已从心愿单移除');
+          toast.success(t('toast.wishlistRemoved'));
         } else {
-          toast.error(data.error || '移除心愿单失败');
+          toast.error(data.error || t('toast.wishlistFailed'));
         }
       } else {
         const response = await fetch('/api/wishlist', {
@@ -148,14 +147,14 @@ function ProductsPageContent() {
                 : undefined,
             });
           }
-          toast.success('✨ 已添加到心愿单');
+          toast.success(t('toast.wishlistAdded'));
         } else {
-          toast.error(data.error || data.message || '添加失败');
+          toast.error(data.error || data.message || t('toast.wishlistFailed'));
         }
       }
     } catch (error) {
       console.error('Wishlist operation failed:', error);
-      toast.error('操作失败，请重试');
+      toast.error(t('toast.operationFailed'));
     } finally {
       setWishlistLoadingId(null);
     }
@@ -285,7 +284,7 @@ function ProductsPageContent() {
       {/* 统计 */}
       {pagination && (
         <div className="mb-4 text-sm text-muted-foreground">
-          {t('totalProducts', { count: pagination.total }) || `Total: ${pagination.total} products`}
+          {t('totalProducts', { count: pagination.total })}
         </div>
       )}
 
@@ -340,8 +339,11 @@ function ProductsPageContent() {
               
               {/* 显示当前范围 */}
               <div className="mt-4 text-center text-sm text-muted-foreground">
-                显示 {((currentPage - 1) * 12) + 1} - {Math.min(currentPage * 12, pagination.total)} 条，
-                共 {pagination.total} 条结果
+                {t('rangeText', {
+                  start: (currentPage - 1) * 12 + 1,
+                  end: Math.min(currentPage * 12, pagination.total),
+                  total: pagination.total,
+                })}
               </div>
             </div>
           )}
@@ -356,7 +358,7 @@ function ProductsPageContent() {
             {t('noProducts') || 'No products found'}
           </h3>
           <p className="text-gray-600">
-            {t('tryDifferentSearch') || 'Try adjusting your search or filters'}
+            {t('tryDifferentFilters')}
           </p>
         </div>
       )}
@@ -365,20 +367,23 @@ function ProductsPageContent() {
 }
 
 export default function ProductsPage() {
+  const { t } = useStaticTranslations('product');
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <svg className="mx-auto mb-4 h-12 w-12 animate-spin text-gray-900" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-            <p className="text-gray-600">Loading products...</p>
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <svg className="mx-auto mb-4 h-12 w-12 animate-spin text-gray-900" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              <p className="text-gray-600">{t('loadingProducts')}</p>
+            </div>
           </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ProductsPageContent />
     </Suspense>
   );

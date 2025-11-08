@@ -11,9 +11,6 @@ import { useSession } from 'next-auth/react';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +23,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/cart-store';
+import { useStaticTranslations } from '@/hooks/use-i18n';
+import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -54,8 +53,12 @@ interface WishlistItem {
 
 export default function WishlistPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const { addItem } = useCartStore();
+  const { t } = useStaticTranslations('account');
+  const { t: tCommon } = useStaticTranslations('common');
+  const { settings } = useSystemSettings();
+  const currencySymbol = getCurrencySymbol(settings?.defaultCurrency || 'USD');
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,11 +81,11 @@ export default function WishlistPage() {
       if (data.success) {
         setWishlistItems(data.data);
       } else {
-        toast.error(data.error || '加载失败');
+        toast.error(data.error || t('wishlist.toasts.loadFailed'));
       }
     } catch (error) {
       console.error('Failed to fetch wishlist:', error);
-      toast.error('加载失败');
+      toast.error(t('wishlist.toasts.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -92,6 +95,7 @@ export default function WishlistPage() {
     if (status === 'authenticated') {
       fetchWishlist();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   // 移除商品
@@ -106,14 +110,14 @@ export default function WishlistPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('已移除');
+        toast.success(t('wishlist.toasts.removed'));
         fetchWishlist();
       } else {
-        toast.error(data.error || '移除失败');
+        toast.error(data.error || t('wishlist.toasts.removeFailed'));
       }
     } catch (error) {
       console.error('Failed to remove from wishlist:', error);
-      toast.error('移除失败');
+      toast.error(t('wishlist.toasts.removeFailed'));
     } finally {
       setRemovingIds((prev) => {
         const newSet = new Set(prev);
@@ -129,7 +133,7 @@ export default function WishlistPage() {
       const inStock = item.product.inventory && item.product.inventory.quantity > 0;
       
       if (!inStock) {
-        toast.error('商品已售罄');
+        toast.error(t('wishlist.toasts.outOfStock'));
         return;
       }
 
@@ -142,19 +146,16 @@ export default function WishlistPage() {
         image: item.product.images?.[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
       });
 
-      toast.success('已添加到购物车');
+      toast.success(t('wishlist.toasts.addedToCart'));
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      toast.error('添加失败');
+      toast.error(t('wishlist.toasts.addFailed'));
     }
   };
 
   // 格式化价格
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('zh-CN', {
-      style: 'currency',
-      currency: 'CNY',
-    }).format(price);
+    return `${currencySymbol}${price.toFixed(2)}`;
   };
 
   // 计算折扣
@@ -184,11 +185,11 @@ export default function WishlistPage() {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回
+          {t('wishlist.backButton')}
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">我的心愿单</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('wishlist.pageTitle')}</h1>
         <p className="text-gray-600 mt-1">
-          {wishlistItems.length} 件心仪的商品
+          {t('wishlist.pageSubtitle', { count: wishlistItems.length })}
         </p>
       </div>
 
@@ -198,13 +199,13 @@ export default function WishlistPage() {
           <CardContent className="py-12 text-center">
             <Heart className="mx-auto h-16 w-16 text-gray-300" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
-              心愿单是空的
+              {t('wishlist.emptyTitle')}
             </h3>
             <p className="mt-2 text-gray-500">
-              浏览商品时点击心形图标，将喜欢的商品加入心愿单
+              {t('wishlist.emptyDescription')}
             </p>
             <Button className="mt-6" onClick={() => router.push('/products')}>
-              去逛逛
+              {tCommon('shopNow')}
             </Button>
           </CardContent>
         </Card>
@@ -231,7 +232,7 @@ export default function WishlistPage() {
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center">
-                          <span className="text-gray-400">暂无图片</span>
+                          <span className="text-gray-400">{tCommon('productImagePlaceholder')}</span>
                         </div>
                       )}
                     </div>
@@ -258,7 +259,7 @@ export default function WishlistPage() {
                       variant="destructive"
                       className="absolute top-2 left-2"
                     >
-                      -{discount}%
+                      -{discount}% {t('wishlist.off')}
                     </Badge>
                   )}
                 </div>
@@ -291,11 +292,11 @@ export default function WishlistPage() {
                   <div className="mt-2">
                     {inStock ? (
                       <Badge variant="secondary" className="text-xs">
-                        有货
+                        {tCommon('inStock')}
                       </Badge>
                     ) : (
                       <Badge variant="destructive" className="text-xs">
-                        已售罄
+                        {t('wishlist.outOfStock')}
                       </Badge>
                     )}
                   </div>
@@ -307,7 +308,7 @@ export default function WishlistPage() {
                     disabled={!inStock}
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    加入购物车
+                    {t('wishlist.addToCart')}
                   </Button>
                 </CardContent>
               </Card>
@@ -320,7 +321,7 @@ export default function WishlistPage() {
       {wishlistItems.length > 0 && (
         <div className="mt-8 text-center">
           <Button variant="outline" onClick={() => router.push('/products')}>
-            继续购物
+            {tCommon('shopNow')}
           </Button>
         </div>
       )}

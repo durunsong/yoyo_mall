@@ -47,6 +47,173 @@
     "avatarUpdated": "头像更新成功",
     "updateFailed": "更新失败",
     "networkError": "网络错误，请重试"
+  },
+  "dashboard": {
+    "pageTitle": "个人中心",
+    "defaultUserName": "用户",
+    "memberBadge": "会员",
+    "editProfile": "编辑资料",
+    "ordersTitle": "我的订单",
+    "viewAllOrders": "查看所有订单",
+    "quickLinks": {
+      "orders": {
+        "title": "我的订单",
+        "description": "{{count}} 个订单"
+      },
+      "addresses": {
+        "title": "收货地址",
+        "description": "{{count}} 个地址"
+      },
+      "wishlist": {
+        "title": "我的心愿单",
+        "description": "{{count}} 件商品"
+      },
+      "settings": {
+        "title": "账户设置",
+        "description": "管理个人信息"
+      }
+    },
+    "orderStats": {
+      "pending": "待付款",
+      "shipped": "待收货",
+      "completed": "已完成"
+    },
+    "recentOrders": {
+      "title": "最近订单",
+      "empty": "暂无最近订单",
+      "viewAll": "查看全部",
+      "cta": "去购物"
+    }
+  },
+  "addresses": {
+    "pageTitle": "收货地址",
+    "pageSubtitle": "管理您的收货地址",
+    "addAddress": "添加新地址",
+    "editAddress": "编辑地址",
+    "deleteConfirm": "确定要删除这个地址吗？",
+    "defaultBadge": "默认",
+    "setDefault": "设为默认",
+    "edit": "编辑",
+    "delete": "删除",
+    "emptyTitle": "还没有保存的地址",
+    "emptyDescription": "添加一个地址以便更快结账",
+    "fields": {
+      "type": "地址类型",
+      "firstName": "名字",
+      "lastName": "姓氏",
+      "company": "公司（可选）",
+      "addressLine1": "地址行1",
+      "addressLine2": "地址行2（可选）",
+      "city": "城市",
+      "state": "州/省",
+      "postalCode": "邮政编码",
+      "country": "国家",
+      "phone": "电话（可选）"
+    },
+    "types": {
+      "shipping": "收货地址",
+      "billing": "账单地址"
+    },
+    "toasts": {
+      "loadFailed": "加载地址列表失败",
+      "missingFields": "请填写所有必填字段",
+      "addSuccess": "地址添加成功",
+      "addFailed": "添加地址失败",
+      "updateSuccess": "地址更新成功",
+      "updateFailed": "更新地址失败",
+      "deleteSuccess": "地址已删除",
+      "deleteFailed": "删除地址失败",
+      "setDefaultSuccess": "默认地址已更新",
+      "setDefaultFailed": "设置默认地址失败"
+    }
+  },
+  "wishlist": {
+    "pageTitle": "我的心愿单",
+    "pageSubtitle": "{{count}} 件心仪的商品",
+    "backButton": "返回",
+    "emptyTitle": "心愿单是空的",
+    "emptyDescription": "开始添加您喜欢的商品",
+    "addToCart": "加入购物车",
+    "remove": "移除",
+    "outOfStock": "已售罄",
+    "off": "折扣",
+    "toasts": {
+      "loadFailed": "加载失败",
+      "removed": "已移除",
+      "removeFailed": "移除失败",
+      "outOfStock": "商品已售罄",
+      "addedToCart": "已添加到购物车",
+      "addFailed": "添加失败"
+    }
+  },
+  "settings": {
+    "pageTitle": "账户设置",
+    "tabs": {
+      "profile": "个人资料",
+      "password": "密码与安全",
+      "notifications": "通知偏好",
+      "preferences": "其他设置"
+    },
+    "profile": {
+      "title": "个人资料",
+      "description": "管理您的个人信息",
+      "avatarUpload": "上传头像",
+      "fields": {
+        "name": "显示名称",
+        "email": "邮箱地址",
+        "phone": "手机号码",
+        "gender": "性别",
+        "country": "国家/地区",
+        "dateOfBirth": "出生日期",
+        "bio": "个人简介"
+      },
+      "genderOptions": {
+        "male": "男",
+        "female": "女",
+        "other": "其他",
+        "preferNotToSay": "不愿透露"
+      }
+    },
+    "password": {
+      "title": "密码与安全",
+      "description": "修改您的密码以保护账户安全",
+      "fields": {
+        "current": "当前密码",
+        "new": "新密码",
+        "confirm": "确认新密码"
+      }
+    },
+    "notifications": {
+      "title": "通知偏好",
+      "description": "选择您希望接收的通知类型",
+      "orderUpdates": "订单更新",
+      "orderUpdatesDesc": "接收有关订单状态的通知",
+      "promotions": "促销活动",
+      "promotionsDesc": "接收特别优惠和促销信息",
+      "newsletter": "新闻通讯",
+      "newsletterDesc": "接收新品和行业资讯"
+    },
+    "preferences": {
+      "title": "其他设置",
+      "description": "自定义您的体验",
+      "language": "语言",
+      "currency": "货币",
+      "timezone": "时区"
+    },
+    "toasts": {
+      "invalidFile": "请上传图片文件",
+      "fileTooLarge": "图片大小不能超过 10MB",
+      "avatarUploadSuccess": "头像上传成功",
+      "avatarUploadFailed": "头像上传失败",
+      "profileUpdateSuccess": "个人资料更新成功",
+      "profileUpdateFailed": "更新个人资料失败",
+      "passwordMismatch": "两次输入的密码不一致",
+      "passwordTooShort": "密码长度至少为6位",
+      "passwordUpdateSuccess": "密码修改成功",
+      "passwordUpdateFailed": "修改密码失败",
+      "notificationsUpdateSuccess": "通知设置已更新",
+      "notificationsUpdateFailed": "更新通知设置失败"
+    }
   }
 }
 

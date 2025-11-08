@@ -47,6 +47,173 @@
     "avatarUpdated": "Avatar updated",
     "updateFailed": "Update failed",
     "networkError": "Network error, please retry"
+  },
+  "dashboard": {
+    "pageTitle": "Account Overview",
+    "defaultUserName": "User",
+    "memberBadge": "Member",
+    "editProfile": "Edit Profile",
+    "ordersTitle": "My Orders",
+    "viewAllOrders": "View All Orders",
+    "quickLinks": {
+      "orders": {
+        "title": "My Orders",
+        "description": "{{count}} orders"
+      },
+      "addresses": {
+        "title": "Addresses",
+        "description": "{{count}} saved addresses"
+      },
+      "wishlist": {
+        "title": "Wishlist",
+        "description": "{{count}} items in wishlist"
+      },
+      "settings": {
+        "title": "Account Settings",
+        "description": "Manage your personal info"
+      }
+    },
+    "orderStats": {
+      "pending": "Awaiting Payment",
+      "shipped": "In Transit",
+      "completed": "Completed"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "empty": "No recent orders yet",
+      "viewAll": "View All",
+      "cta": "Start Shopping"
+    }
+  },
+  "addresses": {
+    "pageTitle": "Shipping Addresses",
+    "pageSubtitle": "Manage your shipping addresses",
+    "addAddress": "Add New Address",
+    "editAddress": "Edit Address",
+    "deleteConfirm": "Are you sure you want to delete this address?",
+    "defaultBadge": "Default",
+    "setDefault": "Set as Default",
+    "edit": "Edit",
+    "delete": "Delete",
+    "emptyTitle": "No saved addresses yet",
+    "emptyDescription": "Add an address for faster checkout",
+    "fields": {
+      "type": "Address Type",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "company": "Company (Optional)",
+      "addressLine1": "Address Line 1",
+      "addressLine2": "Address Line 2 (Optional)",
+      "city": "City",
+      "state": "State/Province",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "phone": "Phone (Optional)"
+    },
+    "types": {
+      "shipping": "Shipping Address",
+      "billing": "Billing Address"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load addresses",
+      "missingFields": "Please fill in all required fields",
+      "addSuccess": "Address added successfully",
+      "addFailed": "Failed to add address",
+      "updateSuccess": "Address updated successfully",
+      "updateFailed": "Failed to update address",
+      "deleteSuccess": "Address deleted",
+      "deleteFailed": "Failed to delete address",
+      "setDefaultSuccess": "Default address updated",
+      "setDefaultFailed": "Failed to set default address"
+    }
+  },
+  "wishlist": {
+    "pageTitle": "My Wishlist",
+    "pageSubtitle": "{{count}} items you love",
+    "backButton": "Back",
+    "emptyTitle": "Your wishlist is empty",
+    "emptyDescription": "Start adding items you like",
+    "addToCart": "Add to Cart",
+    "remove": "Remove",
+    "outOfStock": "Out of Stock",
+    "off": "Off",
+    "toasts": {
+      "loadFailed": "Failed to load",
+      "removed": "Removed",
+      "removeFailed": "Failed to remove",
+      "outOfStock": "Item is out of stock",
+      "addedToCart": "Added to cart",
+      "addFailed": "Failed to add"
+    }
+  },
+  "settings": {
+    "pageTitle": "Account Settings",
+    "tabs": {
+      "profile": "Profile",
+      "password": "Password & Security",
+      "notifications": "Notifications",
+      "preferences": "Preferences"
+    },
+    "profile": {
+      "title": "Personal Profile",
+      "description": "Manage your personal information",
+      "avatarUpload": "Upload Avatar",
+      "fields": {
+        "name": "Display Name",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "gender": "Gender",
+        "country": "Country/Region",
+        "dateOfBirth": "Date of Birth",
+        "bio": "Bio"
+      },
+      "genderOptions": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "preferNotToSay": "Prefer not to say"
+      }
+    },
+    "password": {
+      "title": "Password & Security",
+      "description": "Change your password to keep your account secure",
+      "fields": {
+        "current": "Current Password",
+        "new": "New Password",
+        "confirm": "Confirm New Password"
+      }
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Choose what notifications you want to receive",
+      "orderUpdates": "Order Updates",
+      "orderUpdatesDesc": "Receive notifications about your order status",
+      "promotions": "Promotions",
+      "promotionsDesc": "Receive special offers and promotions",
+      "newsletter": "Newsletter",
+      "newsletterDesc": "Receive news about new products and industry insights"
+    },
+    "preferences": {
+      "title": "Other Settings",
+      "description": "Customize your experience",
+      "language": "Language",
+      "currency": "Currency",
+      "timezone": "Timezone"
+    },
+    "toasts": {
+      "invalidFile": "Please upload an image file",
+      "fileTooLarge": "Image size cannot exceed 10MB",
+      "avatarUploadSuccess": "Avatar uploaded successfully",
+      "avatarUploadFailed": "Failed to upload avatar",
+      "profileUpdateSuccess": "Profile updated successfully",
+      "profileUpdateFailed": "Failed to update profile",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordUpdateSuccess": "Password changed successfully",
+      "passwordUpdateFailed": "Failed to change password",
+      "notificationsUpdateSuccess": "Notification settings updated",
+      "notificationsUpdateFailed": "Failed to update notification settings"
+    }
   }
 }
 

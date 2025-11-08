@@ -1,0 +1,14 @@
+{
+  "toast": {
+    "loginRequired": "请先登录后再添加到购物车",
+    "addSuccess": "已添加到购物车",
+    "addFailed": "添加失败",
+    "networkError": "添加失败，请重试",
+    "loginWishlist": "请先登录后再操作心愿单",
+    "wishlistAdded": "已添加到心愿单",
+    "wishlistRemoved": "已从心愿单移除",
+    "wishlistFailed": "心愿单操作失败",
+    "operationFailed": "操作失败，请重试"
+  }
+}
+

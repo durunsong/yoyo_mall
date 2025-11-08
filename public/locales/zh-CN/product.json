@@ -86,5 +86,21 @@
   "specialPrice": "特价",
   "addToCart": "加入购物车",
   "previousPage": "上一页",
-  "nextPage": "下一页"
+  "nextPage": "下一页",
+  "rangeText": "显示 {{start}} - {{end}} 条，共 {{total}} 条结果",
+  "loadingProducts": "商品加载中...",
+  "toast": {
+    "listFailed": "获取商品列表失败",
+    "networkError": "网络错误，请重试",
+    "detailFailed": "获取商品详情失败",
+    "searchFailed": "搜索失败，请稍后重试",
+    "loginRequired": "请先登录后再添加到购物车",
+    "addSuccess": "已添加到购物车",
+    "addFailed": "添加失败",
+    "wishlistLogin": "请先登录后再操作心愿单",
+    "wishlistAdded": "已添加到心愿单",
+    "wishlistRemoved": "已从心愿单移除",
+    "wishlistFailed": "心愿单操作失败",
+    "operationFailed": "操作失败，请重试"
+  }
 }

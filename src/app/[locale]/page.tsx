@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 
 export default function HomePage() {
   const { t } = useStaticTranslations('common');
+  const { t: tHome } = useStaticTranslations('home');
   // 直接传递参数给 hook，它会自动获取数据
   const { products, loading } = useProducts({ limit: 8 });
   const { addItem } = useCartStore();
@@ -46,7 +47,7 @@ export default function HomePage() {
     // 检查登录状态
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再添加到购物车');
+      toast.info(tHome('toast.loginRequired'));
       return;
     }
 
@@ -72,13 +73,13 @@ export default function HomePage() {
           name: product.name,
           image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
-        toast.success('已添加到购物车');
+        toast.success(tHome('toast.addSuccess'));
       } else {
-        toast.error(data.message || '添加失败');
+        toast.error(data.message || tHome('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
-      toast.error('添加失败，请重试');
+      toast.error(tHome('toast.networkError'));
     }
   };
 
@@ -86,7 +87,7 @@ export default function HomePage() {
   const handleToggleWishlist = async (productId: string) => {
     if (!session?.user) {
       openModal('login');
-      toast.info('请先登录后再操作心愿单');
+      toast.info(tHome('toast.loginWishlist'));
       return;
     }
 
@@ -103,9 +104,9 @@ export default function HomePage() {
 
         if (response.ok && data.success) {
           wishlistStore.removeItem(existingItem.id);
-          toast.success('已从心愿单移除');
+          toast.success(tHome('toast.wishlistRemoved'));
         } else {
-          toast.error(data.error || '移除心愿单失败');
+          toast.error(data.error || tHome('toast.wishlistFailed'));
         }
       } else {
         const response = await fetch('/api/wishlist', {
@@ -136,14 +137,14 @@ export default function HomePage() {
                 : undefined,
             });
           }
-          toast.success('已添加到心愿单');
+          toast.success(tHome('toast.wishlistAdded'));
         } else {
-          toast.error(data.message || data.error || '添加失败');
+          toast.error(data.message || data.error || tHome('toast.wishlistFailed'));
         }
       }
     } catch (error) {
       console.error('Wishlist operation failed:', error);
-      toast.error('操作失败，请重试');
+      toast.error(tHome('toast.operationFailed'));
     } finally {
       setWishlistLoadingId(null);
     }
