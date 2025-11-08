@@ -122,5 +122,77 @@ export function PageSkeleton() {
   );
 }
 
+// 通知列表项骨架屏
+export function NotificationItemSkeleton() {
+  return (
+    <div className="p-4 transition-colors relative">
+      <div className="flex items-start gap-4 pl-4">
+        {/* 图标骨架 - 匹配实际图标容器（p-2 rounded-full，图标 h-5 w-5） */}
+        <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
+        
+        {/* 内容骨架 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            {/* 标题 */}
+            <Skeleton className="h-4 w-32 mb-1" />
+            
+            {/* 删除按钮骨架 */}
+            <Skeleton className="h-4 w-4 rounded flex-shrink-0 opacity-0" />
+          </div>
+          
+          {/* 消息内容 - 匹配实际的两行文本 */}
+          <Skeleton className="h-3.5 w-full mt-1" />
+          <Skeleton className="h-3.5 w-3/4 mt-1" />
+          
+          {/* 时间 */}
+          <Skeleton className="h-3 w-20 mt-2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 通知页面骨架屏
+export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="bg-card text-card-foreground rounded-lg shadow-sm">
+        {/* 头部骨架 - 匹配 CardHeader 结构（p-4），但内容使用 flex items-center justify-between */}
+        <div className="p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            {/* 左侧：标题和徽章 */}
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-6 w-6 rounded" />
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            
+            {/* 右侧：筛选按钮 - 匹配实际按钮布局 */}
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-16 rounded-md" />
+              <Skeleton className="h-9 w-16 rounded-md" />
+              <Skeleton className="h-9 w-20 rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        {/* 通知列表骨架 - 匹配 CardContent p-0 和 space-y-0 结构 */}
+        <div className="p-0">
+          <div className="space-y-0">
+            {Array.from({ length: items }).map((_, i) => {
+              const isLast = i === items - 1;
+              return (
+                <div key={i} className={!isLast ? 'shadow-sm mb-2' : ''}>
+                  <NotificationItemSkeleton />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 

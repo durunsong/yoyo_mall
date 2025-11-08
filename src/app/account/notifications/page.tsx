@@ -13,13 +13,12 @@ import {
   Package,
   Gift,
   Heart,
-  CheckCircle,
   Trash2,
-  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { NotificationsPageSkeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -59,8 +58,9 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // 模拟通知数据
+  // 加载通知数据
   useEffect(() => {
     if (status === 'loading') return;
 
@@ -69,59 +69,37 @@ export default function NotificationsPage() {
       return;
     }
 
-    // 模拟加载通知
-    setTimeout(() => {
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'order',
-          title: '订单已发货',
-          message: '您的订单 #12345 已发货，预计3天内送达',
-          read: false,
-          link: '/orders/12345',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: '2',
-          type: 'promotion',
-          title: '限时优惠',
-          message: '全场商品8折优惠，仅限今天！',
-          read: false,
-          link: '/deals',
-          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-        },
-        {
-          id: '3',
-          type: 'wishlist',
-          title: '心愿单商品降价',
-          message: '您收藏的"MacBook Pro"降价了，快来看看！',
-          read: true,
-          link: '/account/wishlist',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        },
-        {
-          id: '4',
-          type: 'order',
-          title: '订单已签收',
-          message: '您的订单 #12344 已签收，感谢购买！',
-          read: true,
-          link: '/orders/12344',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        },
-        {
-          id: '5',
-          type: 'system',
-          title: '账户安全提醒',
-          message: '您的密码已超过90天未更改，建议定期更改密码',
-          read: true,
-          link: '/account/settings',
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        },
-      ];
-      setNotifications(mockNotifications);
+    loadNotifications();
+  }, [status, router, filter]);
+
+  // 加载通知列表
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const filterParam = filter === 'unread' ? '?filter=unread' : '';
+      const response = await fetch(`/api/user/notifications${filterParam}`);
+      const data = await response.json();
+
+      if (data.success) {
+        // 将API返回的数据转换为Notification格式，确保createdAt是Date对象
+        const formattedNotifications: Notification[] = (data.data || []).map(
+          (n: any) => ({
+            ...n,
+            createdAt: new Date(n.createdAt),
+          }),
+        );
+        setNotifications(formattedNotifications);
+        setUnreadCount(data.unreadCount || 0);
+      } else {
+        toast.error(data.error || '加载通知失败');
+      }
+    } catch (error) {
+      console.error('加载通知失败:', error);
+      toast.error('加载通知失败');
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [status, router]);
+    }
+  };
 
   // 格式化时间
   const formatTime = (date: Date) => {
@@ -138,48 +116,89 @@ export default function NotificationsPage() {
   };
 
   // 标记为已读
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n)),
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user/notifications/${id}/read`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(prev =>
+          prev.map(n => (n.id === id ? { ...n, read: true } : n)),
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } else {
+        toast.error(data.error || '操作失败');
+      }
+    } catch (error) {
+      console.error('标记已读失败:', error);
+      toast.error('操作失败');
+    }
   };
 
   // 标记所有为已读
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    toast.success('已标记所有通知为已读');
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/user/notifications/read-all', {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+        toast.success('已标记所有通知为已读');
+      } else {
+        toast.error(data.error || '操作失败');
+      }
+    } catch (error) {
+      console.error('标记已读失败:', error);
+      toast.error('操作失败');
+    }
   };
 
   // 删除通知
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    toast.success('通知已删除');
+  const deleteNotification = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user/notifications/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        const deletedNotification = notifications.find(n => n.id === id);
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        // 如果删除的是未读通知，更新未读数量
+        if (deletedNotification && !deletedNotification.read) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+        toast.success('通知已删除');
+      } else {
+        toast.error(data.error || '操作失败');
+      }
+    } catch (error) {
+      console.error('删除通知失败:', error);
+      toast.error('操作失败');
+    }
   };
 
   // 点击通知
-  const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
+  const handleNotificationClick = async (notification: Notification) => {
+    // 如果未读，先标记为已读
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
     if (notification.link) {
       router.push(notification.link);
     }
   };
 
-  // 过滤通知
-  const filteredNotifications =
-    filter === 'unread'
-      ? notifications.filter(n => !n.read)
-      : notifications;
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // 过滤通知（API已经根据filter返回了过滤后的数据）
+  const filteredNotifications = notifications;
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
-      </div>
-    );
+    return <NotificationsPageSkeleton items={5} />;
   }
 
   return (
@@ -234,10 +253,11 @@ export default function NotificationsPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredNotifications.map(notification => {
+            <div className="space-y-0">
+              {filteredNotifications.map((notification, index) => {
                 const Icon = notificationIcons[notification.type];
                 const colorClass = notificationColors[notification.type];
+                const isLast = index === filteredNotifications.length - 1;
 
                 return (
                   <div
@@ -245,6 +265,8 @@ export default function NotificationsPage() {
                     className={cn(
                       'p-4 transition-colors cursor-pointer hover:bg-gray-50 relative group',
                       !notification.read && 'bg-blue-50/50',
+                      // 添加阴影，最后一个不要
+                      !isLast && 'shadow-sm mb-2',
                     )}
                     onClick={() => handleNotificationClick(notification)}
                   >

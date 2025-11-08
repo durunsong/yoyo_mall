@@ -55,117 +55,120 @@ export function UserNotifications() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 从localStorage初始化通知（持久化）
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const saved = localStorage.getItem('user-notifications');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Array<Notification & { createdAt: string }>;
-        // 将字符串日期转换为Date对象
-        return parsed.map((n) => ({
-          ...n,
-          createdAt: new Date(n.createdAt),
-        }));
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  // 通知状态
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // 确保客户端挂载
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 加载通知数据 - 页面加载时就获取，不等用户点击
+  // 加载通知数据 - 从API获取
   useEffect(() => {
     if (session?.user && mounted) {
-      // 从localStorage加载已有的通知，或使用模拟数据
-      const saved = localStorage.getItem('user-notifications');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved) as Array<Notification & { createdAt: string }>;
-          // 将字符串日期转换为Date对象
-          const withDates = parsed.map((n) => ({
-            ...n,
-            createdAt: new Date(n.createdAt),
-          }));
-          setNotifications(withDates);
-          return;
-        } catch {
-          // 解析失败，使用默认数据
-        }
-      }
-
-      // 首次加载：使用模拟数据
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'order',
-          title: '订单已发货',
-          message: '您的订单 #12345 已发货，预计3天内送达',
-          read: false,
-          link: '/orders/12345',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: '2',
-          type: 'promotion',
-          title: '限时优惠',
-          message: '全场商品8折优惠，仅限今天！',
-          read: false,
-          link: '/deals',
-          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-        },
-        {
-          id: '3',
-          type: 'wishlist',
-          title: '心愿单商品降价',
-          message: '您收藏的"MacBook Pro"降价了，快来看看！',
-          read: true,
-          link: '/account/wishlist',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        },
-      ];
-      setNotifications(mockNotifications);
-      localStorage.setItem('user-notifications', JSON.stringify(mockNotifications));
+      loadNotifications();
     }
   }, [session, mounted]);
 
-  // 通知变化时保存到localStorage
+  // 当下拉菜单打开时刷新通知
   useEffect(() => {
-    if (mounted && notifications.length > 0) {
-      localStorage.setItem('user-notifications', JSON.stringify(notifications));
+    if (open && session?.user) {
+      loadNotifications();
     }
-  }, [notifications, mounted]);
+  }, [open, session]);
+
+  // 加载通知列表
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/user/notifications');
+      const data = await response.json();
+
+      if (data.success) {
+        // 将API返回的数据转换为Notification格式，确保createdAt是Date对象
+        const formattedNotifications: Notification[] = (data.data || []).map(
+          (n: Notification & { createdAt: string }) => ({
+            ...n,
+            createdAt: new Date(n.createdAt),
+          }),
+        );
+        setNotifications(formattedNotifications);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('加载通知失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 标记为已读
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n)),
-    );
-    // 这里应该调用API标记为已读
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user/notifications/${id}/read`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(prev =>
+          prev.map(n => (n.id === id ? { ...n, read: true } : n)),
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
   };
 
   // 标记所有为已读
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    // 这里应该调用API标记所有为已读
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/user/notifications/read-all', {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
   };
 
   // 清除通知
-  const removeNotification = (id: string, e: React.MouseEvent) => {
+  const removeNotification = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    // 这里应该调用API删除通知
+    try {
+      const response = await fetch(`/api/user/notifications/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        const deletedNotification = notifications.find(n => n.id === id);
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        // 如果删除的是未读通知，更新未读数量
+        if (deletedNotification && !deletedNotification.read) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+      }
+    } catch (error) {
+      console.error('删除通知失败:', error);
+    }
   };
 
   // 点击通知
-  const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
+  const handleNotificationClick = async (notification: Notification) => {
+    // 如果未读，先标记为已读
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
     if (notification.link) {
       router.push(notification.link);
       setOpen(false);
@@ -193,8 +196,7 @@ export function UserNotifications() {
     return null;
   }
 
-  // 未读数量
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // 未读数量（从状态获取，不再从notifications计算）
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -241,7 +243,12 @@ export function UserNotifications() {
 
         {/* 通知列表 */}
         <div className="max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="py-12 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="text-sm text-gray-500 mt-2">加载中...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="py-12 text-center">
               <Bell className="h-12 w-12 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500">暂无通知</p>
