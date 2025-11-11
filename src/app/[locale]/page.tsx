@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ShoppingBag,
@@ -39,46 +39,65 @@ export default function HomePage() {
   const { products, loading, pagination, refetch } = useProducts();
   const [categories, setCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const fallbackCategories = [
-    {
-      name: t('categories.fashion'),
-      href: '/products?category=clothing',
-      icon: Crown,
-      count: 256,
-    },
-    {
-      name: t('categories.electronics'),
-      href: '/products?category=electronics',
-      icon: Smartphone,
-      count: 189,
-    },
-    {
-      name: t('categories.home'),
-      href: '/products?category=home',
-      icon: Home,
-      count: 432,
-    },
-    {
-      name: t('categories.beauty'),
-      href: '/products?category=beauty',
-      icon: Palette,
-      count: 98,
-    },
-  ];
-  const iconSequence = [Crown, Smartphone, Home, Palette];
-  const categoriesToRender = categories.length
-    ? categories.slice(0, 4).map((category: any, index: number) => {
-        const IconComponent = iconSequence[index % iconSequence.length];
-        const fallback = fallbackCategories[index];
-        const slug = category?.slug ?? category?.id;
+  const iconSequence = [Crown, Smartphone, Home, Palette, ShoppingBag, Shield, Zap, Star];
+
+  const baseFallbackCategories = useMemo(
+    () => [
+      {
+        name: t('categories.fashion'),
+        href: '/products?category=clothing',
+        count: 256,
+      },
+      {
+        name: t('categories.electronics'),
+        href: '/products?category=electronics',
+        count: 189,
+      },
+      {
+        name: t('categories.home'),
+        href: '/products?category=home',
+        count: 432,
+      },
+      {
+        name: t('categories.beauty'),
+        href: '/products?category=beauty',
+        count: 98,
+      },
+    ],
+    [t],
+  );
+
+  const fallbackCategories = useMemo(
+    () =>
+      Array.from({ length: 8 }).map((_, index) => {
+        const base = baseFallbackCategories[index % baseFallbackCategories.length];
+        const hrefWithFallback = `${base.href}${base.href.includes('?') ? '&' : '?'}fallback=${index}`;
         return {
-          name: category?.name ?? fallback?.name,
-          href: slug ? `/products?category=${slug}` : fallback?.href ?? '/products',
-          icon: IconComponent,
-          count: category?.productCount ?? category?._count?.products ?? fallback?.count ?? 0,
+          ...base,
+          icon: iconSequence[index % iconSequence.length],
+          href: hrefWithFallback,
         };
-      })
-    : fallbackCategories;
+      }),
+    [baseFallbackCategories],
+  );
+
+  const categoriesToRender = useMemo(
+    () =>
+      Array.from({ length: 8 }).map((_, index) => {
+        const category = categories[index];
+        const fallback = fallbackCategories[index % fallbackCategories.length];
+        const icon = iconSequence[index % iconSequence.length];
+        const slug = category?.slug ?? category?.id;
+
+        return {
+          name: category?.name ?? fallback.name,
+          href: slug ? `/products?category=${slug}` : fallback.href,
+          icon,
+          count: category?.productCount ?? category?._count?.products ?? fallback.count,
+        };
+      }),
+    [categories, fallbackCategories],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -233,7 +252,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero区块 - 结合卖点介绍 */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-20 text-white">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-10 text-white">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-between gap-12 lg:flex-row">
             <div className="max-w-2xl text-center lg:text-left">
@@ -323,7 +342,7 @@ export default function HomePage() {
       </section>
 
       {/* 综合展示区块 - 分类 + 数据 */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-5">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-bold text-gray-900">{t('experienceMore')}</h2>
@@ -348,24 +367,28 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 {categoriesLoading ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="rounded-2xl border-transparent p-4 shadow-sm">
-                        <div className="mb-3 h-10 w-10 rounded-full skeleton-wave" />
-                        <div className="space-y-2">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-4 rounded-2xl border-transparent p-4 shadow-sm"
+                      >
+                        <div className="h-12 w-12 rounded-full skeleton-wave" />
+                        <div className="flex-1 space-y-2">
                           <div className="h-4 w-3/5 rounded skeleton-wave" />
                           <div className="h-3 w-2/5 rounded skeleton-wave" />
                         </div>
+                        <div className="h-5 w-5 rounded skeleton-wave" />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
                     {categoriesToRender.map((category, index) => {
                       const IconComponent = category.icon ?? iconSequence[index % iconSequence.length];
                       return (
                         <Link key={`${category.href}-${index}`} href={category.href} className="group">
-                          <div className="flex items-center gap-4 rounded-2xl  border-transparent p-4 transition-all hover:border-blue-200 hover:bg-blue-50 shadow-sm">
+                          <div className="flex items-center gap-4 rounded-2xl border-transparent p-4 transition-all hover:border-blue-200 hover:bg-blue-50 shadow-sm">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                               <IconComponent className="h-6 w-6" />
                             </div>
@@ -447,7 +470,7 @@ export default function HomePage() {
       </section>
 
       {/* 精品推荐区块 */}
-      <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 py-20">
+      <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 py-5">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-14 text-center">
             <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1 text-sm font-medium text-purple-600">

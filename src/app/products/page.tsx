@@ -46,9 +46,10 @@ function ProductsPageContent() {
   const [sort, setSort] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
   const [categories, setCategories] = useState<any[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   
   // 使用产品Hook
-  const { products, loading, pagination, refetch } = useProducts();
+  const { products, loading, pagination, refetch } = useProducts({}, { autoFetch: false });
   const { addItem } = useCartStore();
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
   const refetchRef = useRef(refetch);
@@ -175,16 +176,15 @@ function ProductsPageContent() {
 
     const searchParam = searchParams.get('search');
     const categoryParam = searchParams.get('category');
-    
-    if (searchParam !== null && searchParam !== keyword) {
+
+    if (searchParam !== null) {
       setKeyword(searchParam);
     }
-    
-    if (categoryParam !== null && categoryParam !== activeCategory) {
+
+    if (categoryParam !== null) {
       setActiveCategory(categoryParam);
     }
-    // 当URL缺少category参数时保持当前选中状态，避免手动点击后样式被重置
-  }, [searchParams, keyword, activeCategory]);
+  }, [searchParams]);
 
   // 获取分类列表
   useEffect(() => {
@@ -204,6 +204,8 @@ function ProductsPageContent() {
         }
       } catch (error) {
         console.error('Failed to fetch categories:', error);
+      } finally {
+        setCategoriesLoaded(true);
       }
     };
     fetchCategories();
@@ -231,8 +233,12 @@ function ProductsPageContent() {
       params.sortOrder = sortOrder;
     }
 
+    if (!categoriesLoaded && resolvedCategoryId !== 'all') {
+      return;
+    }
+
     refetchRef.current(params);
-  }, [currentPage, keyword, resolvedCategoryId, sort]);
+  }, [currentPage, keyword, resolvedCategoryId, sort, categoriesLoaded]);
 
   return (
     <div className="container mx-auto px-4 py-8">

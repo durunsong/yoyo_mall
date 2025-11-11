@@ -239,7 +239,7 @@ export default function AccountPage() {
                   <Link
                     key={stat.label}
                     href="/account/orders"
-                    className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 rounded-lg p-4 transition-colors shadow-sm hover:bg-gray-50"
                   >
                     <div className={`rounded-full p-3 ${stat.color} bg-opacity-10`}>
                       <IconComponent className={`h-6 w-6 ${stat.color}`} />

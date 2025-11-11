@@ -114,8 +114,12 @@ interface ProductDetailResponse {
   data: Product;
 }
 
+interface UseProductsOptions {
+  autoFetch?: boolean;
+}
+
 // 获取商品列表的Hook
-export function useProducts(query: ProductQuery = {}) {
+export function useProducts(query: ProductQuery = {}, options: UseProductsOptions = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,6 +128,7 @@ export function useProducts(query: ProductQuery = {}) {
 
   // 将query转换为稳定的字符串key，避免对象引用变化导致的无限循环
   const queryKey = useMemo(() => JSON.stringify(query), [query]);
+  const autoFetch = options.autoFetch ?? true;
 
   const fetchProducts = useCallback(async (searchQuery: ProductQuery = {}) => {
     setLoading(true);
@@ -169,12 +174,13 @@ export function useProducts(query: ProductQuery = {}) {
   const initialFetchKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!autoFetch) return;
     if (initialFetchKeyRef.current === queryKey) {
       return;
     }
     initialFetchKeyRef.current = queryKey;
     fetchProducts();
-  }, [fetchProducts, queryKey]);
+  }, [fetchProducts, queryKey, autoFetch]);
 
   const refetch = useCallback((newQuery?: ProductQuery) => {
     fetchProducts(newQuery);

@@ -27,7 +27,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-20 text-white">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-10 text-white">
         <div className="mx-auto max-w-7xl px-4">
           <div className="text-center">
             <h1 className="mb-6 text-5xl font-bold text-white">
@@ -105,7 +105,7 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-5">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">
