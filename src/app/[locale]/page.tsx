@@ -274,7 +274,7 @@ export default function HomePage() {
 
             {/* 右侧宣传位占位，后续可替换为真实图片 */}
             <div className="h-64 w-full max-w-lg overflow-hidden rounded-3xl bg-white/10 p-6 backdrop-blur md:h-72">
-              <div className="flex h-full w-full flex-col justify-between rounded-2xl bg-white/90 p-6 text-left text-gray-900">
+              <div className="flex h-full w-full flex-col justify-between rounded-2xl bg-white/90 p-4 text-left text-gray-900">
                 <div>
                   <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-600">
                     {tHome('hotSale')}
@@ -291,7 +291,7 @@ export default function HomePage() {
                     <div className="text-xl font-bold">24h</div>
                     <div>{tHome('heroExpress')}</div>
                   </div>
-                  <div className="col-span-2 rounded-lg bg-green-50 p-3 text-green-700">
+                  <div className="col-span-2 rounded-lg bg-green-50 p-3 text-green-700 min-h-[48px]">
                     {tHome('heroAssurance')}
                   </div>
                 </div>
