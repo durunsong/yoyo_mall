@@ -173,10 +173,8 @@ function ProductsPageContent() {
     
     if (categoryParam !== null && categoryParam !== activeCategory) {
       setActiveCategory(categoryParam);
-    } else if (categoryParam === null && activeCategory !== 'all') {
-      // 如果URL中没有category参数，重置为all
-      setActiveCategory('all');
     }
+    // 当URL缺少category参数时保持当前选中状态，避免手动点击后样式被重置
   }, [searchParams, keyword, activeCategory]);
 
   // 获取分类列表

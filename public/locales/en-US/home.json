@@ -9,6 +9,23 @@
     "wishlistRemoved": "Removed from wishlist",
     "wishlistFailed": "Wishlist operation failed",
     "operationFailed": "Operation failed, please try again"
-  }
+  },
+  "hotSale": "Hot Picks",
+  "heroHighlightTitle": "Limited-time Flash Deals",
+  "heroHighlightDesc": "Handpicked cross-border bestsellers with unbeatable discounts",
+  "heroDiscount": "Time-limited Discount",
+  "heroExpress": "Express Dispatch",
+  "heroAssurance": "Authentic & 7-day Worry-free",
+  "selectedCategories": "Featured Categories",
+  "dataHighlightTitle": "Global Cross-border Highlights",
+  "dataHighlightDesc": "Keep up with real-time bestseller data for smarter sourcing",
+  "dataFastShipping": "72h Lightning Delivery",
+  "dataFastShippingDesc": "Dedicated cross-border logistics",
+  "guaranteeTitle": "Full Journey Protection",
+  "guaranteeDesc": "From pre-sale to after-sale, we safeguard every step",
+  "learnMoreGuarantee": "Explore our protection plan",
+  "recommendTag": "Spotlight",
+  "recommendTitle": "Trending Bestsellers & Fresh Drops",
+  "recommendSubtitle": "Stay ahead with the cross-border products shoppers love right now"
 }
 

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -33,6 +33,7 @@ export default function AccountSettingsPage() {
   const { t } = useStaticTranslations('account');
   const { t: tCommon } = useStaticTranslations('common');
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // 个人资料表单
@@ -59,6 +60,7 @@ export default function AccountSettingsPage() {
     const fetchProfile = async () => {
       if (status === 'authenticated' && session?.user?.id) {
         try {
+          setProfileLoading(true);
           const response = await fetch('/api/user/profile');
           const data = await response.json();
           
@@ -76,6 +78,8 @@ export default function AccountSettingsPage() {
           }
         } catch (error) {
           console.error('Failed to fetch profile:', error);
+        } finally {
+          setProfileLoading(false);
         }
       }
     };
@@ -228,13 +232,36 @@ export default function AccountSettingsPage() {
     }
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+  const showSkeleton = status === 'loading' || profileLoading;
+
+  const SkeletonBlock = useMemo(
+    () => (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="h-24 w-24 rounded-full skeleton-wave" />
+          <div className="flex-1 space-y-3">
+            <div className="h-10 w-36 rounded-full skeleton-wave" />
+            <div className="h-3 w-56 rounded skeleton-wave" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="space-y-2">
+              <div className="h-4 w-24 rounded skeleton-wave" />
+              <div className="h-10 w-full rounded skeleton-wave" />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <div className="h-4 w-24 rounded skeleton-wave" />
+          <div className="h-24 w-full rounded skeleton-wave" />
+        </div>
       </div>
-    );
-  }
+    ),
+    [],
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -274,7 +301,10 @@ export default function AccountSettingsPage() {
                 <CardDescription>{t('settings.profile.description')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {showSkeleton ? (
+                  SkeletonBlock
+                ) : (
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
                   {/* 头像上传 */}
                   <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24">
@@ -463,7 +493,8 @@ export default function AccountSettingsPage() {
                       {tCommon('saveChanges')}
                     </Button>
                   </div>
-                </form>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -476,7 +507,21 @@ export default function AccountSettingsPage() {
                 <CardDescription>{t('settings.password.description')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleChangePassword} className="space-y-4">
+                {showSkeleton ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="h-4 w-28 rounded skeleton-wave" />
+                        <div className="h-10 w-full rounded skeleton-wave" />
+                      </div>
+                    ))}
+                    <div className="mt-6 flex justify-end gap-3">
+                      <div className="h-10 w-24 rounded-full skeleton-wave" />
+                      <div className="h-10 w-32 rounded-full skeleton-wave" />
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="currentPassword">{t('settings.password.fields.current')}</Label>
                     <Input
@@ -546,7 +591,8 @@ export default function AccountSettingsPage() {
                       {t('settings.password.submit')}
                     </Button>
                   </div>
-                </form>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -559,7 +605,20 @@ export default function AccountSettingsPage() {
                 <CardDescription>{t('settings.notifications.description')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                {showSkeleton ? (
+                  <div className="space-y-6">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 rounded skeleton-wave" />
+                          <div className="h-3 w-52 rounded skeleton-wave" />
+                        </div>
+                        <div className="h-9 w-24 rounded-full skeleton-wave" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{t('settings.notifications.orderUpdates')}</p>
@@ -593,7 +652,8 @@ export default function AccountSettingsPage() {
                       {t('settings.notifications.enable')}
                     </Button>
                   </div>
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -602,18 +662,31 @@ export default function AccountSettingsPage() {
           <TabsContent value="preferences">
             <Card>
               <CardHeader>
-              <CardTitle>{t('settings.preferences.title')}</CardTitle>
-              <CardDescription>{t('settings.preferences.description')}</CardDescription>
+                <CardTitle>{t('settings.preferences.title')}</CardTitle>
+                <CardDescription>{t('settings.preferences.description')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                {showSkeleton ? (
+                  <div className="space-y-6">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 rounded skeleton-wave" />
+                          <div className="h-3 w-48 rounded skeleton-wave" />
+                        </div>
+                        <div className="h-9 w-24 rounded-full skeleton-wave" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                    <p className="font-medium">{t('settings.preferences.language')}</p>
-                    <p className="text-sm text-gray-500">{t('settings.preferences.languageDesc')}</p>
+                        <p className="font-medium">{t('settings.preferences.language')}</p>
+                        <p className="text-sm text-gray-500">{t('settings.preferences.languageDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                    {t('settings.preferences.languageValue')}
+                        {t('settings.preferences.languageValue')}
                     </Button>
                   </div>
 
@@ -621,11 +694,11 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                    <p className="font-medium">{t('settings.preferences.currency')}</p>
-                    <p className="text-sm text-gray-500">{t('settings.preferences.currencyDesc')}</p>
+                        <p className="font-medium">{t('settings.preferences.currency')}</p>
+                        <p className="text-sm text-gray-500">{t('settings.preferences.currencyDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                    {t('settings.preferences.currencyValue')}
+                        {t('settings.preferences.currencyValue')}
                     </Button>
                   </div>
 
@@ -633,14 +706,15 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                    <p className="font-medium">{t('settings.preferences.theme')}</p>
-                    <p className="text-sm text-gray-500">{t('settings.preferences.themeDesc')}</p>
+                        <p className="font-medium">{t('settings.preferences.theme')}</p>
+                        <p className="text-sm text-gray-500">{t('settings.preferences.themeDesc')}</p>
                     </div>
                     <Button variant="outline" size="sm">
-                    {t('settings.preferences.themeValue')}
+                        {t('settings.preferences.themeValue')}
                     </Button>
                   </div>
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

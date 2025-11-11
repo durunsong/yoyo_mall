@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           siteUrl: 'https://yoyomall.com',
           contactEmail: 'support@yoyomall.com',
           contactPhone: '+86 400-123-4567',
-          defaultLanguage: 'zh-CN',
+          defaultLanguage: 'en-US',
           defaultCurrency: 'CNY',
           productDetailConfig: JSON.parse(
             JSON.stringify(defaultProductDetailConfig),
@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
         siteUrl: body.siteUrl || null,
         contactEmail: body.contactEmail || null,
         contactPhone: body.contactPhone || null,
-        defaultLanguage: body.defaultLanguage || 'zh-CN',
+        defaultLanguage: body.defaultLanguage || 'en-US',
         defaultCurrency: body.defaultCurrency || 'CNY',
         productDetailConfig: updateData.productDetailConfig
           ? updateData.productDetailConfig

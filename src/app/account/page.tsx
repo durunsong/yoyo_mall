@@ -99,7 +99,7 @@ export default function AccountPage() {
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-lg border p-4">
+                  <div key={i} className="rounded-lg p-4">
                     <div className="flex items-center gap-3">
                       <div className="skeleton-wave h-12 w-12 rounded-full" />
                       <div className="space-y-2">

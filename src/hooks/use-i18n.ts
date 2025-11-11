@@ -29,7 +29,7 @@ const translationsCache: Record<string, Record<string, any>> = {};
 class I18nManager {
   private static instance: I18nManager;
   private listeners: Set<(locale: Locale) => void> = new Set();
-  private currentLocale: Locale = 'zh-CN';
+  private currentLocale: Locale = 'en-US';
 
   private constructor() {
     this.initializeLocale();
@@ -71,11 +71,11 @@ class I18nManager {
 
         // 3) 浏览器首选语言
         const fromNavigator = normalize(navigator.language || (navigator as any).userLanguage);
-        this.currentLocale = fromNavigator || 'zh-CN';
+        this.currentLocale = fromNavigator || 'en-US';
         localStorage.setItem('locale', this.currentLocale);
       } catch (error) {
-        console.warn('Failed to initialize locale, fallback to zh-CN:', error);
-        this.currentLocale = 'zh-CN';
+        console.warn('Failed to initialize locale, fallback to en-US:', error);
+        this.currentLocale = 'en-US';
       }
     }
   }

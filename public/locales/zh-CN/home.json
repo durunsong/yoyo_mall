@@ -9,6 +9,23 @@
     "wishlistRemoved": "已从心愿单移除",
     "wishlistFailed": "心愿单操作失败",
     "operationFailed": "操作失败，请重试"
-  }
+  },
+  "hotSale": "爆款热卖",
+  "heroHighlightTitle": "限时爆款专场",
+  "heroHighlightDesc": "优选跨境精品，限时钜惠不容错过",
+  "heroDiscount": "限时折扣",
+  "heroExpress": "极速出仓",
+  "heroAssurance": "正品保障 · 七天无忧",
+  "selectedCategories": "精选分类",
+  "dataHighlightTitle": "全球跨境好物精选",
+  "dataHighlightDesc": "实时同步热销数据，助力高效率选品",
+  "dataFastShipping": "72h极速达",
+  "dataFastShippingDesc": "跨境专线保障时效",
+  "guaranteeTitle": "全链路保障服务",
+  "guaranteeDesc": "覆盖售前、售中、售后，全程守护购物体验",
+  "learnMoreGuarantee": "了解保障体系",
+  "recommendTag": "全球精选",
+  "recommendTitle": "热销尖货 · 新品直达",
+  "recommendSubtitle": "实时追踪跨境热度，让优质好物一步到手"
 }
 

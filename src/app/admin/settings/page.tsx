@@ -125,7 +125,7 @@ export default function SettingsPage() {
     siteUrl: 'https://yoyomall.com',
     contactEmail: 'support@yoyomall.com',
     contactPhone: '+86 400-123-4567',
-    defaultLanguage: 'zh-CN',
+    defaultLanguage: 'en-US',
     defaultCurrency: 'CNY',
   });
 
@@ -246,7 +246,7 @@ export default function SettingsPage() {
           siteUrl: data.data.siteUrl || '',
           contactEmail: data.data.contactEmail || '',
           contactPhone: data.data.contactPhone || '',
-          defaultLanguage: data.data.defaultLanguage || 'zh-CN',
+          defaultLanguage: data.data.defaultLanguage || 'en-US',
           defaultCurrency: data.data.defaultCurrency || 'CNY',
         });
         

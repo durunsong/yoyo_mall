@@ -41,7 +41,7 @@ const defaultSettings: SystemSettings = {
   siteUrl: 'https://yoyomall.com',
   contactEmail: 'support@yoyomall.com',
   contactPhone: '+86 400-123-4567',
-  defaultLanguage: 'zh-CN',
+  defaultLanguage: 'en-US',
   defaultCurrency: 'CNY',
   stripeEnabled: false,
   alipayEnabled: false,
