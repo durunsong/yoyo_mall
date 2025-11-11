@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect, Suspense } from 'react';
+import { useMemo, useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -51,6 +51,15 @@ function ProductsPageContent() {
   const { products, loading, pagination, refetch } = useProducts();
   const { addItem } = useCartStore();
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const refetchRef = useRef(refetch);
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
+  const resolvedCategoryId = useMemo(() => {
+    if (!activeCategory || activeCategory === 'all') return 'all';
+    const matchedCategory = categories.find((cat) => (cat?.slug || cat?.id) === activeCategory);
+    return matchedCategory?.id || activeCategory;
+  }, [categories, activeCategory]);
 
   // 添加到购物车 - 未登录时弹出登录框
   const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
@@ -184,9 +193,13 @@ function ProductsPageContent() {
         const response = await fetch('/api/categories');
         const data = await response.json();
         if (data.success) {
+          const normalized = (data.data || []).map((cat: any) => ({
+            ...cat,
+            slug: cat.slug || cat.id,
+          }));
           setCategories([
-            { id: 'all', name: t('allCategories') || 'All', slug: 'all' },
-            ...data.data,
+            { id: 'all', slug: 'all', name: t('allCategories') || 'All' },
+            ...normalized,
           ]);
         }
       } catch (error) {
@@ -207,8 +220,8 @@ function ProductsPageContent() {
       params.search = keyword.trim();
     }
 
-    if (activeCategory && activeCategory !== 'all') {
-      params.category = activeCategory;
+    if (resolvedCategoryId && resolvedCategoryId !== 'all') {
+      params.category = resolvedCategoryId;
     }
 
     // 排序处理
@@ -218,8 +231,8 @@ function ProductsPageContent() {
       params.sortOrder = sortOrder;
     }
 
-    refetch(params);
-  }, [currentPage, keyword, activeCategory, sort, refetch]);
+    refetchRef.current(params);
+  }, [currentPage, keyword, resolvedCategoryId, sort]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -265,17 +278,23 @@ function ProductsPageContent() {
         {/* 分类筛选 */}
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          {categories.map(c => (
-            <Button
-              key={c.id}
-              variant={activeCategory === c.id ? 'default' : 'secondary'}
-              size="sm"
-              onClick={() => setActiveCategory(c.id)}
-              className="rounded-full"
-            >
-              {c.name}
-            </Button>
-          ))}
+          {categories.map(c => {
+            const categoryValue = c.slug || c.id;
+            return (
+              <Button
+                key={c.id}
+                variant={activeCategory === categoryValue ? 'default' : 'secondary'}
+                size="sm"
+                onClick={() => {
+                  setActiveCategory(categoryValue);
+                  setCurrentPage(1);
+                }}
+                className="rounded-full"
+              >
+                {c.name}
+              </Button>
+            );
+          })}
         </div>
       </div>
 

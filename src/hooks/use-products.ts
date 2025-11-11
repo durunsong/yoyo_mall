@@ -3,7 +3,7 @@
  * 封装商品API调用逻辑
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 
@@ -166,9 +166,15 @@ export function useProducts(query: ProductQuery = {}) {
     }
   }, [queryKey, t]);
 
+  const initialFetchKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
+    if (initialFetchKeyRef.current === queryKey) {
+      return;
+    }
+    initialFetchKeyRef.current = queryKey;
     fetchProducts();
-  }, [fetchProducts]);
+  }, [fetchProducts, queryKey]);
 
   const refetch = useCallback((newQuery?: ProductQuery) => {
     fetchProducts(newQuery);
