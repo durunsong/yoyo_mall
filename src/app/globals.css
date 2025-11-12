@@ -42,6 +42,9 @@
 
   --skeleton-base: #f3f4f6;
   --skeleton-highlight: #ffffff;
+  /* 全局文本选中高亮颜色（浅色模式） */
+  --selection-bg: rgba(59, 130, 246, 0.35);
+  --selection-fg: #0f172a;
 }
 
 .dark {
@@ -80,6 +83,9 @@
 
   --skeleton-base: #374151;
   --skeleton-highlight: #4b5563;
+  /* 全局文本选中高亮颜色（深色模式） */
+  --selection-bg: rgba(96, 165, 250, 0.45);
+  --selection-fg: #f8fafc;
 }
 
 * {
@@ -420,8 +426,13 @@ label[for] {
 
 /* 文本选择样式 */
 ::selection {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+::-moz-selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-fg);
 }
 
 /* 确保输入框可以选择文本 */
@@ -437,8 +448,8 @@ textarea,
 /* 输入框文本选择高亮 */
 input::selection,
 textarea::selection {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--selection-bg);
+  color: var(--selection-fg);
 }
 
 /* 焦点样式 */
