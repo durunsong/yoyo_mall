@@ -9,7 +9,7 @@ const updateProfileSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY']).optional(),
   dateOfBirth: z.string().optional(),
   bio: z.string().max(500, '个人简介不能超过500个字符').optional(),
   location: z.string().max(100, '位置信息不能超过100个字符').optional(),

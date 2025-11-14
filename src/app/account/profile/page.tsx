@@ -46,7 +46,7 @@ interface UserProfile {
   lastName?: string;
   phone?: string;
   dateOfBirth?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
   locale?: string;
   timezone?: string;
 }
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                   <Label htmlFor="gender">性别</Label>
                   <Select
                     value={profileData.gender || ''}
-                    onValueChange={(value: 'MALE' | 'FEMALE' | 'OTHER') =>
+                    onValueChange={(value: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY') =>
                       setProfileData({ ...profileData, gender: value })
                     }
                   >
