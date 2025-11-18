@@ -866,18 +866,18 @@ export default function HomeConfigPage() {
             </Card>
           </div>
         </div>
-      </div>
 
-      {/* 模块编辑对话框 */}
-      <ModuleEditDialog
-        open={dialogOpen}
-        module={editingModule}
-        onClose={() => {
-          setDialogOpen(false);
-          setEditingModule(null);
-        }}
-        onSave={saveModuleConfig}
-      />
+        {/* 模块编辑对话框 */}
+        <ModuleEditDialog
+          open={dialogOpen}
+          module={editingModule}
+          onClose={() => {
+            setDialogOpen(false);
+            setEditingModule(null);
+          }}
+          onSave={saveModuleConfig}
+        />
+      </div>
     </AdminLayout>
   );
 }

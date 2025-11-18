@@ -1,6 +1,7 @@
 /**
  * Footer组件
  * 网站底部，包含链接、联系信息、社交媒体等
+ * 从数据库读取配置
  */
 
 'use client';
@@ -18,9 +19,53 @@ import {
   Youtube,
 } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
+import { usePathname } from 'next/navigation';
 
-// Footer链接配置函数 - 使用 layout 命名空间
-const getFooterLinks = (t: (key: string, params?: Record<string, string | number>) => string) => ({
+// Footer配置类型
+interface FooterLink {
+  id: string;
+  name: string;
+  nameEn?: string;
+  nameZh?: string;
+  href: string;
+  isActive: boolean;
+  openInNew: boolean;
+}
+
+interface FooterSection {
+  id: string;
+  key: string;
+  title: string;
+  titleEn?: string;
+  titleZh?: string;
+  isActive: boolean;
+  links: FooterLink[];
+}
+
+interface FooterContact {
+  id: string;
+  type: string;
+  label: string;
+  value: string;
+  icon?: string;
+}
+
+interface FooterSocial {
+  id: string;
+  name: string;
+  icon: string;
+  href: string;
+  color?: string;
+}
+
+interface FooterConfig {
+  sections: FooterSection[];
+  contacts: FooterContact[];
+  socials: FooterSocial[];
+}
+
+// 默认Footer链接配置（备用）
+const getDefaultFooterLinks = (t: (key: string, params?: Record<string, string | number>) => string) => ({
   company: {
     title: t('footer.sections.company.title'),
     links: [
@@ -59,22 +104,33 @@ const getFooterLinks = (t: (key: string, params?: Record<string, string | number
   },
 });
 
-// 社交媒体链接
-const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-600' },
-  { name: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-blue-400' },
-  {
-    name: 'Instagram',
-    icon: Instagram,
-    href: '#',
-    color: 'hover:text-pink-500',
-  },
-  { name: 'YouTube', icon: Youtube, href: '#', color: 'hover:text-red-600' },
+// 默认社交媒体链接（备用）
+const defaultSocialLinks = [
+  { name: 'Facebook', icon: 'Facebook', href: '#', color: 'hover:text-blue-600' },
+  { name: 'Twitter', icon: 'Twitter', href: '#', color: 'hover:text-blue-400' },
+  { name: 'Instagram', icon: 'Instagram', href: '#', color: 'hover:text-pink-500' },
+  { name: 'YouTube', icon: 'Youtube', href: '#', color: 'hover:text-red-600' },
 ];
+
+// 图标映射
+const iconMap: Record<string, any> = {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+};
 
 export function Footer() {
   const { t } = useStaticTranslations('layout');
-  const footerLinks = useMemo(() => getFooterLinks(t), [t]);
+  const pathname = usePathname();
+  const defaultFooterLinks = useMemo(() => getDefaultFooterLinks(t), [t]);
+  
+  // 从数据库加载的配置
+  const [footerConfig, setFooterConfig] = useState<FooterConfig | null>(null);
+  const [configLoaded, setConfigLoaded] = useState(false);
   
   // Newsletter 订阅状态
   const [email, setEmail] = useState('');
@@ -85,6 +141,26 @@ export function Footer() {
   // 确保只在客户端渲染动态内容
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // 加载Footer配置
+  useEffect(() => {
+    const loadFooterConfig = async () => {
+      try {
+        const response = await fetch('/api/footer-config');
+        if (response.ok) {
+          const data = await response.json();
+          setFooterConfig(data);
+        }
+      } catch (error) {
+        console.error('加载Footer配置失败:', error);
+        // 加载失败时使用默认配置
+      } finally {
+        setConfigLoaded(true);
+      }
+    };
+
+    loadFooterConfig();
   }, []);
 
   // 处理订阅提交
@@ -202,41 +278,77 @@ export function Footer() {
               {t('footer.companyDescription')}
             </p>
 
-            {/* Contact Info */}
+            {/* Contact Info - 从数据库加载 */}
             <div className="space-y-2 text-sm text-gray-300">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4" />
-                <span>support@yoyomall.com</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4" />
-                <span>123 Business Street, City, State 12345</span>
-              </div>
+              {configLoaded && footerConfig?.contacts && footerConfig.contacts.length > 0 ? (
+                footerConfig.contacts.map((contact) => {
+                  const IconComponent = contact.icon && iconMap[contact.icon] ? iconMap[contact.icon] : Mail;
+                  return (
+                    <div key={contact.id} className="flex items-center space-x-2">
+                      <IconComponent className="h-4 w-4" />
+                      <span>{contact.value}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-4 w-4" />
+                    <span>support@yoyomall.com</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-4 w-4" />
+                    <span>+1 (555) 123-4567</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>123 Business Street, City, State 12345</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Footer Links */}
-          {Object.entries(footerLinks).map(([key, section]) => (
-            <div key={key}>
-              <h4 className="mb-4 font-semibold">{section.title}</h4>
-              <ul className="space-y-2">
-                {section.links.map(link => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-300 transition-colors hover:text-white"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Footer Links - 从数据库加载或使用默认配置 */}
+          {configLoaded && footerConfig?.sections && footerConfig.sections.length > 0 ? (
+            footerConfig.sections.map((section) => (
+              <div key={section.id}>
+                <h4 className="mb-4 font-semibold">{section.title}</h4>
+                <ul className="space-y-2">
+                  {section.links.map((link) => (
+                    <li key={link.id}>
+                      <Link
+                        href={link.href}
+                        target={link.openInNew ? '_blank' : undefined}
+                        rel={link.openInNew ? 'noopener noreferrer' : undefined}
+                        className="text-sm text-gray-300 transition-colors hover:text-white"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          ) : (
+            Object.entries(defaultFooterLinks).map(([key, section]) => (
+              <div key={key}>
+                <h4 className="mb-4 font-semibold">{section.title}</h4>
+                <ul className="space-y-2">
+                  {section.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-gray-300 transition-colors hover:text-white"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -248,18 +360,23 @@ export function Footer() {
               © 2025 Yobuy. {t('footer.allRightsReserved')}
             </div>
 
-            {/* Social Links */}
+            {/* Social Links - 从数据库加载或使用默认配置 */}
             <div className="flex items-center space-x-4">
               <span className="hidden text-sm text-gray-300 md:inline">
                 {t('footer.followUs')}:
               </span>
-              {socialLinks.map(social => {
-                const Icon = social.icon;
+              {(configLoaded && footerConfig?.socials && footerConfig.socials.length > 0
+                ? footerConfig.socials
+                : defaultSocialLinks
+              ).map((social) => {
+                const Icon = iconMap[social.icon] || Mail;
                 return (
                   <Link
                     key={social.name}
                     href={social.href}
-                    className={`text-gray-300 transition-colors ${social.color}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-gray-300 transition-colors ${social.color || 'hover:text-white'}`}
                     aria-label={social.name}
                   >
                     <Icon className="h-5 w-5" />

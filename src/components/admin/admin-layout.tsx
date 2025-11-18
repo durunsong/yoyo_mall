@@ -18,6 +18,7 @@ import {
   User,
   Home,
   Layout,
+  FileText,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,12 @@ const adminNavItems = [
     label: '首页配置',
     href: '/admin/home-config',
     icon: Layout,
+  },
+  {
+    key: 'footer-config',
+    label: 'Footer配置',
+    href: '/admin/footer-config',
+    icon: FileText,
   },
   {
     key: 'products',

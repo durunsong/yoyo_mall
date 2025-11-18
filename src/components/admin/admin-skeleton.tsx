@@ -646,4 +646,89 @@ export function HomeConfigSkeleton() {
   );
 }
 
+/**
+ * Footer配置管理骨架屏
+ * 用于Footer配置页面
+ */
+export function FooterConfigSkeleton() {
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* 页面标题卡片 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="skeleton-wave mb-2 h-8 w-48 rounded" />
+              <div className="skeleton-wave h-4 w-64 rounded" />
+            </div>
+            <div className="skeleton-wave h-10 w-28 rounded" />
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* 标签页导航 */}
+      <div className="flex space-x-4 border-b">
+        <div className="skeleton-wave h-10 w-24 rounded-t" />
+        <div className="skeleton-wave h-10 w-24 rounded-t" />
+        <div className="skeleton-wave h-10 w-24 rounded-t" />
+      </div>
+
+      {/* Footer区块列表卡片 */}
+      <Card>
+        <CardHeader>
+          <div className="skeleton-wave h-6 w-40 rounded" />
+          <div className="skeleton-wave h-4 w-56 rounded" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Footer区块项 */}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card">
+                {/* 区块头部 */}
+                <div className="flex items-center justify-between p-4 border-b">
+                  <div className="flex items-center space-x-4">
+                    <div className="skeleton-wave h-8 w-8 rounded" />
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="skeleton-wave h-5 w-32 rounded" />
+                        <div className="skeleton-wave h-5 w-12 rounded-full" />
+                        <div className="skeleton-wave h-5 w-16 rounded-full" />
+                      </div>
+                      <div className="skeleton-wave h-4 w-40 rounded" />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="skeleton-wave h-9 w-24 rounded" />
+                    <div className="skeleton-wave h-9 w-9 rounded" />
+                    <div className="skeleton-wave h-9 w-9 rounded" />
+                  </div>
+                </div>
+
+                {/* 链接列表（展开状态） */}
+                {i === 0 && (
+                  <div className="p-4">
+                    <div className="space-y-2">
+                      {Array.from({ length: 3 }).map((_, j) => (
+                        <div key={j} className="flex items-center justify-between py-2">
+                          <div className="skeleton-wave h-4 w-32 rounded" />
+                          <div className="skeleton-wave h-4 w-48 rounded" />
+                          <div className="skeleton-wave h-4 w-12 rounded" />
+                          <div className="skeleton-wave h-5 w-12 rounded-full" />
+                          <div className="flex space-x-2">
+                            <div className="skeleton-wave h-8 w-8 rounded" />
+                            <div className="skeleton-wave h-8 w-8 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
