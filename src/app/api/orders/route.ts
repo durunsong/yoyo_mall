@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import {
+  CouponError,
+  validateCouponAndCalculateDiscount,
+} from '@/lib/coupon';
+import {
+  calculateShippingAmount,
+  calculateTaxAmount,
+  roundCurrency,
+} from '@/lib/pricing';
 
 // 订单查询参数验证
 const orderQuerySchema = z.object({
@@ -250,7 +259,7 @@ export async function POST(request: NextRequest) {
       }
 
       const variant = item.variantId ? product.variants[0] : null;
-      const actualPrice = variant?.price || product.price;
+      const actualPrice = Number(variant?.price ?? product.price);
 
       // 验证价格（防止前端价格被篡改）
       if (Math.abs(actualPrice - item.unitPrice) > 0.01) {
@@ -302,46 +311,41 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 计算税费和运费（这里使用简单的计算，实际项目中应该根据地址和商品类型计算）
-    const taxRate = 0.08; // 8% 税率
-    const taxAmount = subtotal * taxRate;
-    const shippingAmount = subtotal >= 99 ? 0 : 9.99; // 满$99免运费
+    subtotal = roundCurrency(subtotal);
+    const taxAmount = calculateTaxAmount(subtotal);
+    const shippingAmount = calculateShippingAmount(subtotal);
     let discountAmount = 0;
+    let appliedCouponId: string | null = null;
+    let appliedCouponCode: string | null = null;
 
-    // 处理优惠券（如果有）
     if (data.couponCode) {
-      const coupon = await prisma.coupon.findFirst({
-        where: {
-          code: data.couponCode,
-          isActive: true,
-          validFrom: { lte: new Date() },
-          validTo: { gte: new Date() },
-          usageLimit: { gt: prisma.coupon.fields.usageCount },
-        },
-      });
-
-      if (!coupon) {
-        return NextResponse.json(
-          { success: false, error: 'INVALID_COUPON', message: '优惠券无效或已过期' },
-          { status: 400 },
-        );
-      }
-
-      // 计算折扣
-      switch (coupon.type) {
-        case 'PERCENTAGE':
-          discountAmount = Math.min(subtotal * (coupon.value / 100), coupon.maxDiscount || Infinity);
-          break;
-        case 'FIXED_AMOUNT':
-          discountAmount = Math.min(coupon.value, subtotal);
-          break;
-        case 'FREE_SHIPPING':
-          discountAmount = shippingAmount;
-          break;
+      try {
+        const {
+          discountAmount: couponDiscount,
+          coupon,
+        } =
+          await validateCouponAndCalculateDiscount({
+            code: data.couponCode,
+            subtotal,
+            shippingAmount,
+          });
+        discountAmount = couponDiscount;
+        appliedCouponId = coupon.id;
+        appliedCouponCode = coupon.code;
+      } catch (error) {
+        if (error instanceof CouponError) {
+          return NextResponse.json(
+            { success: false, error: error.code, message: error.message },
+            { status: 400 },
+          );
+        }
+        throw error;
       }
     }
 
-    const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
+    const totalAmount = roundCurrency(
+      subtotal + taxAmount + shippingAmount - discountAmount,
+    );
 
     // 使用数据库事务创建订单
     const order = await prisma.$transaction(async (tx) => {
@@ -402,9 +406,9 @@ export async function POST(request: NextRequest) {
       }
 
       // 更新优惠券使用次数
-      if (data.couponCode) {
+      if (appliedCouponId) {
         await tx.coupon.update({
-          where: { code: data.couponCode },
+          where: { id: appliedCouponId },
           data: { usageCount: { increment: 1 } },
         });
       }

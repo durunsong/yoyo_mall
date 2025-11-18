@@ -8,6 +8,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 import {
   CreditCard,
   MapPin,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   Lock,
   Package,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,9 +29,18 @@ import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-setting
 import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import {
+  calculateShippingAmount,
+  calculateTaxAmount,
+  SHIPPING_FREE_THRESHOLD,
+} from '@/lib/pricing';
 
 // Stripe Promise
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '');
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY ||
+    '',
+);
 
 // 结算步骤枚举
 enum CheckoutStep {
@@ -41,10 +52,23 @@ enum CheckoutStep {
 export default function CheckoutPage() {
   const router = useRouter();
   const { t } = useStaticTranslations('checkout');
-  const { items } = useCartStore();
+  const { data: session, status } = useSession();
+  const {
+    items,
+    clearCart,
+    coupon: appliedCoupon,
+    clearCoupon,
+  } = useCartStore();
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.SHIPPING);
   const [clientSecret, setClientSecret] = useState('');
+  const [shippingAddressId, setShippingAddressId] = useState<string | null>(null);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const [orderResult, setOrderResult] = useState<{
+    id: string;
+    orderNumber: string;
+  } | null>(null);
   
   // 配送地址
   const [shippingAddress, setShippingAddress] = useState({
@@ -75,13 +99,91 @@ export default function CheckoutPage() {
   const { settings } = useSystemSettings();
   const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
 
+  const ensureShippingAddressId = async () => {
+    if (shippingAddressId) {
+      return shippingAddressId;
+    }
+
+    if (!session?.user) {
+      throw new Error(t('toast.loginRequired'));
+    }
+
+    const normalize = (value?: string | null) =>
+      (value || '').trim().toLowerCase();
+
+    setSavingAddress(true);
+    try {
+      let matchedId: string | null = null;
+
+      const existingRes = await fetch('/api/user/addresses');
+      if (existingRes.ok) {
+        const existingData = await existingRes.json();
+        const existingList: any[] = existingData.data || [];
+        const matched = existingList.find(address =>
+          normalize(address.firstName) === normalize(shippingAddress.firstName) &&
+          normalize(address.lastName) === normalize(shippingAddress.lastName) &&
+          normalize(address.addressLine1) === normalize(shippingAddress.address) &&
+          normalize(address.city) === normalize(shippingAddress.city) &&
+          normalize(address.state) === normalize(shippingAddress.state) &&
+          normalize(address.postalCode) === normalize(shippingAddress.postalCode) &&
+          normalize(address.country) === normalize(shippingAddress.country),
+        );
+
+        if (matched) {
+          matchedId = matched.id;
+          if (!matched.isDefault) {
+            await fetch(`/api/user/addresses/${matched.id}/set-default`, {
+              method: 'POST',
+            });
+          }
+        }
+      }
+
+      if (matchedId) {
+        setShippingAddressId(matchedId);
+        return matchedId;
+      }
+
+      const response = await fetch('/api/user/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'SHIPPING',
+          firstName: shippingAddress.firstName,
+          lastName: shippingAddress.lastName,
+          addressLine1: shippingAddress.address,
+          addressLine2: '',
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postalCode: shippingAddress.postalCode,
+          country: shippingAddress.country,
+          phone: shippingAddress.phone,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '保存地址失败，请稍后重试');
+      }
+
+      const newId = data.data.id as string;
+      setShippingAddressId(newId);
+      await fetch(`/api/user/addresses/${newId}/set-default`, { method: 'POST' });
+
+      return newId;
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
   // 计算总价
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const shipping = 10;
-  const tax = subtotal * 0.08;
+  const shipping = calculateShippingAmount(subtotal);
+  const tax = calculateTaxAmount(subtotal);
   const total = subtotal + shipping + tax;
 
   // 验证地址
@@ -101,7 +203,14 @@ export default function CheckoutPage() {
   const handleProceedToPayment = async () => {
     if (!validateAddress()) return;
 
+    if (!session?.user) {
+      toast.error(t('toast.loginRequired'));
+      router.push('/cart');
+      return;
+    }
+
     try {
+      await ensureShippingAddressId();
       // 创建支付意图
       const response = await fetch('/api/payments/stripe/create-intent', {
         method: 'POST',
@@ -122,7 +231,62 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Payment intent error:', error);
-      toast.error(t('toast.paymentInitFailed'));
+      toast.error(
+        error instanceof Error ? error.message : t('toast.paymentInitFailed'),
+      );
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    try {
+      setCreatingOrder(true);
+      const ensuredAddressId = await ensureShippingAddressId();
+
+      const cartResponse = await fetch('/api/cart');
+      const cartData = await cartResponse.json();
+
+      if (!cartResponse.ok || !cartData.success || !cartData.data?.items?.length) {
+        throw new Error(t('toast.cartEmpty'));
+      }
+
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cartData.data.items.map((item: any) => ({
+            productId: item.productId,
+            variantId: item.variantId ?? undefined,
+            quantity: item.quantity,
+            unitPrice: Number(item.price),
+          })),
+          shippingAddressId: ensuredAddressId,
+          paymentMethod: 'CREDIT_CARD',
+          couponCode: appliedCoupon?.code,
+        }),
+      });
+
+      const orderResult = await orderResponse.json();
+
+      if (!orderResponse.ok || !orderResult.success) {
+        throw new Error(orderResult.message || t('toast.orderFailed'));
+      }
+
+      setOrderResult(orderResult.data);
+      setCurrentStep(CheckoutStep.REVIEW);
+      clearCart();
+      clearCoupon();
+      await fetch('/api/cart', { method: 'DELETE' });
+    } catch (error) {
+      console.error('创建订单失败:', error);
+      const message =
+        error instanceof Error ? error.message : t('toast.orderFailed');
+      toast.error(message);
+      const handledError =
+        error instanceof Error ? error : new Error(message);
+      (handledError as any).__handled = true;
+      throw handledError;
+    } finally {
+      setCreatingOrder(false);
     }
   };
 
@@ -132,6 +296,13 @@ export default function CheckoutPage() {
       router.push('/cart');
     }
   }, [items, router]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      toast.error(t('toast.loginRequired'));
+      router.push('/cart');
+    }
+  }, [status, router, t]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -304,9 +475,23 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full" size="lg" onClick={handleProceedToPayment}>
-                    {t('actions.continueToPayment')}
-                    <ChevronRight className="ml-2 h-5 w-5" />
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handleProceedToPayment}
+                    disabled={savingAddress}
+                  >
+                    {savingAddress ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        {t('actions.processing')}
+                      </>
+                    ) : (
+                      <>
+                        {t('actions.continueToPayment')}
+                        <ChevronRight className="ml-2 h-5 w-5" />
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -324,9 +509,10 @@ export default function CheckoutPage() {
                 <CardContent>
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
                     <PaymentForm
-                      onSuccess={() => setCurrentStep(CheckoutStep.REVIEW)}
+                      onSuccess={handlePaymentSuccess}
                       totalAmount={total}
                       currencySymbol={currencySymbol}
+                      creatingOrder={creatingOrder}
                     />
                   </Elements>
                 </CardContent>
@@ -350,13 +536,21 @@ export default function CheckoutPage() {
                         <span className="font-medium">{t('review.successTitle')}</span>
                       </div>
                       <p className="mt-2 text-sm">
-                        {t('review.successDescription')}
+                        {orderResult
+                          ? `${t('review.successDescription')} · ${t('review.orderNumberLabel') || '订单号'} ${orderResult.orderNumber}`
+                          : t('review.successDescription')}
                       </p>
                     </div>
                     <Button
                       className="w-full"
                       size="lg"
-                      onClick={() => router.push('/account/orders')}
+                      onClick={() =>
+                        router.push(
+                          orderResult
+                            ? `/account/orders/${orderResult.id}`
+                            : '/account/orders',
+                        )
+                      }
                     >
                       {t('review.viewOrders')}
                     </Button>
@@ -462,10 +656,12 @@ function PaymentForm({
   onSuccess,
   totalAmount,
   currencySymbol,
+  creatingOrder,
 }: {
-  onSuccess: () => void;
+  onSuccess: () => Promise<void>;
   totalAmount: number;
   currencySymbol: string;
+  creatingOrder: boolean;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -492,11 +688,17 @@ function PaymentForm({
         toast.error(error.message || t('toast.paymentFailed'));
       } else {
         toast.success(t('toast.paymentSuccess'));
-        onSuccess();
+        await onSuccess();
       }
     } catch (error) {
       console.error('Payment processing failed:', error);
-      toast.error(t('toast.paymentProcessingFailed'));
+      if (!(error as any)?.__handled) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : t('toast.paymentProcessingFailed'),
+        );
+      }
     } finally {
       setProcessing(false);
     }
@@ -505,10 +707,17 @@ function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement />
-      <Button type="submit" className="w-full" size="lg" disabled={!stripe || processing}>
-        {processing
+      <Button
+        type="submit"
+        className="w-full"
+        size="lg"
+        disabled={!stripe || processing || creatingOrder}
+      >
+        {processing || creatingOrder
           ? t('payment.processing')
-          : t('payment.payAmount', { amount: `${currencySymbol}${totalAmount.toFixed(2)}` })}
+          : t('payment.payAmount', {
+              amount: `${currencySymbol}${totalAmount.toFixed(2)}`,
+            })}
       </Button>
     </form>
   );

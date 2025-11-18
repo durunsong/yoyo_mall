@@ -111,20 +111,43 @@ export default function OrdersPage() {
   const [isUpdateStatusDialogOpen, setIsUpdateStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<Order['status']>('PENDING');
   const [updating, setUpdating] = useState(false);
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    PENDING: 0,
+    CONFIRMED: 0,
+    PROCESSING: 0,
+    SHIPPED: 0,
+    DELIVERED: 0,
+  });
 
   // 加载订单列表
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+useEffect(() => {
+  fetchOrders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [statusFilter]);
 
   // 获取订单列表
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/orders?limit=100');
+      const params = new URLSearchParams({ limit: '100' });
+      if (statusFilter !== 'all') {
+        params.set('status', statusFilter);
+      }
+      const response = await fetch(`/api/admin/orders?${params.toString()}`);
       const data = await response.json();
       if (data.success) {
         setOrders(data.data);
+        setStatusCounts({
+          all: data.counts?.total ?? data.data.length,
+          PENDING: data.counts?.PENDING ?? 0,
+          CONFIRMED: data.counts?.CONFIRMED ?? 0,
+          PROCESSING: data.counts?.PROCESSING ?? 0,
+          SHIPPED: data.counts?.SHIPPED ?? 0,
+          DELIVERED: data.counts?.DELIVERED ?? 0,
+        });
+      } else {
+        toast.error(data.error || '加载订单列表失败');
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -163,8 +186,8 @@ export default function OrdersPage() {
 
     try {
       setUpdating(true);
-      const response = await fetch(`/api/orders/${selectedOrder.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/admin/orders/${selectedOrder.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -238,8 +261,8 @@ export default function OrdersPage() {
 
       if (newStatus) {
         for (const orderId of selectedOrders) {
-          const response = await fetch(`/api/orders/${orderId}`, {
-            method: 'PATCH',
+          const response = await fetch(`/api/admin/orders/${orderId}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus }),
           });
@@ -280,10 +303,11 @@ export default function OrdersPage() {
 
   // 订单统计
   const stats = {
-    total: orders.length,
-    pending: orders.filter((o) => o.status === 'PENDING').length,
-    processing: orders.filter((o) => ['CONFIRMED', 'PROCESSING', 'SHIPPED'].includes(o.status)).length,
-    completed: orders.filter((o) => o.status === 'DELIVERED').length,
+    total: statusCounts.all,
+    pending: statusCounts.PENDING,
+    processing:
+      statusCounts.CONFIRMED + statusCounts.PROCESSING + statusCounts.SHIPPED,
+    completed: statusCounts.DELIVERED,
     totalRevenue: orders
       .filter((o) => o.status === 'DELIVERED')
       .reduce((sum, o) => sum + o.totalAmount, 0),

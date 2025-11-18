@@ -57,7 +57,7 @@ interface Order {
   orderNumber: string;
   status: OrderStatus;
   totalAmount: number;
-  shippingFee: number;
+  shippingAmount: number;
   taxAmount: number;
   discountAmount: number;
   createdAt: string;
@@ -71,16 +71,18 @@ interface Order {
     id: string;
     quantity: number;
     unitPrice: number;
+    totalPrice: number;
     product: {
       id: string;
       name: string;
       images?: Array<{ url: string }>;
     };
   }>;
-  shippingAddress: {
-    fullName: string;
-    phone: string;
-    address: string;
+  shippingAddress?: {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    addressLine1: string;
     city: string;
     state: string;
     postalCode: string;
@@ -88,11 +90,18 @@ interface Order {
   };
   payment?: {
     id: string;
-    method: string;
+    paymentMethod: string;
     status: string;
     transactionId?: string;
     createdAt: string;
-  };
+  } | null;
+  payments?: Array<{
+    id: string;
+    paymentMethod: string;
+    status: string;
+    transactionId?: string;
+    createdAt: string;
+  }>;
 }
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
@@ -109,11 +118,14 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const fetchOrderDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/orders/${params.id}`);
+      const response = await fetch(`/api/admin/orders/${params.id}`);
       const data = await response.json();
 
       if (data.success) {
-        setOrder(data.data);
+        setOrder({
+          ...data.data,
+          payment: data.data.payments?.[0] ?? null,
+        });
       } else {
         toast.error('加载订单详情失败');
         router.push('/admin/orders');
@@ -133,8 +145,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
     try {
       setUpdating(true);
-      const response = await fetch(`/api/orders/${order.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/admin/orders/${order.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -333,11 +345,11 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">商品小计</span>
-                    <span>{formatPrice(order.totalAmount - order.shippingFee - order.taxAmount + order.discountAmount)}</span>
+                    <span>{formatPrice(order.totalAmount - order.shippingAmount - order.taxAmount + order.discountAmount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">运费</span>
-                    <span>{formatPrice(order.shippingFee)}</span>
+                    <span>{formatPrice(order.shippingAmount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">税费</span>
@@ -367,24 +379,36 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600">收货人</div>
-                    <div className="font-medium">{order.shippingAddress.fullName}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600">联系电话</div>
-                    <div className="font-medium">{order.shippingAddress.phone}</div>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">收货地址</div>
-                  <div className="font-medium">
-                    {order.shippingAddress.country} {order.shippingAddress.state}{' '}
-                    {order.shippingAddress.city} {order.shippingAddress.address}{' '}
-                    {order.shippingAddress.postalCode}
-                  </div>
-                </div>
+                {order.shippingAddress ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-600">收货人</div>
+                        <div className="font-medium">
+                          {[order.shippingAddress.firstName, order.shippingAddress.lastName]
+                            .filter(Boolean)
+                            .join(' ')}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">联系电话</div>
+                        <div className="font-medium">
+                          {order.shippingAddress.phone || '-'}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">收货地址</div>
+                      <div className="font-medium">
+                        {order.shippingAddress.country} {order.shippingAddress.state}{' '}
+                        {order.shippingAddress.city} {order.shippingAddress.addressLine1}{' '}
+                        {order.shippingAddress.postalCode}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">暂无配送信息</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -420,7 +444,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <CardContent className="space-y-3">
                   <div>
                     <div className="text-sm text-gray-600">支付方式</div>
-                    <div className="font-medium">{order.payment.method}</div>
+                    <div className="font-medium">{order.payment.paymentMethod}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">支付状态</div>

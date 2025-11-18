@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -29,6 +29,11 @@ import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from 'sonner';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
+import {
+  calculateShippingAmount,
+  calculateTaxAmount,
+  SHIPPING_FREE_THRESHOLD,
+} from '@/lib/pricing';
 
 export default function CartPage() {
   const router = useRouter();
@@ -37,12 +42,27 @@ export default function CartPage() {
   const { t: tCommon } = useStaticTranslations('common');
   const { t: tProduct } = useStaticTranslations('product');
   
-  const { items, updateQuantity, removeItem, _hasHydrated } = useCartStore();
-  const [couponCode, setCouponCode] = useState('');
-  const [couponDiscount, setCouponDiscount] = useState(0);
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    _hasHydrated,
+    coupon,
+    applyCoupon,
+    clearCoupon,
+  } = useCartStore();
+  const [couponInput, setCouponInput] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   
+  useEffect(() => {
+    if (coupon?.code) {
+      setCouponInput(coupon.code);
+    } else {
+      setCouponInput('');
+    }
+  }, [coupon]);
+
   // 获取系统设置的货币符号
   const { settings } = useSystemSettings();
   const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
@@ -52,33 +72,49 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const shippingThreshold = 99;
-  const shippingCost = 10;
-  const shipping = subtotal >= shippingThreshold ? 0 : shippingCost; // 满99免运费
-  const tax = subtotal * 0.08; // 8%税率
-  const discount = couponDiscount;
+  const shippingThreshold = SHIPPING_FREE_THRESHOLD;
+  const shipping = calculateShippingAmount(subtotal);
+  const tax = calculateTaxAmount(subtotal);
+  const discount = coupon?.discount ?? 0;
   const total = subtotal + shipping + tax - discount;
 
   // 应用优惠券
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
+    if (!couponInput.trim()) {
       toast.error(t('enterCouponCode'));
+      return;
+    }
+
+    if (!session?.user) {
+      toast.error(tProduct('toast.loginRequired'));
       return;
     }
 
     setApplyingCoupon(true);
     try {
-      // TODO: 调用优惠券验证API
-      // 模拟优惠券验证
-      if (couponCode.toUpperCase() === 'WELCOME10') {
-        const discountAmount = subtotal * 0.1; // 10% 折扣
-        setCouponDiscount(discountAmount);
-        toast.success(t('couponApplied'));
-      } else {
-        toast.error(t('invalidCoupon'));
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponInput }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || t('invalidCoupon'));
       }
+
+      applyCoupon({
+        code: data.data.coupon.code,
+        discount: data.data.discountAmount,
+      });
+      setCouponInput(data.data.coupon.code);
+      toast.success(t('couponApplied'));
     } catch (error) {
-      toast.error(t('couponError'));
+      console.error('验证优惠券失败:', error);
+      toast.error(
+        error instanceof Error ? error.message : t('couponError'),
+      );
     } finally {
       setApplyingCoupon(false);
     }
@@ -86,8 +122,8 @@ export default function CartPage() {
 
   // 移除优惠券
   const handleRemoveCoupon = () => {
-    setCouponCode('');
-    setCouponDiscount(0);
+    setCouponInput('');
+    clearCoupon();
     toast.success(t('couponRemoved'));
   };
 
@@ -362,14 +398,14 @@ export default function CartPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {couponDiscount > 0 ? (
+                  {coupon ? (
                     <div className="flex items-center justify-between rounded-lg bg-green-50 p-3">
                       <div className="flex items-center gap-2">
                         <Badge variant="default" className="bg-green-600">
-                          {couponCode}
+                          {coupon.code}
                         </Badge>
                         <span className="text-sm text-green-700">
-                          -{currencySymbol}{couponDiscount.toFixed(2)}
+                          -{currencySymbol}{coupon.discount.toFixed(2)}
                         </span>
                       </div>
                       <Button
@@ -384,14 +420,14 @@ export default function CartPage() {
                   ) : (
                     <div className="flex gap-2">
                       <Input
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
                         placeholder={t('enterCouponCode')}
                         className="flex-1"
                       />
                       <Button
                         onClick={handleApplyCoupon}
-                        disabled={applyingCoupon || !couponCode.trim()}
+                        disabled={applyingCoupon || !couponInput.trim()}
                       >
                         {t('apply')}
                       </Button>
@@ -420,10 +456,10 @@ export default function CartPage() {
                     <span>{tCommon('tax')}</span>
                     <span>{currencySymbol}{tax.toFixed(2)}</span>
                   </div>
-                  {couponDiscount > 0 && (
+                  {coupon && (
                     <div className="flex justify-between text-green-600">
                       <span>{t('couponDiscount')}</span>
-                      <span>-{currencySymbol}{couponDiscount.toFixed(2)}</span>
+                      <span>-{currencySymbol}{coupon.discount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />

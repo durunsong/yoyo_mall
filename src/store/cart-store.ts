@@ -12,6 +12,10 @@ import type { CartItem } from '@/types';
 interface CartState {
   // 状态
   items: CartItem[];
+  coupon: {
+    code: string;
+    discount: number;
+  } | null;
   isOpen: boolean;
   _hasHydrated: boolean; // 水合状态标记（始终为true，因为不使用localStorage）
 
@@ -24,6 +28,8 @@ interface CartState {
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  applyCoupon: (payload: { code: string; discount: number }) => void;
+  clearCoupon: () => void;
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -39,6 +45,7 @@ function generateId(): string {
 export const useCartStore = create<CartState>((set, get) => ({
   // 初始状态
   items: [],
+  coupon: null,
   isOpen: false,
   _hasHydrated: true, // 不使用localStorage，始终为true
 
@@ -120,6 +127,17 @@ export const useCartStore = create<CartState>((set, get) => ({
   clearCart: () =>
     set(() => ({
       items: [],
+      coupon: null,
+    })),
+
+  applyCoupon: payload =>
+    set(() => ({
+      coupon: payload,
+    })),
+
+  clearCoupon: () =>
+    set(() => ({
+      coupon: null,
     })),
 
   // 切换购物车显示状态
