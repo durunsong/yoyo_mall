@@ -60,6 +60,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 如果用户没有 profile，自动创建一个空的 profile
+    if (!user.profile) {
+      console.log('用户没有profile记录，自动创建:', session.user.id);
+      
+      const newProfile = await prisma.userProfile.create({
+        data: {
+          userId: session.user.id,
+          firstName: '',
+          lastName: '',
+          phone: '',
+          bio: '',
+          location: '',
+          locale: 'zh-CN',
+          timezone: 'Asia/Shanghai',
+        },
+        select: {
+          firstName: true,
+          lastName: true,
+          phone: true,
+          gender: true,
+          dateOfBirth: true,
+          bio: true,
+          location: true,
+          locale: true,
+          timezone: true,
+        },
+      });
+
+      // 将新创建的 profile 添加到返回的用户数据中
+      return NextResponse.json({
+        ...user,
+        profile: newProfile,
+      });
+    }
+
     return NextResponse.json(user);
 
   } catch (error) {

@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, socials });
   } catch (error) {
     console.error('获取Footer社交媒体链接失败:', error);
-    return NextResponse.json({ error: '获取Footer社交媒体链接失败' }, { status: 500 });
+    // 如果表不存在或没有数据，返回空数组而不是500错误
+    return NextResponse.json({ success: true, socials: [] });
   }
 }
 

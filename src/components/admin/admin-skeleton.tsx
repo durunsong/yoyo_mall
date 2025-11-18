@@ -667,7 +667,7 @@ export function FooterConfigSkeleton() {
       </Card>
 
       {/* 标签页导航 */}
-      <div className="flex space-x-4 border-b">
+      <div className="flex space-x-4">
         <div className="skeleton-wave h-10 w-24 rounded-t" />
         <div className="skeleton-wave h-10 w-24 rounded-t" />
         <div className="skeleton-wave h-10 w-24 rounded-t" />
@@ -683,9 +683,9 @@ export function FooterConfigSkeleton() {
           <div className="space-y-4">
             {/* Footer区块项 */}
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-lg border bg-card">
+              <div key={i} className="rounded-lg bg-card">
                 {/* 区块头部 */}
-                <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center justify-between p-4 shadow-sm">
                   <div className="flex items-center space-x-4">
                     <div className="skeleton-wave h-8 w-8 rounded" />
                     <div>
