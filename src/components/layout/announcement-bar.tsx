@@ -235,7 +235,7 @@ export function AnnouncementBar() {
   );
 
   return (
-    <div className="w-full" style={containerStyles}>
+    <div className="w-full overflow-hidden" style={containerStyles}>
       {isClickable ? (
         <button
           type="button"

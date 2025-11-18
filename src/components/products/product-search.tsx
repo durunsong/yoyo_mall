@@ -40,8 +40,10 @@ export default function ProductSearch({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // 修改为 onKeyDown 以确保回车键能正常触发
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault(); // 防止表单提交
       handleSearch();
     }
   };
@@ -53,15 +55,16 @@ export default function ProductSearch({
         placeholder={placeholder}
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         className="pr-10"
       />
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        className="absolute right-0 top-0 h-full px-3"
+        className="absolute right-0 top-0 h-full px-3 hover:bg-accent"
         onClick={handleSearch}
+        aria-label="搜索"
       >
         <Search className="h-4 w-4" />
       </Button>

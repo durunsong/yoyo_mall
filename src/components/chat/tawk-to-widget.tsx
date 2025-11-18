@@ -25,6 +25,21 @@ export function TawkToWidget() {
       return;
     }
 
+    // 添加CSS样式，在脚本加载前就隐藏Tawk.to widget
+    const style = document.createElement('style');
+    style.id = 'tawk-hide-style';
+    style.textContent = `
+      #tawkchat-container,
+      .tawk-min-container,
+      .tawk-button,
+      iframe[src*="tawk.to"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+
     // 从环境变量获取配置
     const widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID;
     const apiKey = process.env.NEXT_PUBLIC_TAWK_API_KEY;
@@ -40,9 +55,25 @@ export function TawkToWidget() {
       return;
     }
 
-    // 初始化 Tawk_API
+    // 初始化 Tawk_API - 在加载前就配置为隐藏
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
+    
+    // 在脚本加载前就设置为隐藏状态，避免加载时闪现
+    window.Tawk_API.customStyle = {
+      visibility: {
+        desktop: {
+          position: 'br',
+          xOffset: 0,
+          yOffset: 0,
+        },
+        mobile: {
+          position: 'br',
+          xOffset: 0,
+          yOffset: 0,
+        },
+      },
+    };
 
     // 创建并加载 Tawk.to 脚本
     const script = document.createElement('script');
@@ -58,18 +89,77 @@ export function TawkToWidget() {
     // 可选: 监听 Tawk.to 事件
     window.Tawk_API.onLoad = function () {
       console.log('Tawk.to 客服已加载');
+      
+      // 始终隐藏 Tawk.to 的默认浮动图标
+      // 只使用自定义的客服按钮
+      window.Tawk_API.hideWidget();
     };
 
     window.Tawk_API.onChatMaximized = function () {
       console.log('客服窗口已打开');
+      
+      // 在桌面端添加点击外部关闭的功能
+      if (window.innerWidth >= 768) {
+        // 延迟添加监听器，避免立即触发
+        setTimeout(() => {
+          addClickOutsideListener();
+        }, 100);
+      }
     };
 
     window.Tawk_API.onChatMinimized = function () {
       console.log('客服窗口已最小化');
+      // 移除点击外部监听器
+      removeClickOutsideListener();
+    };
+
+    // 点击外部关闭客服窗口的处理函数
+    const handleClickOutside = (event: MouseEvent) => {
+      // 获取 Tawk.to iframe 元素
+      const tawkIframe = document.getElementById('tawkchat-container') || 
+                        document.querySelector('iframe[title*="chat"]') ||
+                        document.querySelector('iframe[src*="tawk.to"]');
+      
+      if (!tawkIframe) return;
+
+      // 检查点击是否在 iframe 外部
+      const rect = tawkIframe.getBoundingClientRect();
+      const clickX = event.clientX;
+      const clickY = event.clientY;
+
+      const isOutside = 
+        clickX < rect.left ||
+        clickX > rect.right ||
+        clickY < rect.top ||
+        clickY > rect.bottom;
+
+      // 如果点击在外部，关闭客服窗口
+      if (isOutside && window.Tawk_API) {
+        window.Tawk_API.minimize();
+      }
+    };
+
+    // 添加点击外部监听器
+    const addClickOutsideListener = () => {
+      document.addEventListener('click', handleClickOutside, true);
+    };
+
+    // 移除点击外部监听器
+    const removeClickOutsideListener = () => {
+      document.removeEventListener('click', handleClickOutside, true);
     };
 
     // 清理函数
     return () => {
+      // 移除点击外部监听器
+      removeClickOutsideListener();
+      
+      // 移除隐藏样式
+      const hideStyle = document.getElementById('tawk-hide-style');
+      if (hideStyle) {
+        hideStyle.remove();
+      }
+      
       // 移除脚本(如果需要)
       const tawkScript = document.querySelector(
         'script[src*="embed.tawk.to"]',
@@ -83,7 +173,7 @@ export function TawkToWidget() {
         window.Tawk_API = undefined;
       }
     };
-  }, []);
+  }, [pathname]);
 
   // 不渲染任何 DOM,Tawk.to 会自动注入客服组件
   return null;

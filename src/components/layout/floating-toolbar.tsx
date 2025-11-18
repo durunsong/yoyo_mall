@@ -9,13 +9,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, ArrowUp, Minus, Plus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowUp, Minus, Plus, Trash2, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { toast } from 'sonner';
+import { TawkToAPI } from '@/components/chat/tawk-to-widget';
 import {
   HoverCard,
   HoverCardContent,
@@ -213,9 +214,10 @@ export function FloatingToolbar() {
   };
 
   // 如果还未挂载到客户端,显示占位符
+  // 注意：在移动端（< md 断点）隐藏固定工具栏
   if (!isClient || !currentTime) {
     return (
-      <div className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
+      <div className="fixed right-3 top-1/2 z-40 hidden md:flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
         {/* 时间显示 - 顶部(占位符) */}
         <div className="mb-1 w-16 rounded-t-xl bg-white px-2 py-2 text-center shadow-md">
           <div className="text-[10px] leading-tight text-gray-500">UTC+8</div>
@@ -237,6 +239,16 @@ export function FloatingToolbar() {
           </button>
         </div>
 
+        {/* 在线客服按钮 */}
+        <div className="w-16">
+          <button className="flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-green-50 group">
+            <div className="relative">
+              <MessageCircle className="h-6 w-6 text-green-600" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+            </div>
+          </button>
+        </div>
+
         {/* Discord 按钮 - 底部 */}
         <div className="w-16 rounded-b-xl bg-white shadow-md">
           <button className="flex h-12 w-full items-center justify-center rounded-b-xl transition-all hover:bg-gray-50">
@@ -250,7 +262,7 @@ export function FloatingToolbar() {
   }
 
   return (
-    <div className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
+    <div className="fixed right-3 top-1/2 z-40 hidden md:flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
       {/* 时间显示 - 顶部 */}
       <div className="mb-1 w-16 rounded-t-xl bg-white px-2 py-2 text-center shadow-md">
         <div className="text-[10px] leading-tight text-gray-500">
@@ -464,6 +476,22 @@ export function FloatingToolbar() {
           {wishlistAnimation && (
             <span className="absolute inset-0 rounded-full bg-red-500 opacity-75 animate-ping" />
           )}
+        </button>
+      </div>
+
+      {/* 在线客服按钮 */}
+      <div className="relative w-16">
+        <button
+          onClick={() => TawkToAPI.maximize()}
+          className="relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-green-50 group"
+          title="在线客服"
+        >
+          <div className="relative">
+            {/* 使用自定义客服图标 */}
+            <MessageCircle className="h-6 w-6 text-green-600 transition-all duration-300 group-hover:scale-110" />
+            {/* 在线状态指示器 */}
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white animate-pulse"></span>
+          </div>
         </button>
       </div>
 

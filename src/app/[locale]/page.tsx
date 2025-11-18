@@ -250,9 +250,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden">
       {/* Hero区块 - 结合卖点介绍 */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-10 text-white">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-10 text-white w-full overflow-x-hidden">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-between gap-12 lg:flex-row">
             <div className="max-w-2xl text-center lg:text-left">
@@ -342,7 +342,7 @@ export default function HomePage() {
       </section>
 
       {/* 综合展示区块 - 分类 + 数据 */}
-      <section className="bg-gray-50 py-5">
+      <section className="bg-gray-50 py-5 w-full overflow-x-hidden">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-bold text-gray-900">{t('experienceMore')}</h2>
@@ -470,7 +470,7 @@ export default function HomePage() {
       </section>
 
       {/* 精品推荐区块 */}
-      <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 py-5">
+      <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 py-5 w-full overflow-x-hidden">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-14 text-center">
             <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1 text-sm font-medium text-purple-600">

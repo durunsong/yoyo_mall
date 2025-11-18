@@ -22,9 +22,9 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   
   // 如果是前台路径，使用完整的前台布局
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden">
       <ShadcnHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 w-full overflow-x-hidden">{children}</main>
       <Footer />
       {/* 浮动工具栏 */}
       <FloatingToolbar />

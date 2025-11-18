@@ -131,9 +131,9 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gray-900 text-white w-full overflow-x-hidden">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-blue-100 to-indigo-400 py-12">
+      <div className="bg-gradient-to-r from-blue-100 to-indigo-400 py-12 w-full overflow-x-hidden">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
