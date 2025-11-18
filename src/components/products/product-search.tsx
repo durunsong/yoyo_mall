@@ -26,17 +26,16 @@ export default function ProductSearch({
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearch = () => {
-    // 如果有自定义回调，优先使用
-    if (onSearch) {
-      onSearch(searchValue);
-      return;
-    }
-
     // 默认行为：跳转到商品列表页并传递搜索关键词
     if (searchValue.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchValue.trim())}`);
     } else {
       router.push('/products');
+    }
+
+    // 执行搜索后调用回调（用于关闭移动端搜索框等）
+    if (onSearch) {
+      onSearch(searchValue);
     }
   };
 

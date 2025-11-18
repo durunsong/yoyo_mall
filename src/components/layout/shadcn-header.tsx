@@ -176,8 +176,10 @@ export function ShadcnHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className={`lg:hidden transition-colors ${mobileSearchOpen ? 'bg-accent text-accent-foreground' : ''}`}
                 onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                aria-label="搜索"
+                aria-expanded={mobileSearchOpen}
               >
                 <Search className="h-4 w-4" />
               </Button>
@@ -468,10 +470,11 @@ export function ShadcnHeader() {
 
           {/* 移动端搜索框 - 在header内部，点击搜索按钮后显示 */}
           {mobileSearchOpen && (
-            <div className="border-t border-gray-200 px-4 py-3 lg:hidden">
+            <div className="border-t border-gray-200 bg-white px-4 py-3 lg:hidden animate-in slide-in-from-top-2 duration-200">
               <ProductSearch 
                 placeholder={tNav('searchPlaceholder')} 
                 onSearch={() => setMobileSearchOpen(false)} 
+                className="w-full"
               />
             </div>
           )}

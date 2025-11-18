@@ -609,3 +609,73 @@ model HomeBanner {
 
   @@map("home_banners")
 }
+
+// Footer配置 - 区块模型
+model FooterSection {
+  id          String       @id @default(cuid())
+  key         String       @unique // company, customer, account, legal
+  title       String       // 区块标题
+  titleEn     String?      // 英文标题
+  titleZh     String?      // 中文标题
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // 关联的链接
+  links       FooterLink[]
+
+  @@map("footer_sections")
+}
+
+// Footer链接模型
+model FooterLink {
+  id          String        @id @default(cuid())
+  sectionId   String
+  name        String        // 链接名称
+  nameEn      String?       // 英文名称
+  nameZh      String?       // 中文名称
+  href        String        // 链接地址
+  sortOrder   Int           @default(0)
+  isActive    Boolean       @default(true)
+  openInNew   Boolean       @default(false) // 是否在新窗口打开
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // 关联的区块
+  section     FooterSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@map("footer_links")
+}
+
+// Footer联系信息模型
+model FooterContact {
+  id          String   @id @default(cuid())
+  type        String   // email, phone, address
+  label       String   // 标签
+  labelEn     String?  // 英文标签
+  labelZh     String?  // 中文标签
+  value       String   // 值
+  icon        String?  // 图标名称 (lucide-react)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("footer_contacts")
+}
+
+// Footer社交媒体链接模型
+model FooterSocial {
+  id          String   @id @default(cuid())
+  name        String   // Facebook, Twitter, Instagram, YouTube等
+  icon        String   // 图标名称 (lucide-react)
+  href        String   // 链接地址
+  color       String?  // hover颜色类名
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("footer_socials")
+}
