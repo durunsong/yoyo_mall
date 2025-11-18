@@ -68,40 +68,44 @@ interface FooterSection {
   links: FooterLink[];
 }
 
-// interface FooterContact {
-//   id: string;
-//   type: string;
-//   label: string;
-//   labelEn?: string;
-//   labelZh?: string;
-//   value: string;
-//   icon?: string;
-//   sortOrder: number;
-//   isActive: boolean;
-// }
+interface FooterContact {
+  id?: string;
+  type: string;
+  label: string;
+  labelEn?: string;
+  labelZh?: string;
+  value: string;
+  icon?: string;
+  sortOrder: number;
+  isActive: boolean;
+}
 
-// interface FooterSocial {
-//   id: string;
-//   name: string;
-//   icon: string;
-//   href: string;
-//   color?: string;
-//   sortOrder: number;
-//   isActive: boolean;
-// }
+interface FooterSocial {
+  id?: string;
+  name: string;
+  icon: string;
+  href: string;
+  color?: string;
+  sortOrder: number;
+  isActive: boolean;
+}
 
 export default function FooterConfigPage() {
   const [sections, setSections] = useState<FooterSection[]>([]);
-  // const [contacts, setContacts] = useState<FooterContact[]>([]);
-  // const [socials, setSocials] = useState<FooterSocial[]>([]);
+  const [contacts, setContacts] = useState<FooterContact[]>([]);
+  const [socials, setSocials] = useState<FooterSocial[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('sections'); // sections, contacts, socials
   
   // 对话框状态
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [socialDialogOpen, setSocialDialogOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState<FooterSection | null>(null);
   const [currentLink, setCurrentLink] = useState<Partial<FooterLink>>({});
+  const [currentContact, setCurrentContact] = useState<Partial<FooterContact> | null>(null);
+  const [currentSocial, setCurrentSocial] = useState<Partial<FooterSocial> | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   // 加载数据
@@ -112,10 +116,27 @@ export default function FooterConfigPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/footer-sections');
-      if (response.ok) {
-        const data = await response.json();
-        setSections(data.sections || []);
+      
+      // 并行加载所有数据
+      const [sectionsRes, contactsRes, socialsRes] = await Promise.all([
+        fetch('/api/admin/footer-sections'),
+        fetch('/api/admin/footer-contacts'),
+        fetch('/api/admin/footer-socials'),
+      ]);
+      
+      if (sectionsRes.ok) {
+        const data = await sectionsRes.json();
+        setSections(data.sections || data.data || []);
+      }
+      
+      if (contactsRes.ok) {
+        const data = await contactsRes.json();
+        setContacts(data.contacts || data.data || []);
+      }
+      
+      if (socialsRes.ok) {
+        const data = await socialsRes.json();
+        setSocials(data.socials || data.data || []);
       }
     } catch (error) {
       console.error('加载Footer配置失败:', error);
@@ -243,6 +264,116 @@ export default function FooterConfigPage() {
     } catch (error) {
       console.error('删除链接失败:', error);
       toast.error('删除链接失败');
+    }
+  };
+
+  // ==================== 联系信息CRUD ====================
+  // 保存联系信息
+  const handleSaveContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentContact) return;
+
+    try {
+      const url = currentContact.id
+        ? `/api/admin/footer-contacts/${currentContact.id}`
+        : '/api/admin/footer-contacts';
+      const method = currentContact.id ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentContact),
+      });
+
+      if (response.ok) {
+        toast.success(currentContact.id ? '联系信息更新成功' : '联系信息创建成功');
+        setContactDialogOpen(false);
+        setCurrentContact(null);
+        loadData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '保存失败');
+      }
+    } catch (error) {
+      console.error('保存联系信息失败:', error);
+      toast.error('保存联系信息失败');
+    }
+  };
+
+  // 删除联系信息
+  const handleDeleteContact = async (id: string) => {
+    if (!confirm('确定要删除此联系信息吗？')) return;
+
+    try {
+      const response = await fetch(`/api/admin/footer-contacts/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('联系信息删除成功');
+        loadData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除联系信息失败:', error);
+      toast.error('删除联系信息失败');
+    }
+  };
+
+  // ==================== 社交媒体CRUD ====================
+  // 保存社交媒体
+  const handleSaveSocial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentSocial) return;
+
+    try {
+      const url = currentSocial.id
+        ? `/api/admin/footer-socials/${currentSocial.id}`
+        : '/api/admin/footer-socials';
+      const method = currentSocial.id ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentSocial),
+      });
+
+      if (response.ok) {
+        toast.success(currentSocial.id ? '社交媒体更新成功' : '社交媒体创建成功');
+        setSocialDialogOpen(false);
+        setCurrentSocial(null);
+        loadData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '保存失败');
+      }
+    } catch (error) {
+      console.error('保存社交媒体失败:', error);
+      toast.error('保存社交媒体失败');
+    }
+  };
+
+  // 删除社交媒体
+  const handleDeleteSocial = async (id: string) => {
+    if (!confirm('确定要删除此社交媒体吗？')) return;
+
+    try {
+      const response = await fetch(`/api/admin/footer-socials/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('社交媒体删除成功');
+        loadData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除社交媒体失败:', error);
+      toast.error('删除社交媒体失败');
     }
   };
 
@@ -462,15 +593,90 @@ export default function FooterConfigPage() {
         <TabsContent value="contacts" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>联系信息</CardTitle>
-              <CardDescription>
-                管理Footer的联系方式（邮箱、电话、地址等）
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>联系信息</CardTitle>
+                  <CardDescription className="mt-1">
+                    管理Footer的联系方式（邮箱、电话、地址等），共 {contacts.length} 条
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => {
+                    setCurrentContact({
+                      type: 'email',
+                      label: '',
+                      value: '',
+                      icon: 'Mail',
+                      sortOrder: contacts.length,
+                      isActive: true,
+                    });
+                    setContactDialogOpen(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  添加联系方式
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                联系信息管理功能开发中...
-              </div>
+              {contacts.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  暂无联系信息，点击上方&ldquo;添加联系方式&rdquo;按钮开始创建
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>类型</TableHead>
+                      <TableHead>标签</TableHead>
+                      <TableHead>值</TableHead>
+                      <TableHead>图标</TableHead>
+                      <TableHead>排序</TableHead>
+                      <TableHead>激活</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contacts.map((contact) => (
+                      <TableRow key={contact.id}>
+                        <TableCell>
+                          <Badge variant="outline">{contact.type}</Badge>
+                        </TableCell>
+                        <TableCell>{contact.label}</TableCell>
+                        <TableCell className="max-w-xs truncate">{contact.value}</TableCell>
+                        <TableCell>{contact.icon || '-'}</TableCell>
+                        <TableCell>{contact.sortOrder}</TableCell>
+                        <TableCell>
+                          <Badge variant={contact.isActive ? 'default' : 'secondary'}>
+                            {contact.isActive ? '是' : '否'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCurrentContact(contact);
+                                setContactDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => contact.id && handleDeleteContact(contact.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -479,15 +685,104 @@ export default function FooterConfigPage() {
         <TabsContent value="socials" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>社交媒体链接</CardTitle>
-              <CardDescription>
-                管理Footer的社交媒体图标和链接
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>社交媒体链接</CardTitle>
+                  <CardDescription className="mt-1">
+                    管理Footer的社交媒体图标和链接，共 {socials.length} 个
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => {
+                    setCurrentSocial({
+                      name: '',
+                      icon: 'Facebook',
+                      href: '',
+                      color: 'hover:text-blue-600',
+                      sortOrder: socials.length,
+                      isActive: true,
+                    });
+                    setSocialDialogOpen(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  添加社交媒体
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                社交媒体管理功能开发中...
-              </div>
+              {socials.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  暂无社交媒体链接，点击上方&ldquo;添加社交媒体&rdquo;按钮开始创建
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>名称</TableHead>
+                      <TableHead>图标</TableHead>
+                      <TableHead>链接</TableHead>
+                      <TableHead>颜色</TableHead>
+                      <TableHead>排序</TableHead>
+                      <TableHead>激活</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {socials.map((social) => (
+                      <TableRow key={social.id}>
+                        <TableCell className="font-medium">{social.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{social.icon}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          <a
+                            href={social.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline flex items-center"
+                          >
+                            {social.href}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {social.color || 'default'}
+                          </code>
+                        </TableCell>
+                        <TableCell>{social.sortOrder}</TableCell>
+                        <TableCell>
+                          <Badge variant={social.isActive ? 'default' : 'secondary'}>
+                            {social.isActive ? '是' : '否'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCurrentSocial(social);
+                                setSocialDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => social.id && handleDeleteSocial(social.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -713,6 +1008,270 @@ export default function FooterConfigPage() {
                 onClick={() => {
                   setLinkDialogOpen(false);
                   setCurrentLink({});
+                }}
+              >
+                <X className="mr-2 h-4 w-4" />
+                取消
+              </Button>
+              <Button type="submit">
+                <Save className="mr-2 h-4 w-4" />
+                保存
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 联系信息编辑对话框 */}
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <form onSubmit={handleSaveContact}>
+            <DialogHeader>
+              <DialogTitle>
+                {currentContact?.id ? '编辑联系信息' : '新建联系信息'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="contact-type">类型</Label>
+                <Input
+                  id="contact-type"
+                  value={currentContact?.type || ''}
+                  onChange={(e) => setCurrentContact(prev => 
+                    prev ? { ...prev, type: e.target.value } : null
+                  )}
+                  placeholder="例如: email, phone, address"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="contact-label">标签（默认）</Label>
+                <Input
+                  id="contact-label"
+                  value={currentContact?.label || ''}
+                  onChange={(e) => setCurrentContact(prev => 
+                    prev ? { ...prev, label: e.target.value } : null
+                  )}
+                  placeholder="例如: Email, Phone, Address"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-labelEn">英文标签</Label>
+                  <Input
+                    id="contact-labelEn"
+                    value={currentContact?.labelEn || ''}
+                    onChange={(e) => setCurrentContact(prev => 
+                      prev ? { ...prev, labelEn: e.target.value } : null
+                    )}
+                    placeholder="例如: Email"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-labelZh">中文标签</Label>
+                  <Input
+                    id="contact-labelZh"
+                    value={currentContact?.labelZh || ''}
+                    onChange={(e) => setCurrentContact(prev => 
+                      prev ? { ...prev, labelZh: e.target.value } : null
+                    )}
+                    placeholder="例如: 邮箱"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="contact-value">值</Label>
+                <Input
+                  id="contact-value"
+                  value={currentContact?.value || ''}
+                  onChange={(e) => setCurrentContact(prev => 
+                    prev ? { ...prev, value: e.target.value } : null
+                  )}
+                  placeholder="例如: support@yoyomall.com"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="contact-icon">图标（Lucide图标名称）</Label>
+                <Input
+                  id="contact-icon"
+                  value={currentContact?.icon || ''}
+                  onChange={(e) => setCurrentContact(prev => 
+                    prev ? { ...prev, icon: e.target.value } : null
+                  )}
+                  placeholder="例如: Mail, Phone, MapPin"
+                />
+                <p className="text-xs text-muted-foreground">
+                  参考: Mail, Phone, MapPin等Lucide图标
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-sortOrder">排序</Label>
+                  <Input
+                    id="contact-sortOrder"
+                    type="number"
+                    value={currentContact?.sortOrder || 0}
+                    onChange={(e) => setCurrentContact(prev => 
+                      prev ? { ...prev, sortOrder: parseInt(e.target.value) || 0 } : null
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-isActive">激活状态</Label>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Switch
+                      id="contact-isActive"
+                      checked={currentContact?.isActive || false}
+                      onCheckedChange={(checked) => setCurrentContact(prev => 
+                        prev ? { ...prev, isActive: checked } : null
+                      )}
+                    />
+                    <Label htmlFor="contact-isActive">
+                      {currentContact?.isActive ? '激活' : '禁用'}
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setContactDialogOpen(false);
+                  setCurrentContact(null);
+                }}
+              >
+                <X className="mr-2 h-4 w-4" />
+                取消
+              </Button>
+              <Button type="submit">
+                <Save className="mr-2 h-4 w-4" />
+                保存
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 社交媒体编辑对话框 */}
+      <Dialog open={socialDialogOpen} onOpenChange={setSocialDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <form onSubmit={handleSaveSocial}>
+            <DialogHeader>
+              <DialogTitle>
+                {currentSocial?.id ? '编辑社交媒体' : '新建社交媒体'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="social-name">名称</Label>
+                <Input
+                  id="social-name"
+                  value={currentSocial?.name || ''}
+                  onChange={(e) => setCurrentSocial(prev => 
+                    prev ? { ...prev, name: e.target.value } : null
+                  )}
+                  placeholder="例如: Facebook, Twitter, Instagram"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="social-icon">图标（Lucide图标名称）</Label>
+                <Input
+                  id="social-icon"
+                  value={currentSocial?.icon || ''}
+                  onChange={(e) => setCurrentSocial(prev => 
+                    prev ? { ...prev, icon: e.target.value } : null
+                  )}
+                  placeholder="例如: Facebook, Twitter, Instagram, Youtube"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  参考: Facebook, Twitter, Instagram, Youtube, Linkedin等
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="social-href">链接</Label>
+                <Input
+                  id="social-href"
+                  type="url"
+                  value={currentSocial?.href || ''}
+                  onChange={(e) => setCurrentSocial(prev => 
+                    prev ? { ...prev, href: e.target.value } : null
+                  )}
+                  placeholder="例如: https://facebook.com/yourpage"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="social-color">颜色类名（Tailwind CSS）</Label>
+                <Input
+                  id="social-color"
+                  value={currentSocial?.color || ''}
+                  onChange={(e) => setCurrentSocial(prev => 
+                    prev ? { ...prev, color: e.target.value } : null
+                  )}
+                  placeholder="例如: hover:text-blue-600"
+                />
+                <p className="text-xs text-muted-foreground">
+                  可选，如: hover:text-blue-600, hover:text-pink-500等
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="social-sortOrder">排序</Label>
+                  <Input
+                    id="social-sortOrder"
+                    type="number"
+                    value={currentSocial?.sortOrder || 0}
+                    onChange={(e) => setCurrentSocial(prev => 
+                      prev ? { ...prev, sortOrder: parseInt(e.target.value) || 0 } : null
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="social-isActive">激活状态</Label>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Switch
+                      id="social-isActive"
+                      checked={currentSocial?.isActive || false}
+                      onCheckedChange={(checked) => setCurrentSocial(prev => 
+                        prev ? { ...prev, isActive: checked } : null
+                      )}
+                    />
+                    <Label htmlFor="social-isActive">
+                      {currentSocial?.isActive ? '激活' : '禁用'}
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSocialDialogOpen(false);
+                  setCurrentSocial(null);
                 }}
               >
                 <X className="mr-2 h-4 w-4" />

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       orderBy: { sortOrder: 'asc' },
     });
 
-    return NextResponse.json({ socials });
+    return NextResponse.json({ success: true, socials });
   } catch (error) {
     console.error('获取Footer社交媒体链接失败:', error);
     return NextResponse.json({ error: '获取Footer社交媒体链接失败' }, { status: 500 });
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ social }, { status: 201 });
+    return NextResponse.json({ success: true, social }, { status: 201 });
   } catch (error) {
     console.error('创建Footer社交媒体链接失败:', error);
     return NextResponse.json({ error: '创建Footer社交媒体链接失败' }, { status: 500 });

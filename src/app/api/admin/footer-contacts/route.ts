@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       orderBy: { sortOrder: 'asc' },
     });
 
-    return NextResponse.json({ contacts });
+    return NextResponse.json({ success: true, contacts });
   } catch (error) {
     console.error('获取Footer联系信息失败:', error);
     return NextResponse.json({ error: '获取Footer联系信息失败' }, { status: 500 });
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ contact }, { status: 201 });
+    return NextResponse.json({ success: true, contact }, { status: 201 });
   } catch (error) {
     console.error('创建Footer联系信息失败:', error);
     return NextResponse.json({ error: '创建Footer联系信息失败' }, { status: 500 });
