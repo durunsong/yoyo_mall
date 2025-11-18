@@ -50,11 +50,17 @@ export default function ProductSearch({
   return (
     <div className={`relative flex ${className}`}>
       <Input
+        clearable
         type="text"
         placeholder={placeholder}
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         onKeyDown={handleKeyDown}
+        onClear={() => {
+          setSearchValue('');
+          // 清空后也可以触发搜索（显示所有商品）
+          router.push('/products');
+        }}
         className="pr-10"
       />
       <Button

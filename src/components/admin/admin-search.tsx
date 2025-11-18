@@ -211,21 +211,27 @@ export function AdminSearch() {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
+    <div ref={searchRef} className="w-full max-w-md">
       {/* 搜索输入框 */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
         <Input
+          clearable
           type="text"
           placeholder="搜索商品、订单、用户..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query && setShowResults(true)}
+          onClear={() => {
+            setQuery('');
+            setResults([]);
+            setShowResults(false);
+          }}
           className="pl-10 pr-10 h-10"
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
+          <Loader2 className="absolute right-10 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin z-10" />
         )}
       </div>
 

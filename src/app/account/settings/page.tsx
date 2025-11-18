@@ -378,6 +378,7 @@ export default function AccountSettingsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="name">{`${t('settings.profile.fields.name')} *`}</Label>
                       <Input
+                        clearable
                         id="name"
                         value={profileForm.name}
                         onChange={(e) =>
@@ -403,6 +404,7 @@ export default function AccountSettingsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="phone">{t('settings.profile.fields.phone')}</Label>
                       <Input
+                        clearable
                         id="phone"
                         type="tel"
                         value={profileForm.phone}
@@ -438,6 +440,7 @@ export default function AccountSettingsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="country">{t('settings.profile.fields.country')}</Label>
                       <Input
+                        clearable
                         id="country"
                         value={profileForm.country}
                         onChange={(e) =>

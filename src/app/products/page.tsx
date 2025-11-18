@@ -252,14 +252,21 @@ function ProductsPageContent() {
       <div className="mb-6 flex flex-col gap-4 rounded-lg bg-card p-4 shadow-sm">
         <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
           {/* 搜索框 */}
-          <div className="relative w-full md:max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder={t('searchPlaceholder') || 'Search products...'}
-              className="pl-9"
-            />
+          <div className="w-full md:max-w-md">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+              <Input
+                clearable
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onClear={() => {
+                  setKeyword('');
+                  setCurrentPage(1);
+                }}
+                placeholder={t('searchPlaceholder') || 'Search products...'}
+                className="pl-9 pr-10"
+              />
+            </div>
           </div>
 
           {/* 排序 */}

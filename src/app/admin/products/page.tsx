@@ -1431,14 +1431,18 @@ export default function ProductsPage() {
           <CardContent>
             <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center">
               {/* 搜索框 */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="搜索商品名称或SKU..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 z-10" />
+                  <Input
+                    clearable
+                    placeholder="搜索商品名称或SKU..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onClear={() => setSearchTerm('')}
+                    className="pl-10 pr-10"
+                  />
+                </div>
               </div>
 
               {/* 分类筛选 */}
