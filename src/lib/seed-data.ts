@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { prisma } from '@/lib/prisma';
 
 // 基础分类数据

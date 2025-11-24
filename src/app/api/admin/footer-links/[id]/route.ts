@@ -7,15 +7,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * GET /api/admin/footer-links/[id]
  * 获取单个Footer链接详情
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -28,7 +31,7 @@ export async function GET(
     }
 
     const link = await prisma.footerLink.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         section: true,
       },
@@ -57,9 +60,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -76,7 +80,7 @@ export async function PUT(
 
     // 检查链接是否存在
     const existing = await prisma.footerLink.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -88,7 +92,7 @@ export async function PUT(
 
     // 更新链接
     const link = await prisma.footerLink.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name !== undefined && { name }),
         ...(nameEn !== undefined && { nameEn }),
@@ -119,9 +123,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -135,7 +140,7 @@ export async function DELETE(
 
     // 检查链接是否存在
     const existing = await prisma.footerLink.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -147,7 +152,7 @@ export async function DELETE(
 
     // 删除链接
     await prisma.footerLink.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Footer链接删除成功' });

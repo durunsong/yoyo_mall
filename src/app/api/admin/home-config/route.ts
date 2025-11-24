@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { HomePageConfig } from '@/types/home-config';
+import type { HomePageConfig, HomePageModule } from '@/types/home-config';
+
+const parseModules = (data: unknown): HomePageModule[] => {
+  if (Array.isArray(data)) {
+    return data as HomePageModule[];
+  }
+  return [];
+};
 
 /**
  * GET /api/admin/home-config
@@ -41,7 +48,7 @@ export async function GET(request: NextRequest) {
           modules: [],
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as HomePageConfig,
+        } satisfies HomePageConfig,
       });
     }
 
@@ -50,7 +57,7 @@ export async function GET(request: NextRequest) {
       id: activeConfig.id,
       name: '首页配置',
       isActive: activeConfig.isActive,
-      modules: activeConfig.modules as any,
+      modules: parseModules(activeConfig.modules),
       createdAt: activeConfig.createdAt,
       updatedAt: activeConfig.updatedAt,
     };
@@ -116,10 +123,10 @@ export async function POST(request: NextRequest) {
         id: newConfig.id,
         name: '首页配置',
         isActive: newConfig.isActive,
-        modules: newConfig.modules,
+        modules: parseModules(newConfig.modules),
         createdAt: newConfig.createdAt,
         updatedAt: newConfig.updatedAt,
-      } as HomePageConfig,
+      } satisfies HomePageConfig,
     });
   } catch (error) {
     console.error('保存首页配置失败:', error);
@@ -180,10 +187,10 @@ export async function PUT(request: NextRequest) {
         id: updatedConfig.id,
         name: '首页配置',
         isActive: updatedConfig.isActive,
-        modules: updatedConfig.modules,
+        modules: parseModules(updatedConfig.modules),
         createdAt: updatedConfig.createdAt,
         updatedAt: updatedConfig.updatedAt,
-      } as HomePageConfig,
+      } satisfies HomePageConfig,
     });
   } catch (error) {
     console.error('更新首页配置失败:', error);

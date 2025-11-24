@@ -7,14 +7,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * DELETE - 从心愿单移除商品
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: wishlistItemId } = await params;
     // 验证用户登录
     const session = await auth();
     if (!session?.user?.email) {
@@ -39,7 +42,7 @@ export async function DELETE(
 
     // 获取心愿单项
     const wishlistItem = await prisma.wishlistItem.findUnique({
-      where: { id: params.id },
+      where: { id: wishlistItemId },
     });
 
     if (!wishlistItem) {
@@ -59,12 +62,12 @@ export async function DELETE(
 
     // 删除心愿单项
     await prisma.wishlistItem.delete({
-      where: { id: params.id },
+      where: { id: wishlistItemId },
     });
 
     console.log('从心愿单移除:', {
       userId: user.id,
-      wishlistItemId: params.id,
+      wishlistItemId,
     });
 
     return NextResponse.json({

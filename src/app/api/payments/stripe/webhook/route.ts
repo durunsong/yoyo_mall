@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
     }
 
     const event = verificationResult.data;
+    if (!event) {
+      console.error('Webhook事件解析失败');
+      return NextResponse.json(
+        { error: 'Invalid event payload' },
+        { status: 400 },
+      );
+    }
     
     console.log('收到Stripe Webhook事件:', {
       type: event.type,
@@ -174,7 +181,7 @@ async function handlePaymentFailed(paymentIntent: any) {
 
         // 释放预留库存
         for (const item of order.items) {
-          if (item.product.trackInventory) {
+          if (item.product?.trackInventory) {
             if (item.variantId) {
               await tx.inventory.updateMany({
                 where: { variantId: item.variantId },
@@ -251,7 +258,7 @@ async function handlePaymentCanceled(paymentIntent: any) {
 
         // 释放预留库存
         for (const item of order.items) {
-          if (item.product.trackInventory) {
+          if (item.product?.trackInventory) {
             if (item.variantId) {
               await tx.inventory.updateMany({
                 where: { variantId: item.variantId },

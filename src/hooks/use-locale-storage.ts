@@ -10,7 +10,7 @@ import { useParams, usePathname } from 'next/navigation';
 
 export function useLocaleStorage() {
   // const params = useParams(); // 暂时未使用
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
   // 从路由中检测当前语言
   const getLocaleFromPath = () => {

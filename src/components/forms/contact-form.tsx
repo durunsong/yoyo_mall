@@ -76,30 +76,42 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
         )}
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <Input
-            label={t('name')}
-            {...register('name')}
-            error={errors.name?.message}
-            placeholder={t('enterYourName')}
-            required
-          />
-
-          <Input
-            label={t('email')}
-            type="email"
-            {...register('email')}
-            error={errors.email?.message}
-            placeholder={t('enterYourEmail')}
-            required
-          />
-
-          <Input
-            label={t('subject')}
-            {...register('subject')}
-            error={errors.subject?.message}
-            placeholder={t('enterSubject')}
-            required
-          />
+          {[
+            {
+              name: 'name' as const,
+              label: t('name'),
+              placeholder: t('enterYourName'),
+              type: 'text',
+            },
+            {
+              name: 'email' as const,
+              label: t('email'),
+              placeholder: t('enterYourEmail'),
+              type: 'email',
+            },
+            {
+              name: 'subject' as const,
+              label: t('subject'),
+              placeholder: t('enterSubject'),
+              type: 'text',
+            },
+          ].map(field => (
+            <div className="space-y-1" key={field.name}>
+              <label className="text-sm font-medium leading-none" htmlFor={`contact-${field.name}`}>
+                {field.label} <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id={`contact-${field.name}`}
+                type={field.type}
+                placeholder={field.placeholder}
+                required
+                {...register(field.name)}
+              />
+              {errors[field.name] && (
+                <p className="text-sm text-destructive">{errors[field.name]?.message}</p>
+              )}
+            </div>
+          ))}
 
           <div className="space-y-1">
             <label className="text-sm leading-none font-medium">

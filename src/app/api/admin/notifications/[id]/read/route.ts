@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * 标记通知为已读
  * POST /api/admin/notifications/[id]/read
@@ -9,9 +11,10 @@ import { auth } from '@/app/api/auth/[...nextauth]/route';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: notificationId } = await params;
     // 验证管理员权限
     const session = await auth();
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
@@ -21,14 +24,13 @@ export async function POST(
       );
     }
 
-    const notificationId = params.id;
-
     // TODO: 在实际应用中,应该在数据库中更新通知状态
     // 当前为简化实现,直接返回成功
     
     return NextResponse.json({
       success: true,
       message: '已标记为已读',
+      data: { id: notificationId },
     });
   } catch (error) {
     console.error('标记已读失败:', error);

@@ -4,6 +4,9 @@ import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { createPaymentIntent, getOrCreateStripeCustomer } from '@/lib/stripe';
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 // 创建支付意图验证
 const createPaymentIntentSchema = z.object({
   orderId: z.string().min(1, '订单ID不能为空'),
@@ -72,13 +75,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingPayment && existingPayment.providerTransactionId) {
+      const existingMetadata = isRecord(existingPayment.metadata) ? existingPayment.metadata : undefined;
       return NextResponse.json({
         success: true,
         message: '使用现有支付意图',
         data: {
-          clientSecret: existingPayment.metadata?.clientSecret,
+          clientSecret: existingMetadata?.clientSecret,
           paymentId: existingPayment.id,
-          amount: order.totalAmount,
+          amount: Number(order.totalAmount),
           currency: order.currency,
         },
       });
@@ -91,7 +95,7 @@ export async function POST(request: NextRequest) {
       name: order.user.name || undefined,
     });
 
-    if (!customerResult.success) {
+    if (!customerResult.success || !customerResult.data) {
       return NextResponse.json(
         { 
           success: false, 
@@ -104,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // 创建支付意图
     const paymentIntentResult = await createPaymentIntent({
-      amount: order.totalAmount,
+      amount: Number(order.totalAmount),
       currency: order.currency.toLowerCase(),
       orderId: order.id,
       customerId: customerResult.data.id,
@@ -115,7 +119,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!paymentIntentResult.success) {
+    if (!paymentIntentResult.success || !paymentIntentResult.data) {
       return NextResponse.json(
         { 
           success: false, 
@@ -134,7 +138,7 @@ export async function POST(request: NextRequest) {
         paymentMethod: 'CREDIT_CARD',
         provider: 'stripe',
         providerTransactionId: paymentIntentResult.data.paymentIntentId,
-        amount: order.totalAmount,
+        amount: Number(order.totalAmount),
         currency: order.currency,
         status: 'PENDING',
         metadata: {
@@ -150,7 +154,7 @@ export async function POST(request: NextRequest) {
       orderNumber: order.orderNumber,
       paymentId: payment.id,
       paymentIntentId: paymentIntentResult.data.paymentIntentId,
-      amount: order.totalAmount,
+      amount: Number(order.totalAmount),
       currency: order.currency,
       userId: session.user.id,
     });
@@ -162,14 +166,14 @@ export async function POST(request: NextRequest) {
         clientSecret: paymentIntentResult.data.clientSecret,
         paymentId: payment.id,
         paymentIntentId: paymentIntentResult.data.paymentIntentId,
-        amount: order.totalAmount,
+        amount: Number(order.totalAmount),
         currency: order.currency,
         order: {
           id: order.id,
           orderNumber: order.orderNumber,
           itemCount: order.items.length,
           items: order.items.map(item => ({
-            name: item.product.name,
+            name: item.product?.name ?? '未知商品',
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             totalPrice: item.totalPrice,

@@ -33,7 +33,8 @@ const monitorBasicPerformance = () => {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       
       if (navigation) {
-        const loadTime = navigation.loadEventEnd - navigation.navigationStart;
+        const navigationStart = typeof navigation.startTime === 'number' ? navigation.startTime : 0;
+        const loadTime = navigation.loadEventEnd - navigationStart;
         
         sendToAnalytics({
           name: 'pageLoad',

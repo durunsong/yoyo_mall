@@ -94,6 +94,7 @@ const adminNavItems = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const currentPath = pathname ?? '/';
   const { t } = useStaticTranslations('admin');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -147,8 +148,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               // 修复高亮逻辑：精确匹配首页，其他页面使用startsWith
               const isActive = 
                 item.href === '/admin' 
-                  ? pathname === '/admin' 
-                  : pathname.startsWith(item.href);
+                  ? currentPath === '/admin' 
+                  : currentPath.startsWith(item.href);
               
               return (
                 <li key={item.key}>

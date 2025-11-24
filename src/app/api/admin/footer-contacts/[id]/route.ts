@@ -7,12 +7,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 // 获取单个联系信息
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -21,7 +24,7 @@ export async function GET(
     }
 
     const contact = await prisma.footerContact.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!contact) {
@@ -38,9 +41,10 @@ export async function GET(
 // 更新单个联系信息
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -53,7 +57,7 @@ export async function PUT(
 
     // 检查联系信息是否存在
     const existingContact = await prisma.footerContact.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingContact) {
@@ -62,7 +66,7 @@ export async function PUT(
 
     // 更新联系信息
     const contact = await prisma.footerContact.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         type: type !== undefined ? type : existingContact.type,
         label: label !== undefined ? label : existingContact.label,
@@ -85,9 +89,10 @@ export async function PUT(
 // 删除单个联系信息
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -97,7 +102,7 @@ export async function DELETE(
 
     // 检查联系信息是否存在
     const existingContact = await prisma.footerContact.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingContact) {
@@ -106,7 +111,7 @@ export async function DELETE(
 
     // 删除联系信息
     await prisma.footerContact.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true, message: '联系信息已删除' });

@@ -67,6 +67,9 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const handleTabChange = (value: string) => {
+    setActiveTab((value as 'login' | 'register') ?? 'login');
+  };
 
   // 登录表单
   const loginForm = useForm<LoginFormData>({
@@ -191,7 +194,7 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">{t('login')}</TabsTrigger>
             <TabsTrigger value="register">{t('register')}</TabsTrigger>
@@ -332,7 +335,7 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
                 <Checkbox 
                   id="agreement" 
                   checked={registerForm.watch('agreement')}
-                  onCheckedChange={(checked) => registerForm.setValue('agreement', checked)}
+                  onCheckedChange={checked => registerForm.setValue('agreement', checked === true)}
                 />
                 <Label htmlFor="agreement" className="text-sm">{t('termsAndConditions')}</Label>
               </div>

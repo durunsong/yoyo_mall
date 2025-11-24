@@ -9,11 +9,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // OSS配置
+const ossRegion = process.env.OSS_REGION || 'oss-cn-shanghai';
+const ossBucket = process.env.OSS_BUCKET || 'next-static-oss';
 const client = new OSS({
-  region: process.env.OSS_REGION || 'oss-cn-shanghai',
+  region: ossRegion,
   accessKeyId: process.env.OSS_ACCESS_KEY_ID || '',
   accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET || '',
-  bucket: process.env.OSS_BUCKET || 'next-static-oss',
+  bucket: ossBucket,
 });
 
 // 图片分类和路径映射
@@ -120,7 +122,7 @@ async function generateImageMapping(): Promise<Record<string, string[]>> {
         console.error(`跳过图片: ${imageUrl}`);
         // 使用占位图
         mapping[category].push(
-          `https://${client.options.bucket}.${client.options.region}.aliyuncs.com/${ossPath}`,
+          `https://${ossBucket}.${ossRegion}.aliyuncs.com/${ossPath}`,
         );
       }
     }

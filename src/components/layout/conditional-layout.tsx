@@ -11,9 +11,10 @@ interface ConditionalLayoutProps {
 
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
+  const currentPath = pathname ?? '/';
   
   // 检查是否是管理后台路径
-  const isAdminRoute = pathname.startsWith('/admin');
+  const isAdminRoute = currentPath.startsWith('/admin');
   
   // 如果是管理后台路径，直接渲染子组件（不包含前台头部和底部）
   if (isAdminRoute) {

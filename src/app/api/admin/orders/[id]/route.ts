@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 const updateSchema = z.object({
   status: z.enum([
     'PENDING',
@@ -29,9 +31,10 @@ async function ensureAdmin() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await ensureAdmin();
     if (!session) {
       return NextResponse.json(
@@ -41,7 +44,7 @@ export async function GET(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         items: {
           include: {
@@ -142,9 +145,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await ensureAdmin();
     if (!session) {
       return NextResponse.json(
@@ -156,7 +160,7 @@ export async function PUT(
     const data = updateSchema.parse(body);
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: data.status,
         notes: data.notes,

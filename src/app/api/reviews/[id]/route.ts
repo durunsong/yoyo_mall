@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * 更新评价验证schema
  */
@@ -23,9 +25,10 @@ const updateReviewSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: reviewId } = await params;
     // 验证用户登录
     const session = await auth();
     if (!session?.user?.email) {
@@ -50,7 +53,7 @@ export async function PATCH(
 
     // 获取评价
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: reviewId },
     });
 
     if (!review) {
@@ -74,7 +77,7 @@ export async function PATCH(
 
     // 更新评价
     const updatedReview = await prisma.review.update({
-      where: { id: params.id },
+      where: { id: reviewId },
       data: {
         ...(validatedData.rating && { rating: validatedData.rating }),
         ...(validatedData.title !== undefined && { title: validatedData.title }),
@@ -93,7 +96,7 @@ export async function PATCH(
     });
 
     console.log('评价更新成功:', {
-      reviewId: params.id,
+      reviewId,
       userId: user.id,
     });
 
@@ -130,9 +133,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: reviewId } = await params;
     // 验证用户登录
     const session = await auth();
     if (!session?.user?.email) {
@@ -157,7 +161,7 @@ export async function DELETE(
 
     // 获取评价
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: reviewId },
     });
 
     if (!review) {
@@ -177,11 +181,11 @@ export async function DELETE(
 
     // 删除评价
     await prisma.review.delete({
-      where: { id: params.id },
+      where: { id: reviewId },
     });
 
     console.log('评价删除成功:', {
-      reviewId: params.id,
+      reviewId,
       userId: user.id,
     });
 

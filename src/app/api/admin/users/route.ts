@@ -191,6 +191,10 @@ export async function POST(request: NextRequest) {
     // 解析请求体
     const body = await request.json();
     const { email, name, role = 'CUSTOMER', password } = body;
+    const allowedRoles = ['CUSTOMER', 'ADMIN', 'SUPER_ADMIN'] as const;
+    const normalizedRole = allowedRoles.includes(role)
+      ? (role as (typeof allowedRoles)[number])
+      : 'CUSTOMER';
 
     // 验证必填字段
     if (!email || !name || !password) {
@@ -222,7 +226,7 @@ export async function POST(request: NextRequest) {
         email,
         name,
         password: hashedPassword,
-        role: role as 'ADMIN' | 'CUSTOMER' | 'GUEST',
+        role: normalizedRole,
         profile: {
           create: {},
         },

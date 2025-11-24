@@ -147,6 +147,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 返回结果
+    const urls = uploadResults
+      .map(result => result.url)
+      .filter((url): url is string => Boolean(url));
+
     const response: {
       success: boolean;
       data?: UploadResult[];
@@ -156,7 +160,7 @@ export async function POST(request: NextRequest) {
     } = {
       success: uploadResults.length > 0,
       data: uploadResults,
-      urls: uploadResults.map(r => r.url), // 兼容旧版格式
+      urls, // 兼容旧版格式
       message:
         uploadResults.length > 0
           ? `成功上传 ${uploadResults.length} 个文件到阿里云OSS`

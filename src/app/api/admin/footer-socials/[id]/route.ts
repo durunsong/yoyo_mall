@@ -7,12 +7,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 // 获取单个社交媒体链接
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -21,7 +24,7 @@ export async function GET(
     }
 
     const social = await prisma.footerSocial.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!social) {
@@ -38,9 +41,10 @@ export async function GET(
 // 更新单个社交媒体链接
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -53,7 +57,7 @@ export async function PUT(
 
     // 检查社交媒体链接是否存在
     const existingSocial = await prisma.footerSocial.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingSocial) {
@@ -62,7 +66,7 @@ export async function PUT(
 
     // 更新社交媒体链接
     const social = await prisma.footerSocial.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: name !== undefined ? name : existingSocial.name,
         icon: icon !== undefined ? icon : existingSocial.icon,
@@ -83,9 +87,10 @@ export async function PUT(
 // 删除单个社交媒体链接
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
     
@@ -95,7 +100,7 @@ export async function DELETE(
 
     // 检查社交媒体链接是否存在
     const existingSocial = await prisma.footerSocial.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingSocial) {
@@ -104,7 +109,7 @@ export async function DELETE(
 
     // 删除社交媒体链接
     await prisma.footerSocial.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true, message: '社交媒体链接已删除' });

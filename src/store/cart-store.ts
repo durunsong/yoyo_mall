@@ -24,7 +24,7 @@ interface CartState {
   subtotal: number;
 
   // 操作方法
-  addItem: (item: Omit<CartItem, 'id'>) => void;
+  addItem: (item: Omit<CartItem, 'id'> & { id?: string }) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -92,8 +92,8 @@ export const useCartStore = create<CartState>((set, get) => ({
           ),
         };
       } else {
-        // 添加新商品，如果传入了id则使用传入的，否则生成新的
-        const itemId = normalizedItem.id || generateId();
+      // 添加新商品，如果传入了id则使用传入的，否则生成新的
+      const itemId = normalizedItem.id || generateId();
         console.log(`➕ 添加新商品: ${normalizedItem.name}, 数量: ${normalizedItem.quantity}, ID: ${itemId}`);
         return {
           items: [...state.items, { ...normalizedItem, id: itemId }],

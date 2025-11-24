@@ -51,6 +51,8 @@ import {
   PromoBannerConfig,
   CategoryNavConfig,
   BannerConfig,
+  BrandShowcaseConfig,
+  ContentCardConfig,
 } from '@/types/home-config';
 
 // 可拖拽的模块项组件
@@ -570,7 +572,7 @@ export default function HomeConfigPage() {
   };
 
   // 获取默认配置
-  const getDefaultConfig = (type: HomePageModule['type']) => {
+  const getDefaultConfig = (type: HomePageModule['type']): HomePageModule['config'] => {
     switch (type) {
       case 'product-section':
         return {
@@ -599,19 +601,49 @@ export default function HomeConfigPage() {
           enabled: true,
         } as PromoBannerConfig;
       case 'banner':
-        return {
-          autoplay: true,
-          interval: 5,
-        };
+        return [
+          {
+            id: `banner-${Date.now()}`,
+            image: '/images/banner-placeholder-1.jpg',
+            title: '示例Banner',
+            subtitle: '上传图片后即可替换',
+            order: 1,
+            enabled: true,
+          },
+        ] as BannerConfig[];
       case 'category-nav':
+        return [
+          {
+            id: `category-${Date.now()}`,
+            categoryId: '',
+            categoryName: '示例分类',
+            order: 1,
+            enabled: true,
+          },
+        ] as CategoryNavConfig[];
+      case 'brand-showcase':
         return {
-          title: '热门分类',
-          displayType: 'grid',
-          limit: 8,
-          showIcon: true,
-        };
+          id: `brand-${Date.now()}`,
+          title: '合作品牌',
+          brandIds: [],
+          layout: 'grid',
+          showLogo: true,
+          order: 1,
+          enabled: true,
+        } as BrandShowcaseConfig;
+      case 'content-cards':
+        return [
+          {
+            id: `card-${Date.now()}`,
+            title: '服务保障',
+            description: '支持自定义内容、图标、链接等信息',
+            type: 'info',
+            order: 1,
+            enabled: true,
+          },
+        ] as ContentCardConfig[];
       default:
-        return {};
+        return [] as BannerConfig[];
     }
   };
 

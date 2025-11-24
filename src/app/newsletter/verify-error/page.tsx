@@ -11,7 +11,7 @@ import { XCircle } from 'lucide-react';
 
 function VerifyErrorContent() {
   const searchParams = useSearchParams();
-  const reason = searchParams.get('reason');
+  const reason = searchParams?.get('reason');
 
   const getErrorMessage = () => {
     switch (reason) {

@@ -8,19 +8,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 // 更新地址
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: addressId } = await params;
     const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
     }
-
-    const addressId = params.id;
 
     // 获取用户
     const user = await prisma.user.findUnique({
@@ -90,16 +91,15 @@ export async function PATCH(
 // 删除地址
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: addressId } = await params;
     const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
     }
-
-    const addressId = params.id;
 
     // 获取用户
     const user = await prisma.user.findUnique({

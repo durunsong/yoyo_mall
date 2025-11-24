@@ -4,6 +4,9 @@ import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { confirmPayment, mapStripeStatusToOrderStatus } from '@/lib/stripe';
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 // 确认支付验证
 const confirmPaymentSchema = z.object({
   paymentIntentId: z.string().min(1, '支付意图ID不能为空'),
@@ -75,6 +78,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!stripeResult.data) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'STRIPE_ERROR',
+          message: '未能获取支付详情',
+        },
+        { status: 500 },
+      );
+    }
+
     const stripePayment = stripeResult.data;
     const newOrderStatus = mapStripeStatusToOrderStatus(stripePayment.status);
     const newPaymentStatus = stripePayment.status === 'succeeded' ? 'COMPLETED' : 
@@ -83,12 +97,14 @@ export async function POST(request: NextRequest) {
     // 使用事务更新支付和订单状态
     const result = await prisma.$transaction(async (tx) => {
       // 更新支付状态
+      const existingMetadata = isRecord(payment.metadata) ? payment.metadata : {};
+
       const updatedPayment = await tx.payment.update({
         where: { id: payment.id },
         data: {
           status: newPaymentStatus,
           metadata: {
-            ...payment.metadata,
+            ...existingMetadata,
             stripeStatus: stripePayment.status,
             updatedAt: new Date().toISOString(),
           },
@@ -104,7 +120,7 @@ export async function POST(request: NextRequest) {
       // 如果支付成功，处理库存
       if (stripePayment.status === 'succeeded' && payment.order.status === 'PENDING') {
         for (const item of payment.order.items) {
-          if (item.product.trackInventory) {
+          if (item.product?.trackInventory) {
             // 将预留库存转为实际减少
             if (item.variantId) {
               await tx.inventory.updateMany({
@@ -130,7 +146,7 @@ export async function POST(request: NextRequest) {
       // 如果支付失败或取消，释放预留库存
       if (['canceled', 'failed'].includes(stripePayment.status)) {
         for (const item of payment.order.items) {
-          if (item.product.trackInventory) {
+          if (item.product?.trackInventory) {
             if (item.variantId) {
               await tx.inventory.updateMany({
                 where: { variantId: item.variantId },

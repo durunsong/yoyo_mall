@@ -16,13 +16,19 @@ import {
 import { Download, FileText, Table, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface ExportField {
+  key: string;
+  label?: string;
+}
+
 interface ExportButtonProps {
   data: any[];
   filename: string;
   disabled?: boolean;
+  fields?: ExportField[];
 }
 
-export function ExportButton({ data, filename, disabled }: ExportButtonProps) {
+export function ExportButton({ data, filename, disabled, fields }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false);
 
   // 导出为 CSV
@@ -35,14 +41,14 @@ export function ExportButton({ data, filename, disabled }: ExportButtonProps) {
     try {
       setExporting(true);
 
-      // 获取所有列名
-      const headers = Object.keys(data[0]);
+      const headerKeys = fields?.map(field => field.key) ?? Object.keys(data[0]);
+      const headerLabels = fields?.map(field => field.label ?? field.key) ?? headerKeys;
       
       // 构建 CSV 内容
       const csvContent = [
-        headers.join(','), // 表头
+        headerLabels.join(','), // 表头
         ...data.map(row => 
-          headers.map(header => {
+          headerKeys.map(header => {
             const value = row[header];
             // 处理包含逗号、引号或换行的值
             if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {

@@ -7,15 +7,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * GET /api/admin/footer-sections/[id]
  * 获取单个Footer区块详情
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -28,7 +31,7 @@ export async function GET(
     }
 
     const section = await prisma.footerSection.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         links: {
           orderBy: { sortOrder: 'asc' },
@@ -59,9 +62,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -78,7 +82,7 @@ export async function PUT(
 
     // 检查区块是否存在
     const existing = await prisma.footerSection.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -90,7 +94,7 @@ export async function PUT(
 
     // 更新区块
     const section = await prisma.footerSection.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(title !== undefined && { title }),
         ...(titleEn !== undefined && { titleEn }),
@@ -121,9 +125,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
+    const { id } = await params;
     // 权限验证
     const session = await auth();
     const role = (session?.user as { role?: string })?.role;
@@ -137,7 +142,7 @@ export async function DELETE(
 
     // 检查区块是否存在
     const existing = await prisma.footerSection.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -149,7 +154,7 @@ export async function DELETE(
 
     // 删除区块（级联删除所有关联的链接）
     await prisma.footerSection.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Footer区块删除成功' });

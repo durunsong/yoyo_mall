@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 // 分类查询参数验证
@@ -92,10 +93,16 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    const sortField = query.sortBy ?? 'sortOrder';
+    const sortDirection = query.sortOrder ?? 'asc';
+    const orderBy: Prisma.CategoryOrderByWithRelationInput = {
+      [sortField]: sortDirection,
+    };
+
     const categories = await prisma.category.findMany({
       where,
       include,
-      orderBy: { [query.sortBy]: query.sortOrder },
+      orderBy,
     });
 
     // 递归计算分类及其所有子分类的商品总数
@@ -129,7 +136,7 @@ export async function GET(request: NextRequest) {
       const allCategories = await prisma.category.findMany({
         where: query.isActive !== undefined ? { isActive: query.isActive } : {},
         include,
-        orderBy: { [query.sortBy]: query.sortOrder },
+        orderBy,
       });
 
       // 为每个分类计算包含子分类的商品总数

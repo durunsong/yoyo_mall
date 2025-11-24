@@ -80,8 +80,8 @@ graph TB
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/your-username/yoyo-mall.git
-cd yoyo-mall
+git clone https://github.com/durunsong/yoyo_mall.git
+cd yoyo_mall
 ```
 
 ### 2. 安装依赖
@@ -162,22 +162,6 @@ yoyo-mall/
 ```
 
 ## 🛠️ 开发工作流
-
-### 与AI协作的最佳实践
-
-```bash
-# 1. 功能开发
-"我需要开发商品列表页面，包含搜索、筛选、分页功能，使用Next.js 15和React 19，要求响应式设计"
-
-# 2. 组件创建
-"创建一个ProductCard组件，支持商品图片、名称、价格、评分显示，使用TypeScript和Tailwind CSS"
-
-# 3. API开发
-"开发商品管理的RESTful API，包含CRUD操作，使用Prisma ORM和Zod验证"
-
-# 4. 性能优化
-"优化商品列表页面的性能，包括图片懒加载、虚拟滚动、代码分割"
-```
 
 ### Git工作流
 
@@ -260,36 +244,6 @@ git push origin feature/product-catalog
 - ✅ 安全Headers配置
 - 🚧 单元测试(规划中)
 
-## 💡 AI协作提示词示例
-
-### 基础开发
-
-```
-你是一名资深的全栈开发工程师，使用Next.js 15 + React 19 + TypeScript开发跨境电商网站。
-
-要求：
-- 严格遵循TypeScript类型安全
-- 使用Tailwind CSS进行样式设计
-- 代码要有详细的中文注释
-- 考虑PC和移动端响应式适配
-- 遵循最佳实践和性能优化
-
-请帮我实现[具体功能描述]...
-```
-
-### 高级功能
-
-```
-需要为电商网站添加[具体功能]，要求：
-- 集成Prisma数据库操作
-- 使用Zod进行数据验证
-- 实现完整的错误处理
-- 考虑国际化支持
-- 性能优化和用户体验
-
-技术栈：Next.js 15, React 19, TypeScript, Tailwind CSS
-```
-
 ## 🧪 测试和部署
 
 ### 测试命令
@@ -349,9 +303,9 @@ npm run lint          # 代码规范检查
 
 ## 📞 联系方式
 
-- 项目作者: [Your Name]
-- 邮箱: your.email@example.com
-- 项目链接: [https://github.com/your-username/yoyo-mall](https://github.com/your-username/yoyo-mall)
+- 项目作者: [@durunsong](https://github.com/durunsong)
+- 邮箱: durunsongs@gmail.com
+- 项目地址: [https://github.com/durunsong/yoyo_mall](https://github.com/durunsong/yoyo_mall)
 
 ---
 

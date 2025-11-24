@@ -233,25 +233,30 @@ export async function GET(request: NextRequest) {
       }));
 
     // 获取热门商品详情
-    const topProductIds = topProducts.map((p) => p.productId);
-    const topProductsDetails = await prisma.product.findMany({
-      where: {
-        id: {
-          in: topProductIds,
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        price: true,
-        images: {
-          select: {
-            url: true,
+    const topProductIds = topProducts
+      .map((p) => p.productId)
+      .filter((id): id is string => Boolean(id));
+    const topProductsDetails = topProductIds.length
+      ? await prisma.product.findMany({
+          where: {
+            id: {
+              in: topProductIds,
+            },
           },
-          take: 1,
-        },
-      },
-    });
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            images: {
+              select: {
+                url: true,
+              },
+              take: 1,
+              orderBy: { sortOrder: 'asc' },
+            },
+          },
+        })
+      : [];
 
     // 合并热门商品数据
     const topProductsData = topProducts.map((p) => {

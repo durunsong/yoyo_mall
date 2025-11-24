@@ -23,10 +23,10 @@ const createReviewSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
 
     // 解析查询参数
     const { searchParams } = new URL(request.url);
@@ -140,10 +140,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
 
     // 验证用户登录
     const session = await auth();

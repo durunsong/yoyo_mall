@@ -244,9 +244,17 @@ export async function POST(request: NextRequest) {
         where: { id: item.productId },
         include: {
           inventory: true,
+          images: {
+            select: { url: true },
+            orderBy: { sortOrder: 'asc' },
+            take: 1,
+          },
           variants: {
             where: { id: item.variantId || undefined },
-            include: { inventory: true },
+            include: {
+              inventory: true,
+              attributes: true,
+            },
           },
         },
       });

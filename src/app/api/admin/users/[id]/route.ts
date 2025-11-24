@@ -8,12 +8,14 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+type RouteParams = { params: Promise<{ id: string }> };
+
 /**
  * 更新用户验证schema
  */
 const updateUserSchema = z.object({
   name: z.string().min(2).max(50).optional(),
-  role: z.enum(['ADMIN', 'CUSTOMER', 'GUEST']).optional(),
+  role: z.enum(['ADMIN', 'CUSTOMER', 'SUPER_ADMIN']).optional(),
   avatar: z.string().url().optional().nullable(),
 });
 
@@ -22,9 +24,10 @@ const updateUserSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: userId } = await params;
     // 验证管理员权限
     const session = await auth();
     if (!session?.user?.email) {
@@ -49,7 +52,7 @@ export async function GET(
 
     // 获取用户详情
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -73,7 +76,7 @@ export async function GET(
             id: true,
             orderNumber: true,
             status: true,
-            total: true,
+            totalAmount: true,
             createdAt: true,
           },
           orderBy: { createdAt: 'desc' },
@@ -83,10 +86,16 @@ export async function GET(
           select: {
             id: true,
             type: true,
-            fullName: true,
-            streetAddress: true,
+            firstName: true,
+            lastName: true,
+            company: true,
+            addressLine1: true,
+            addressLine2: true,
             city: true,
+            state: true,
+            postalCode: true,
             country: true,
+            phone: true,
             isDefault: true,
           },
         },
@@ -107,9 +116,23 @@ export async function GET(
       );
     }
 
+    const formattedUser = {
+      ...user,
+      orders: user.orders.map(order => ({
+        ...order,
+        totalAmount: Number(order.totalAmount),
+        total: Number(order.totalAmount),
+      })),
+      addresses: user.addresses.map(address => ({
+        ...address,
+        fullName: [address.firstName, address.lastName].filter(Boolean).join(' ').trim(),
+        streetAddress: address.addressLine1,
+      })),
+    };
+
     return NextResponse.json({
       success: true,
-      data: user,
+      data: formattedUser,
     });
   } catch (error) {
     console.error('获取用户详情失败:', error);
@@ -125,9 +148,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: userId } = await params;
     // 验证管理员权限
     const session = await auth();
     if (!session?.user?.email) {
@@ -156,7 +180,7 @@ export async function PATCH(
 
     // 检查用户是否存在
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -168,7 +192,7 @@ export async function PATCH(
 
     // 更新用户信息
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: userId },
       data: {
         ...(validatedData.name && { name: validatedData.name }),
         ...(validatedData.role && { role: validatedData.role }),
@@ -186,7 +210,7 @@ export async function PATCH(
 
     console.log('管理员更新用户信息:', {
       adminId: session.user.id,
-      targetUserId: params.id,
+      targetUserId: userId,
       changes: validatedData,
     });
 
@@ -224,9 +248,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
+    const { id: userId } = await params;
     // 验证管理员权限
     const session = await auth();
     if (!session?.user?.email) {
@@ -250,7 +275,7 @@ export async function DELETE(
     }
 
     // 防止删除自己
-    if (currentUser.id === params.id) {
+    if (currentUser.id === userId) {
       return NextResponse.json(
         { success: false, error: '不能删除自己的账户' },
         { status: 400 },
@@ -259,7 +284,7 @@ export async function DELETE(
 
     // 检查用户是否存在
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: userId },
       include: {
         _count: {
           select: {
@@ -289,12 +314,12 @@ export async function DELETE(
 
     // 删除用户（级联删除相关数据）
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id: userId },
     });
 
     console.log('管理员删除用户:', {
       adminId: session.user.id,
-      deletedUserId: params.id,
+      deletedUserId: userId,
       email: user.email,
     });
 

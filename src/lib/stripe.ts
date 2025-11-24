@@ -4,6 +4,7 @@
  */
 
 import Stripe from 'stripe';
+import type { OrderStatus } from '@prisma/client';
 
 // 创建Stripe实例
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -11,7 +12,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-11-20.acacia',
+  apiVersion: '2025-02-24.acacia',
   typescript: true,
 });
 
@@ -211,18 +212,18 @@ export function verifyWebhookSignature(
 }
 
 // 处理支付状态映射
-export function mapStripeStatusToOrderStatus(stripeStatus: string) {
-  const statusMap: Record<string, string> = {
-    'requires_payment_method': 'PENDING',
-    'requires_confirmation': 'PENDING',
-    'requires_action': 'PENDING',
-    'processing': 'PROCESSING',
-    'requires_capture': 'CONFIRMED',
-    'succeeded': 'CONFIRMED',
-    'canceled': 'CANCELLED',
+export function mapStripeStatusToOrderStatus(stripeStatus: string): OrderStatus {
+  const statusMap: Record<string, OrderStatus> = {
+    requires_payment_method: 'PENDING',
+    requires_confirmation: 'PENDING',
+    requires_action: 'PENDING',
+    processing: 'PROCESSING',
+    requires_capture: 'CONFIRMED',
+    succeeded: 'CONFIRMED',
+    canceled: 'CANCELLED',
   };
 
-  return statusMap[stripeStatus] || 'PENDING';
+  return statusMap[stripeStatus] ?? 'PENDING';
 }
 
 // 格式化金额显示
