@@ -32,8 +32,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-# .env* (暂时需要commit到git，用于环境变量配置)
+# env files - 禁止提交真实密钥到 Git
+.env
+.env.local
+.env*.local
+.env.production
+.env.development
 
 # vercel
 .vercel
