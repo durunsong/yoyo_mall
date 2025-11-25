@@ -341,7 +341,7 @@ export function FloatingToolbar() {
                     return (
                       <div 
                         key={item.id} 
-                        className="group relative flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3 transition-all hover:border-blue-200 hover:bg-blue-50/30"
+                        className="group relative flex gap-3 rounded-lg shadow-sm bg-gray-50/50 p-3 transition-all hover:shadow-md hover:bg-blue-50/30"
                       >
                         {/* 删除按钮 - 鼠标悬停显示 */}
                         <button
@@ -353,7 +353,7 @@ export function FloatingToolbar() {
                           <Trash2 className="h-3 w-3" />
                         </button>
 
-                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border border-gray-200 bg-white">
+                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded shadow-sm bg-white">
                           <Image
                             src={item.image || `${process.env.NEXT_PUBLIC_OSS_BASE_URL || process.env.BASE_OSS_URL}/${process.env.OSS_FOLDER || 'yoyo_mall'}/placeholder.png`}
                             alt={item.name}
