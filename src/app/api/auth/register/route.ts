@@ -16,6 +16,9 @@ const registerSchema = z.object({
     .string()
     .min(6, '密码至少需要6个字符')
     .max(50, '密码不能超过50个字符'),
+  phone: z
+    .string()
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
     // 验证请求数据
     const validatedData = registerSchema.parse(body);
     
-    const { name, email, password } = validatedData;
+    const { name, email, password, phone } = validatedData;
 
     // 检查邮箱是否已存在
     const existingUser = await prisma.user.findUnique({
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
           create: {
             firstName: name.split(' ')[0] || '',
             lastName: name.split(' ').slice(1).join(' ') || '',
+            phone: phone || '',
           },
         },
       },

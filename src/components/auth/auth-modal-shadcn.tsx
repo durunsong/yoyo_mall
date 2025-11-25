@@ -145,7 +145,7 @@ export function AuthModalShadcn({ open, onClose, defaultTab = 'login' }: AuthMod
       const resp = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: data.username, email: data.email, password: data.password }),
+        body: JSON.stringify({ name: data.username, email: data.email, password: data.password, phone: data.phone }),
       });
       const json = await resp.json();
       console.log('注册响应:', json);
