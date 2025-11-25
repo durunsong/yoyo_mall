@@ -107,6 +107,8 @@ export default function ProductDetailPage() {
 
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const thumbnailListRef = useRef<HTMLDivElement | null>(null);
+  const leftColumnRef = useRef<HTMLDivElement | null>(null);
+  const rightColumnRef = useRef<HTMLDivElement | null>(null);
 
   const wishlistItems = useWishlistStore(state => state.items);
   const addWishlistItem = useWishlistStore(state => state.addItem);
@@ -196,14 +198,24 @@ export default function ProductDetailPage() {
   }, [goToImage, selectedImage, totalImages]);
 
   const scrollThumbnails = useCallback(
-    (direction: 'left' | 'right') => {
+    (direction: 'left' | 'right' | 'up' | 'down') => {
       const container = thumbnailListRef.current;
       if (!container) return;
       const scrollAmount = 120 * 3;
-      container.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
+      
+      // 桌面端竖向滚动
+      if (direction === 'up' || direction === 'down') {
+        container.scrollBy({
+          top: direction === 'up' ? -scrollAmount : scrollAmount,
+          behavior: 'smooth',
+        });
+      } else {
+        // 移动端横向滚动
+        container.scrollBy({
+          left: direction === 'left' ? -scrollAmount : scrollAmount,
+          behavior: 'smooth',
+        });
+      }
     },
     [],
   );
@@ -289,6 +301,7 @@ export default function ProductDetailPage() {
       setShareUrl(window.location.href);
     }
   }, []);
+
 
   // 获取相关商品
   const fetchRelatedProducts = async (
@@ -454,19 +467,34 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-2">
-          {/* 左侧：主图与缩略图骨架 */}
-          <div className="space-y-4">
-            <div className="skeleton-wave aspect-square rounded-lg" />
-            <div className="flex gap-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="skeleton-wave h-20 w-20 rounded-md" />
-              ))}
+        <div className="lg:flex lg:gap-8">
+          {/* 左侧：图片画廊骨架 */}
+          <div className="lg:w-1/2 lg:shrink-0">
+            {/* 桌面端：缩略图在左，主图在右 */}
+            <div className="hidden md:flex gap-4">
+              {/* 缩略图列表骨架 - 竖向 */}
+              <div className="flex w-[80px] flex-col gap-2">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="skeleton-wave h-[80px] w-[80px] rounded-md" />
+                ))}
+              </div>
+              {/* 主图骨架 */}
+              <div className="skeleton-wave aspect-square flex-1 rounded-lg" />
+            </div>
+
+            {/* 移动端：主图在上，缩略图在下 */}
+            <div className="md:hidden space-y-4">
+              <div className="skeleton-wave aspect-square w-full rounded-lg" />
+              <div className="flex gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="skeleton-wave h-20 w-20 rounded-md" />
+                ))}
+              </div>
             </div>
           </div>
 
           {/* 右侧：信息骨架，尽可能还原最终布局占位 */}
-          <div className="space-y-6">
+          <div className="mt-8 lg:mt-0 lg:w-1/2 space-y-6">
             {/* 标题与短描述 */}
             <div className="space-y-3">
               <div className="skeleton-wave h-7 w-3/4 rounded" />
@@ -596,143 +624,262 @@ const hasReviews = reviewCount > 0;
         </nav>
 
         {/* 商品主要信息 */}
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* 左侧：图片画廊 */}
-          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-            {/* 主图 */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => handleOpenPreview(selectedImage)}
-                className="relative aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
-              >
-                {prevImageIndex !== null && isAnimating && (
+        <div className="lg:flex lg:gap-8">
+          {/* 左侧：图片画廊容器 - 使用flex让高度和右侧对齐 */}
+          <div className="lg:w-1/2 lg:shrink-0">
+            {/* sticky内容区域 - 在父容器内滚动时保持固定 */}
+            <div ref={leftColumnRef} className="lg:sticky lg:top-24">
+            {/* 桌面端：横向布局（缩略图在左，主图在右） */}
+            <div className="hidden md:flex gap-4">
+              {/* 缩略图列表 - 竖向排列在左侧 */}
+              {totalImages > 1 && (
+                <div className="relative flex flex-col">
+                  <div
+                    ref={thumbnailListRef}
+                    className="flex max-h-[500px] w-[80px] flex-col gap-2 overflow-y-auto scrollbar-thin"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#d1d5db transparent',
+                    }}
+                  >
+                    {imageList.map((image, index) => (
+                      <button
+                        key={image.id ?? `${product.id}-image-${index}`}
+                        ref={(el) => {
+                          thumbnailRefs.current[index] = el;
+                        }}
+                        type="button"
+                        onClick={() => {
+                          if (index === selectedImage) return;
+                          const direction = index > selectedImage ? 'left' : 'right';
+                          goToImage(index, direction);
+                        }}
+                        onMouseEnter={() => handleThumbnailHover(index)}
+                        onMouseLeave={handleThumbnailLeave}
+                        className="relative h-[80px] w-[80px] shrink-0 overflow-hidden transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black cursor-pointer"
+                        style={{
+                          border:
+                            selectedImage === index
+                              ? '2px solid #000'
+                              : hoveredThumbnail === index
+                                ? '2px solid rgba(0,0,0,0.5)'
+                                : '2px solid #e5e7eb',
+                        }}
+                      >
+                        <Image
+                          src={image.url || PLACEHOLDER_IMAGE}
+                          alt={image.alt || `${product.name} ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                        <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 主图区域 */}
+              <div className="flex-1">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPreview(selectedImage)}
+                    className="relative aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none cursor-zoom-in"
+                  >
+                    {prevImageIndex !== null && isAnimating && (
+                      <Image
+                        key={`prev-${prevImageIndex}-${slideDirection}`}
+                        src={imageList[prevImageIndex]?.url || PLACEHOLDER_IMAGE}
+                        alt={imageList[prevImageIndex]?.alt || product?.name || 'Product image'}
+                        fill
+                        className={`absolute inset-0 object-cover ${
+                          slideDirection === 'left'
+                            ? 'animate-product-slide-out-left'
+                            : 'animate-product-slide-out-right'
+                        }`}
+                        priority
+                      />
+                    )}
+                    <Image
+                      key={`main-${selectedImage}`}
+                      src={primaryImageUrl}
+                      alt={primaryImageAlt}
+                      fill
+                      className={`absolute inset-0 object-cover ${
+                        isAnimating
+                          ? slideDirection === 'left'
+                            ? 'animate-product-slide-in-left'
+                            : 'animate-product-slide-in-right'
+                          : ''
+                      }`}
+                      priority
+                    />
+                    <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                    {discountPercent > 0 && (
+                      <Badge variant="destructive" className="absolute left-4 top-4 z-10">
+                        -{discountPercent}%
+                      </Badge>
+                    )}
+                  </button>
+
+                  {showMainNav && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handlePrevImage}
+                        className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white transition-all"
+                        aria-label={t('previousImage') || '上一张'}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextImage}
+                        className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white transition-all"
+                        aria-label={t('nextImage') || '下一张'}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 移动端：原来的纵向布局（主图在上，缩略图在下） */}
+            <div className="md:hidden space-y-4">
+              {/* 主图 */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => handleOpenPreview(selectedImage)}
+                  className="relative aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
+                >
+                  {prevImageIndex !== null && isAnimating && (
+                    <Image
+                      key={`prev-${prevImageIndex}-${slideDirection}`}
+                      src={imageList[prevImageIndex]?.url || PLACEHOLDER_IMAGE}
+                      alt={imageList[prevImageIndex]?.alt || product?.name || 'Product image'}
+                      fill
+                      className={`absolute inset-0 object-cover ${
+                        slideDirection === 'left'
+                          ? 'animate-product-slide-out-left'
+                          : 'animate-product-slide-out-right'
+                      }`}
+                      priority
+                    />
+                  )}
                   <Image
-                    key={`prev-${prevImageIndex}-${slideDirection}`}
-                    src={imageList[prevImageIndex]?.url || PLACEHOLDER_IMAGE}
-                    alt={imageList[prevImageIndex]?.alt || product?.name || 'Product image'}
+                    key={`main-${selectedImage}`}
+                    src={primaryImageUrl}
+                    alt={primaryImageAlt}
                     fill
                     className={`absolute inset-0 object-cover ${
-                      slideDirection === 'left'
-                        ? 'animate-product-slide-out-left'
-                        : 'animate-product-slide-out-right'
+                      isAnimating
+                        ? slideDirection === 'left'
+                          ? 'animate-product-slide-in-left'
+                          : 'animate-product-slide-in-right'
+                        : ''
                     }`}
                     priority
                   />
-                )}
-                <Image
-                  key={`main-${selectedImage}`}
-                  src={primaryImageUrl}
-                  alt={primaryImageAlt}
-                  fill
-                  className={`absolute inset-0 object-cover ${
-                    isAnimating
-                      ? slideDirection === 'left'
-                        ? 'animate-product-slide-in-left'
-                        : 'animate-product-slide-in-right'
-                      : ''
-                  }`}
-                  priority
-                />
-                <span className="sr-only">{t('previewImage') || '预览图片'}</span>
-                {discountPercent > 0 && (
-                  <Badge variant="destructive" className="absolute left-4 top-4 z-10">
-                    -{discountPercent}%
-                  </Badge>
-                )}
-              </button>
+                  <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                  {discountPercent > 0 && (
+                    <Badge variant="destructive" className="absolute left-4 top-4 z-10">
+                      -{discountPercent}%
+                    </Badge>
+                  )}
+                </button>
 
-              {showMainNav && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handlePrevImage}
-                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
-                    aria-label={t('previousImage') || '上一张'}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextImage}
-                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
-                    aria-label={t('nextImage') || '下一张'}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* 缩略图 */}
-            {totalImages > 1 && (
-              <div className="relative">
-                {showThumbnailNav && (
+                {showMainNav && (
                   <>
                     <button
                       type="button"
-                      onClick={() => scrollThumbnails('left')}
-                      className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
-                      aria-label={t('scrollLeft') || '向左滚动'}
+                      onClick={handlePrevImage}
+                      className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                      aria-label={t('previousImage') || '上一张'}
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                       type="button"
-                      onClick={() => scrollThumbnails('right')}
-                      className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
-                      aria-label={t('scrollRight') || '向右滚动'}
+                      onClick={handleNextImage}
+                      className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                      aria-label={t('nextImage') || '下一张'}
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-5 w-5" />
                     </button>
                   </>
                 )}
-
-                <div
-                  ref={thumbnailListRef}
-                  className={`flex gap-2 overflow-x-auto ${showThumbnailNav ? 'px-10' : ''}`}
-                >
-                {imageList.map((image, index) => (
-                    <button
-                      key={image.id ?? `${product.id}-image-${index}`}
-                      ref={(el) => {
-                        thumbnailRefs.current[index] = el;
-                      }}
-                      type="button"
-                      onClick={() => {
-                        if (index === selectedImage) return;
-                        const direction = index > selectedImage ? 'left' : 'right';
-                        goToImage(index, direction);
-                      }}
-                    onMouseEnter={() => handleThumbnailHover(index)}
-                    onMouseLeave={handleThumbnailLeave}
-                    className="relative h-20 w-20 shrink-0 overflow-hidden transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
-                    style={{
-                      border:
-                        selectedImage === index
-                          ? '3px solid #000'
-                          : hoveredThumbnail === index
-                            ? '3px solid rgba(0,0,0,0.5)'
-                            : '3px solid transparent',
-                    }}
-                    >
-                      {/* 缩略图按钮移除圆角，避免选中态描边显示异常 */}
-                      <Image
-                        src={image.url || PLACEHOLDER_IMAGE}
-                        alt={image.alt || `${product.name} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      <span className="sr-only">{t('previewImage') || '预览图片'}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
-            )}
+
+              {/* 缩略图 - 横向排列 */}
+              {totalImages > 1 && (
+                <div className="relative">
+                  {showThumbnailNav && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => scrollThumbnails('left')}
+                        className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
+                        aria-label={t('scrollLeft') || '向左滚动'}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => scrollThumbnails('right')}
+                        className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow hover:bg-white"
+                        aria-label={t('scrollRight') || '向右滚动'}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+
+                  <div
+                    className={`flex gap-2 overflow-x-auto scrollbar-thin ${showThumbnailNav ? 'px-10' : ''}`}
+                  >
+                    {imageList.map((image, index) => (
+                      <button
+                        key={image.id ?? `${product.id}-image-${index}`}
+                        type="button"
+                        onClick={() => {
+                          if (index === selectedImage) return;
+                          const direction = index > selectedImage ? 'left' : 'right';
+                          goToImage(index, direction);
+                        }}
+                        onMouseEnter={() => handleThumbnailHover(index)}
+                        onMouseLeave={handleThumbnailLeave}
+                        className="relative h-20 w-20 shrink-0 overflow-hidden transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                        style={{
+                          border:
+                            selectedImage === index
+                              ? '3px solid #000'
+                              : hoveredThumbnail === index
+                                ? '3px solid rgba(0,0,0,0.5)'
+                                : '3px solid transparent',
+                        }}
+                      >
+                        <Image
+                          src={image.url || PLACEHOLDER_IMAGE}
+                          alt={image.alt || `${product.name} ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                        <span className="sr-only">{t('previewImage') || '预览图片'}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           </div>
 
           {/* 右侧：商品信息 */}
-          <div className="space-y-6">
+          <div ref={rightColumnRef} className="mt-8 lg:mt-0 lg:w-1/2 space-y-6">
             {/* 标题 */}
             <div>
               <h1 className="mb-2 text-3xl font-bold text-gray-900">{product.name}</h1>
