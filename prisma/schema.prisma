@@ -29,6 +29,7 @@ model User {
   wishlist     WishlistItem[]
   cartItems    CartItem[]
   loginRecords LoginRecord[]
+  adminEmailLogs AdminEmailLog[]
 
   @@map("users")
 }
@@ -282,6 +283,44 @@ enum CampaignStatus {
   SENDING       // 发送中
   SENT          // 已发送
   FAILED        // 发送失败
+}
+
+model AdminEmailLog {
+  id             String            @id @default(cuid())
+  subject        String
+  content        String            @db.Text
+  htmlContent    String?           @db.Text
+  complianceInfo Json?
+  sendType       AdminEmailSendType
+  status         AdminEmailStatus  @default(PENDING)
+  recipientCount Int               @default(0)
+  successCount   Int               @default(0)
+  failureCount   Int               @default(0)
+  failureReason  String?
+  recipients     Json
+  createdById    String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([status])
+  @@map("admin_email_logs")
+}
+
+enum AdminEmailSendType {
+  SINGLE
+  MULTI
+  ALL
+}
+
+enum AdminEmailStatus {
+  PENDING
+  SENDING
+  SUCCESS
+  PARTIAL
+  FAILED
 }
 
 // 商品变体

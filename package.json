@@ -78,6 +78,7 @@
     "react-hook-form": "^7.62.0",
     "react-i18next": "^15.7.3",
     "resend": "^6.4.1",
+    "sanitize-html": "^2.13.0",
     "sharp": "^0.34.4",
     "sonner": "^2.0.7",
     "stripe": "^17.7.0",

@@ -19,6 +19,7 @@ import {
   Home,
   Layout,
   FileText,
+  Mail,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,12 @@ const adminNavItems = [
     label: '数据分析',
     href: '/admin/analytics',
     icon: BarChart3,
+  },
+  {
+    key: 'email',
+    label: '邮件管理',
+    href: '/admin/email',
+    icon: Mail,
   },
   {
     key: 'settings',
