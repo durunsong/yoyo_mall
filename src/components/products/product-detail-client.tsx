@@ -40,6 +40,15 @@ import type { SystemSettings } from '@/lib/settings/system-settings';
 const PLACEHOLDER_IMAGE =
   'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png';
 
+interface RealtimeProductSnapshot {
+  price: number;
+  comparePrice: number | null;
+  availableQuantity: number;
+  inStock: boolean;
+  isLowStock: boolean;
+  updatedAt: string;
+}
+
 const ShareButtonIcon = ({ className }: { className?: string }) => (
   <img
     src="/icons/share.svg"
@@ -95,6 +104,8 @@ export function ProductDetailClient({
   const [hoveredThumbnail, setHoveredThumbnail] = useState<number | null>(null);
   const [hoveredPreviewIndex, setHoveredPreviewIndex] = useState<number | null>(null);
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const [realtimeData, setRealtimeData] = useState<RealtimeProductSnapshot | null>(null);
+  const [realtimeError, setRealtimeError] = useState<string | null>(null);
 
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const thumbnailListRef = useRef<HTMLDivElement | null>(null);
@@ -108,6 +119,42 @@ export function ProductDetailClient({
   useEffect(() => {
     thumbnailRefs.current = [];
   }, [product.id]);
+
+useEffect(() => {
+  let isActive = true;
+
+  const fetchRealtimePayload = async () => {
+    try {
+      const response = await fetch(`/api/products/${product.id}/realtime`, {
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch realtime data');
+      }
+      const payload = await response.json();
+      if (!payload?.success || !payload?.data) {
+        throw new Error(payload?.message || 'Realtime payload invalid');
+      }
+      if (isActive) {
+        setRealtimeData(payload.data as RealtimeProductSnapshot);
+        setRealtimeError(null);
+      }
+    } catch (error) {
+      if (isActive) {
+        console.error('实时库存刷新失败:', error);
+        setRealtimeError('REFRESH_FAILED');
+      }
+    }
+  };
+
+  fetchRealtimePayload();
+  const interval = window.setInterval(fetchRealtimePayload, 30_000);
+
+  return () => {
+    isActive = false;
+    window.clearInterval(interval);
+  };
+}, [product.id]);
 
   const imageList =
     product.images && product.images.length > 0
@@ -235,11 +282,23 @@ export function ProductDetailClient({
   const shareConfig = settings.productDetailConfig.share;
   const reviewsConfig = settings.productDetailConfig.reviews;
   const currencySymbol = getCurrencySymbol(settings.defaultCurrency);
-  const availableQuantity = product.availableQuantity ?? product.inventory?.quantity ?? 0;
-  const lowStockThreshold = product.inventory?.lowStockThreshold ?? 10;
-  const inStock = product.inStock ?? (availableQuantity > 0 || product.allowOutOfStock);
-  const lowStock =
-    product.isLowStock ?? (availableQuantity > 0 && availableQuantity <= lowStockThreshold);
+  const fallbackAvailableQuantity = product.availableQuantity ?? product.inventory?.quantity ?? 0;
+  const fallbackLowStockThreshold = product.inventory?.lowStockThreshold ?? 10;
+  const derivedPrice = realtimeData?.price ?? Number(product.price);
+  const derivedComparePrice = realtimeData?.comparePrice ?? (product.comparePrice ?? null);
+  const derivedAvailableQuantity =
+    realtimeData?.availableQuantity ?? fallbackAvailableQuantity;
+  const derivedInStock =
+    realtimeData?.inStock ??
+    (product.inStock ?? (derivedAvailableQuantity > 0 || product.allowOutOfStock));
+  const derivedLowStock =
+    realtimeData?.isLowStock ??
+    (product.isLowStock ??
+      (derivedAvailableQuantity > 0 && derivedAvailableQuantity <= fallbackLowStockThreshold));
+  const derivedDiscountPercent =
+    derivedComparePrice && derivedComparePrice > derivedPrice
+      ? Math.round(((derivedComparePrice - derivedPrice) / derivedComparePrice) * 100)
+      : null;
   const clampedRating = Math.max(0, Math.min(5, product.averageRating));
   const hasReviews = product.reviewCount > 0;
 
@@ -251,7 +310,7 @@ export function ProductDetailClient({
       : '');
 
   const handleAddToCart = async () => {
-    if (!inStock) return;
+    if (!derivedInStock) return;
     if (!effectiveSessionUser) {
       openModal('login');
       toast.info(tProduct('addToCartLogin') || '请先登录后再添加到购物车');
@@ -273,7 +332,7 @@ export function ProductDetailClient({
         addItem({
           productId: product.id,
           quantity,
-          price: product.price,
+          price: derivedPrice,
           name: product.name,
           image: imageUrl,
         });
@@ -323,7 +382,7 @@ export function ProductDetailClient({
             id: wishlistItem?.id,
             productId: product.id,
             name: product.name,
-            price: Number(product.price ?? 0),
+            price: derivedPrice,
             image: imageUrl,
             addedAt: wishlistItem?.createdAt ? new Date(wishlistItem.createdAt) : undefined,
           });
@@ -433,8 +492,7 @@ export function ProductDetailClient({
       setQuantity((prev) => Math.max(1, Math.min(999, prev + delta)));
       return;
     }
-    const currentAvailable =
-      product.availableQuantity ?? product.inventory?.quantity ?? 0;
+    const currentAvailable = derivedAvailableQuantity;
     const newQuantity = quantity + delta;
     if (newQuantity < 1) return;
     if (currentAvailable === 0) return;
@@ -556,9 +614,9 @@ export function ProductDetailClient({
                         priority
                       />
                       <span className="sr-only">{tProduct('previewImage') || '预览图片'}</span>
-                      {product.comparePrice && (
+                      {derivedDiscountPercent !== null && (
                         <Badge variant="destructive" className="absolute left-4 top-4 z-10">
-                          -{Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}%
+                          -{derivedDiscountPercent}%
                         </Badge>
                       )}
                     </button>
@@ -623,9 +681,9 @@ export function ProductDetailClient({
                       priority
                     />
                     <span className="sr-only">{tProduct('previewImage') || '预览图片'}</span>
-                    {product.comparePrice && (
+                    {derivedDiscountPercent !== null && (
                       <Badge variant="destructive" className="absolute left-4 top-4 z-10">
-                        -{Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}%
+                        -{derivedDiscountPercent}%
                       </Badge>
                     )}
                   </button>
@@ -770,25 +828,25 @@ export function ProductDetailClient({
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-blue-600">
                   {currencySymbol}
-                  {Number(product.price).toFixed(2)}
+                  {derivedPrice.toFixed(2)}
                 </span>
-                {product.comparePrice && (
+                {derivedComparePrice && (
                   <span className="text-xl text-gray-400 line-through">
                     {currencySymbol}
-                    {Number(product.comparePrice).toFixed(2)}
+                    {derivedComparePrice.toFixed(2)}
                   </span>
                 )}
               </div>
-              {lowStock && (
+              {derivedLowStock && (
                 <p className="text-sm text-orange-600">
-                  ⚠️ {tProduct('lowStock') || 'Only'} {availableQuantity}{' '}
+                  ⚠️ {tProduct('lowStock') || 'Only'} {derivedAvailableQuantity}{' '}
                   {tProduct('itemsLeft') || 'items left'}
                 </p>
               )}
             </div>
 
             <div className="flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
-              {inStock ? (
+              {derivedInStock ? (
                 <>
                   <Check className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-medium text-green-600">
@@ -801,6 +859,18 @@ export function ProductDetailClient({
                 </span>
               )}
             </div>
+            <p className="text-xs text-gray-500">
+              {realtimeData
+                ? `${tProduct('realtimeUpdatedAt') || '实时库存'} · ${new Date(
+                    realtimeData.updatedAt,
+                  ).toLocaleTimeString()}`
+                : tProduct('realtimeLoading') || '正在同步库存...'}
+              {realtimeError && (
+                <span className="ml-2 text-red-500">
+                  {tProduct('realtimeFailed') || '刷新失败'}
+                </span>
+              )}
+            </p>
 
             <Separator />
 
@@ -823,7 +893,7 @@ export function ProductDetailClient({
                     onClick={() => handleQuantityChange(1)}
                     disabled={
                       !product.allowOutOfStock &&
-                      (availableQuantity === 0 || quantity >= availableQuantity)
+                      (derivedAvailableQuantity === 0 || quantity >= derivedAvailableQuantity)
                     }
                   >
                     <Plus className="h-4 w-4" />
@@ -832,7 +902,7 @@ export function ProductDetailClient({
                 <span className="text-sm text-gray-600">
                   {product.allowOutOfStock
                     ? tProduct('preorderHint') || '可预订，下单后优先为您安排备货'
-                    : `${availableQuantity} ${tProduct('available') || 'available'}`}
+                    : `${derivedAvailableQuantity} ${tProduct('available') || 'available'}`}
                 </span>
               </div>
             </div>
@@ -842,7 +912,7 @@ export function ProductDetailClient({
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={!inStock}
+                disabled={!derivedInStock}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 {tProduct('addToCart') || 'Add to Cart'}

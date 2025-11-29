@@ -6,11 +6,13 @@ import { getDictionaries } from '@/lib/server/translations';
 
 export const revalidate = 300;
 
+type ProductsSearchParams = Record<string, string | string[] | undefined>;
+
 interface ProductsPageProps {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: ProductsSearchParams | Promise<ProductsSearchParams | undefined>;
 }
 
-function parseQuery(searchParams: ProductsPageProps['searchParams']): ProductListQuery {
+function parseQuery(searchParams?: ProductsSearchParams): ProductListQuery {
   if (!searchParams) return {};
 
   const getParam = (key: string) => {
@@ -35,9 +37,11 @@ function parseQuery(searchParams: ProductsPageProps['searchParams']): ProductLis
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const query = parseQuery(resolvedSearchParams);
+
   const settings = await getSystemSettings();
   const locale = settings.defaultLanguage || 'en-US';
-  const query = parseQuery(searchParams);
 
   const [productList, categories, dictionaries] = await Promise.all([
     getProductList(query),

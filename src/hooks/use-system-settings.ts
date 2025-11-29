@@ -12,6 +12,7 @@ import {
   defaultSystemSettings,
   mergeSystemSettings,
 } from '@/lib/settings/system-settings';
+import { getCurrencySymbol } from '@/lib/currency';
 
 interface SettingsStore {
   settings: SystemSettings | null;
@@ -76,20 +77,7 @@ export function useSystemSettings() {
 /**
  * 获取货币符号
  */
-export function getCurrencySymbol(currency: string): string {
-  const currencyMap: Record<string, string> = {
-    'CNY': '¥',
-    'USD': '$',
-    'EUR': '€',
-    'GBP': '£',
-    'JPY': '¥',
-    'KRW': '₩',
-    'HKD': 'HK$',
-    'TWD': 'NT$',
-  };
-  
-  return currencyMap[currency] || currency;
-}
+export { getCurrencySymbol };
 
 /**
  * 格式化价格

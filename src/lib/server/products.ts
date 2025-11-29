@@ -126,6 +126,38 @@ export async function getHomepageProducts(limit = 10): Promise<HomepageProduct[]
   return products.map(mapHomepageProduct);
 }
 
+export async function getDiscountedProducts(limit = 20): Promise<HomepageProduct[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      status: 'PUBLISHED',
+      comparePrice: {
+        not: null,
+      },
+    },
+    include: homepageProductInclude,
+    orderBy: [
+      { updatedAt: 'desc' },
+      { createdAt: 'desc' },
+    ],
+    take: limit * 2,
+  });
+
+  const discounted = products
+    .filter((product) => {
+      if (!product.comparePrice) return false;
+      try {
+        const compareValue = Number(product.comparePrice);
+        const saleValue = Number(product.price);
+        return compareValue > saleValue;
+      } catch {
+        return false;
+      }
+    })
+    .slice(0, limit);
+
+  return discounted.map(mapHomepageProduct);
+}
+
 function mapProductDetail(product: RawProductDetail): ProductDetailData {
   const availableQuantity = product.inventory
     ? Math.max(0, product.inventory.quantity - product.inventory.reservedQuantity)

@@ -6,14 +6,17 @@ import { getTopCategories } from '@/lib/server/categories';
 const PRODUCT_LIMIT = 10;
 const FEATURED_LIMIT = 5;
 
+type LocaleParams = { locale: string } | undefined;
+
 interface HomePageProps {
-  params: { locale: string };
+  params: LocaleParams | Promise<LocaleParams>;
 }
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 export default async function HomePage({ params }: HomePageProps) {
-  const locale = params?.locale || 'en-US';
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'en-US';
 
   const [products, translations, categories] = await Promise.all([
     getHomepageProducts(PRODUCT_LIMIT),
