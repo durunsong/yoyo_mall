@@ -52,6 +52,35 @@ type RawProductDetail = Prisma.ProductGetPayload<{
   include: typeof productDetailInclude;
 }>;
 
+export interface ProductListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  sortBy?: 'name' | 'price' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ProductListPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface ProductListResult {
+  products: HomepageProduct[];
+  pagination: ProductListPagination;
+  appliedFilters: {
+    search?: string;
+    category?: string;
+    sortBy?: ProductListQuery['sortBy'];
+    sortOrder?: ProductListQuery['sortOrder'];
+  };
+}
+
 function mapHomepageProduct(product: RawHomepageProduct): HomepageProduct {
   const availableQuantity = product.inventory
     ? Math.max(0, product.inventory.quantity - product.inventory.reservedQuantity)
@@ -176,6 +205,105 @@ export async function getRelatedProducts(options: {
 
   return products.map(mapHomepageProduct);
 }
+
+async function resolveCategoryIds(categoryIdentifier: string) {
+  const category = await prisma.category.findFirst({
+    where: {
+      OR: [{ id: categoryIdentifier }, { slug: categoryIdentifier }],
+    },
+    select: { id: true },
+  });
+
+  if (!category) {
+    return [];
+  }
+
+  const ids: string[] = [category.id];
+  let currentLevel = [category.id];
+
+  while (currentLevel.length > 0) {
+    const children = await prisma.category.findMany({
+      where: { parentId: { in: currentLevel } },
+      select: { id: true },
+    });
+    if (children.length === 0) {
+      break;
+    }
+    const childIds = children.map((child) => child.id);
+    ids.push(...childIds);
+    currentLevel = childIds;
+  }
+
+  return ids;
+}
+
+export async function getProductList(query: ProductListQuery): Promise<ProductListResult> {
+  const page = Math.max(1, query.page ?? 1);
+  const limit = Math.max(1, Math.min(100, query.limit ?? 12));
+  const skip = (page - 1) * limit;
+
+  const filters: Prisma.ProductWhereInput[] = [{ status: 'PUBLISHED' }];
+
+  if (query.search) {
+    filters.push({
+      OR: [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+        { sku: { contains: query.search, mode: 'insensitive' } },
+        { tags: { has: query.search } },
+      ],
+    });
+  }
+
+  if (query.category && query.category !== 'all') {
+    const categoryIds = await resolveCategoryIds(query.category);
+    if (categoryIds.length > 0) {
+      filters.push({ categoryId: { in: categoryIds } });
+    }
+  }
+
+  const where: Prisma.ProductWhereInput = {
+    AND: filters,
+  };
+
+  const sortBy = query.sortBy ?? 'createdAt';
+  const sortOrder = query.sortOrder ?? (sortBy === 'createdAt' ? 'desc' : 'asc');
+  const orderBy: Prisma.ProductOrderByWithRelationInput = {
+    [sortBy]: sortOrder,
+  };
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: homepageProductInclude,
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  const pagination: ProductListPagination = {
+    page,
+    limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+    hasNext: page < Math.ceil(total / limit),
+    hasPrev: page > 1,
+  };
+
+  return {
+    products: products.map(mapHomepageProduct),
+    pagination,
+    appliedFilters: {
+      search: query.search,
+      category: query.category,
+      sortBy,
+      sortOrder,
+    },
+  };
+}
+
 
 
 
