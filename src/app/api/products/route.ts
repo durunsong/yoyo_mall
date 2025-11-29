@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { revalidateProductPages } from '@/lib/server/revalidate';
 
 // 规范化 slug：允许中文与数字，去除首尾连接符
 function slugify(value: string): string {
@@ -311,11 +312,16 @@ export async function POST(request: NextRequest) {
       sku: product.sku,
     });
 
-    return NextResponse.json({
-      success: true,
-      message: '商品创建成功',
-      data: product,
-    }, { status: 201 });
+    await revalidateProductPages();
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: '商品创建成功',
+        data: product,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('创建商品失败:', error);
 

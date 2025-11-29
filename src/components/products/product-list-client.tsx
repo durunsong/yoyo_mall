@@ -245,6 +245,9 @@ export function ProductsPageClient({
     }
   };
 
+  const effectiveLimit = initialPagination.limit ?? initialQuery.limit ?? DEFAULT_LIMIT;
+  const effectiveTotalPages = Math.max(1, Math.ceil((initialPagination.total ?? 0) / effectiveLimit));
+
   return (
     <div className="container mx-auto px-4 py-8" aria-busy={isPending}>
       <div className="mb-6">
@@ -337,17 +340,17 @@ export function ProductsPageClient({
             ))}
           </div>
 
-          {initialPagination.totalPages > 1 && (
+          {effectiveTotalPages > 1 && (
             <div className="mt-8">
               <PaginationControls
                 currentPage={currentPage}
-                totalPages={initialPagination.totalPages}
+                totalPages={effectiveTotalPages}
                 onPageChange={handlePageChange}
               />
               <div className="mt-4 text-center text-sm text-muted-foreground">
                 {t('rangeText', {
-                  start: (currentPage - 1) * (initialPagination.limit ?? DEFAULT_LIMIT) + 1,
-                  end: Math.min(currentPage * (initialPagination.limit ?? DEFAULT_LIMIT), initialPagination.total),
+                  start: (currentPage - 1) * effectiveLimit + 1,
+                  end: Math.min(currentPage * effectiveLimit, initialPagination.total),
                   total: initialPagination.total,
                 })}
               </div>

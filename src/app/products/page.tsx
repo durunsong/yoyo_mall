@@ -5,6 +5,7 @@ import { getSystemSettings } from '@/lib/server/system-settings';
 import { getDictionaries } from '@/lib/server/translations';
 
 export const revalidate = 300;
+const DEFAULT_PAGE_SIZE = 10;
 
 type ProductsSearchParams = Record<string, string | string[] | undefined>;
 
@@ -24,11 +25,11 @@ function parseQuery(searchParams?: ProductsSearchParams): ProductListQuery {
   const limitParam = getParam('limit');
 
   const page = pageParam ? Number(pageParam) : undefined;
-  const limit = limitParam ? Number(limitParam) : undefined;
+  const limit = limitParam ? Number(limitParam) : DEFAULT_PAGE_SIZE;
 
   return {
     page: Number.isNaN(page) ? undefined : page,
-    limit: Number.isNaN(limit) ? undefined : limit,
+    limit: Number.isNaN(limit) ? DEFAULT_PAGE_SIZE : limit,
     search: getParam('search') || undefined,
     category: getParam('category') || undefined,
     sortBy: (getParam('sortBy') as ProductListQuery['sortBy']) || undefined,

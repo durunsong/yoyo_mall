@@ -271,7 +271,7 @@ async function resolveCategoryIds(categoryIdentifier: string) {
 
 export async function getProductList(query: ProductListQuery): Promise<ProductListResult> {
   const page = Math.max(1, query.page ?? 1);
-  const limit = Math.max(1, Math.min(100, query.limit ?? 12));
+  const limit = Math.max(1, Math.min(100, query.limit ?? 10));
   const skip = (page - 1) * limit;
 
   const filters: Prisma.ProductWhereInput[] = [{ status: 'PUBLISHED' }];

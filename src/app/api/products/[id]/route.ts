@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { revalidateProductPages } from '@/lib/server/revalidate';
 
 const productImageSchema = z.object({
   url: z.string().url('图片URL格式不正确'),
@@ -304,6 +305,8 @@ async function updateProduct(
       sku: product.sku,
     });
 
+    await revalidateProductPages();
+
     return NextResponse.json({
       success: true,
       message: '商品更新成功',
@@ -401,6 +404,8 @@ export async function DELETE(
       name: existingProduct.name,
       sku: existingProduct.sku,
     });
+
+    await revalidateProductPages();
 
     return NextResponse.json({
       success: true,
