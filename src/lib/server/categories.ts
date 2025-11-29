@@ -1,13 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/prisma';
-
-export interface CategorySummary {
-  id: string;
-  name: string;
-  slug: string;
-  productCount: number;
-}
+import type { CategorySummary } from '@/types/category';
 
 export async function getTopCategories(limit = 8): Promise<CategorySummary[]> {
   const categories = await prisma.category.findMany({

@@ -1,0 +1,49 @@
+import { normalizeProductDetailConfig, defaultProductDetailConfig } from '@/lib/config/product-detail';
+
+export interface SystemSettings {
+  siteName: string;
+  siteDescription: string | null;
+  siteUrl: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  defaultLanguage: string;
+  defaultCurrency: string;
+  stripeEnabled: boolean;
+  alipayEnabled: boolean;
+  wechatPayEnabled: boolean;
+  productDetailConfig: ReturnType<typeof normalizeProductDetailConfig>;
+}
+
+export const defaultSystemSettings: SystemSettings = {
+  siteName: 'Yobuy',
+  siteDescription: '您的跨境电商平台',
+  siteUrl: 'https://yoyomall.com',
+  contactEmail: 'support@yoyomall.com',
+  contactPhone: '+86 400-123-4567',
+  defaultLanguage: 'en-US',
+  defaultCurrency: 'CNY',
+  stripeEnabled: false,
+  alipayEnabled: false,
+  wechatPayEnabled: false,
+  productDetailConfig: normalizeProductDetailConfig(defaultProductDetailConfig),
+};
+
+type SystemSettingsInput = Partial<Omit<SystemSettings, 'productDetailConfig'>> & {
+  productDetailConfig?: unknown;
+};
+
+export function mergeSystemSettings(input?: SystemSettingsInput): SystemSettings {
+  if (!input) {
+    return defaultSystemSettings;
+  }
+
+  return {
+    ...defaultSystemSettings,
+    ...input,
+    productDetailConfig: normalizeProductDetailConfig(
+      input.productDetailConfig ?? defaultProductDetailConfig,
+    ),
+  };
+}
+
+

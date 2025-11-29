@@ -26,8 +26,8 @@ import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import type { TranslationDictionary } from '@/lib/i18n/dictionary';
 import { createTranslator } from '@/lib/i18n/dictionary';
-import type { HomepageProduct } from '@/lib/server/products';
-import type { CategorySummary } from '@/lib/server/categories';
+import type { HomepageProduct } from '@/types/product';
+import type { CategorySummary } from '@/types/category';
 
 interface HomePageClientProps {
   locale: string;

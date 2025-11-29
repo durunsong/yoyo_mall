@@ -8,24 +8,10 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import {
-  ProductDetailConfig,
-  defaultProductDetailConfig,
-  normalizeProductDetailConfig,
-} from '@/lib/config/product-detail';
-
-interface SystemSettings {
-  siteName: string;
-  siteDescription: string | null;
-  siteUrl: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  defaultLanguage: string;
-  defaultCurrency: string;
-  stripeEnabled: boolean;
-  alipayEnabled: boolean;
-  wechatPayEnabled: boolean;
-  productDetailConfig: ProductDetailConfig;
-}
+  SystemSettings,
+  defaultSystemSettings,
+  mergeSystemSettings,
+} from '@/lib/settings/system-settings';
 
 interface SettingsStore {
   settings: SystemSettings | null;
@@ -33,21 +19,6 @@ interface SettingsStore {
   error: string | null;
   fetchSettings: () => Promise<void>;
 }
-
-// 默认设置
-const defaultSettings: SystemSettings = {
-  siteName: 'Yobuy',
-  siteDescription: '您的跨境电商平台',
-  siteUrl: 'https://yoyomall.com',
-  contactEmail: 'support@yoyomall.com',
-  contactPhone: '+86 400-123-4567',
-  defaultLanguage: 'en-US',
-  defaultCurrency: 'CNY',
-  stripeEnabled: false,
-  alipayEnabled: false,
-  wechatPayEnabled: false,
-  productDetailConfig: normalizeProductDetailConfig(defaultProductDetailConfig),
-};
 
 // Zustand store
 const useSettingsStore = create<SettingsStore>((set) => ({
@@ -63,22 +34,17 @@ const useSettingsStore = create<SettingsStore>((set) => ({
       const data = await response.json();
       
       if (data.success && data.data) {
-        const normalizedSettings: SystemSettings = {
-          ...defaultSettings,
-          ...data.data,
-          productDetailConfig: normalizeProductDetailConfig(
-            data.data.productDetailConfig,
-          ),
-        };
-
-        set({ settings: normalizedSettings, loading: false });
+        set({
+          settings: mergeSystemSettings(data.data),
+          loading: false,
+        });
       } else {
-        set({ settings: defaultSettings, loading: false });
+        set({ settings: defaultSystemSettings, loading: false });
       }
     } catch (error) {
       console.error('获取系统设置失败:', error);
       set({ 
-        settings: defaultSettings, 
+        settings: defaultSystemSettings, 
         loading: false, 
         error: '获取系统设置失败', 
       });
@@ -100,7 +66,7 @@ export function useSystemSettings() {
   }, [settings, loading, fetchSettings]);
   
   return {
-    settings: settings || defaultSettings,
+    settings: settings || defaultSystemSettings,
     loading,
     error,
     refresh: fetchSettings,
