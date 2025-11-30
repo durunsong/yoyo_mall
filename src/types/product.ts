@@ -21,6 +21,11 @@ export type HomepageProduct = {
   availableQuantity: number;
   allowOutOfStock: boolean;
   tags: string[];
+  originCountry?: string | null;
+  hsCode?: string | null;
+  materials?: string[];
+  netWeight?: number | null;
+  volumetricWeight?: number | null;
 };
 
 export type ProductDetailReview = {
@@ -47,6 +52,13 @@ export type ProductDetailData = {
   comparePrice: number | null;
   currency: string;
   tags: string[];
+  originCountry?: string | null;
+  hsCode?: string | null;
+  materials?: string[];
+  netWeight?: number | null;
+  volumetricWeight?: number | null;
+  packageDimensions?: string | null;
+  compliance?: Record<string, unknown> | null;
   category: {
     id: string;
     name: string;

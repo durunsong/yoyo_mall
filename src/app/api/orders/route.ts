@@ -7,8 +7,11 @@ import {
   validateCouponAndCalculateDiscount,
 } from '@/lib/coupon';
 import {
+  TAX_RATE,
   calculateShippingAmount,
   calculateTaxAmount,
+  calculateDutyAmount,
+  calculateInsuranceAmount,
   roundCurrency,
 } from '@/lib/pricing';
 
@@ -217,6 +220,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const normalizedCountryCode = shippingAddress.country?.toUpperCase() ?? 'CN';
+
+    let market = await prisma.marketConfig.findUnique({
+      where: { countryCode: normalizedCountryCode },
+    });
+
+    if (!market) {
+      market = await prisma.marketConfig.findUnique({
+        where: { countryCode: 'CN' },
+      });
+    }
+
+    const shippingZone = market
+      ? await prisma.shippingZone.findFirst({
+          where: { marketId: market.id, enabled: true },
+          orderBy: { baseFee: 'asc' },
+        })
+      : await prisma.shippingZone.findFirst({
+          where: { code: 'CN_STANDARD' },
+        });
+
     // 验证账单地址（如果提供）
     let billingAddress = null;
     if (data.billingAddressId) {
@@ -237,6 +261,7 @@ export async function POST(request: NextRequest) {
 
     // 验证商品并计算价格
     let subtotal = 0;
+    let totalWeight = 0;
     const validatedItems: any[] = [];
 
     for (const item of data.items) {
@@ -298,6 +323,8 @@ export async function POST(request: NextRequest) {
 
       const lineTotal = actualPrice * item.quantity;
       subtotal += lineTotal;
+      const productWeight = product.weight ? Number(product.weight) : 0.5;
+      totalWeight += productWeight * item.quantity;
 
       validatedItems.push({
         ...item,
@@ -309,6 +336,10 @@ export async function POST(request: NextRequest) {
           sku: product.sku,
           price: actualPrice,
           image: product.images?.[0]?.url,
+          weight: product.weight ? Number(product.weight) : null,
+          originCountry: product.originCountry,
+          hsCode: product.hsCode,
+          materials: product.materials,
           variant: variant ? {
             id: variant.id,
             name: variant.name,
@@ -320,8 +351,48 @@ export async function POST(request: NextRequest) {
     }
 
     subtotal = roundCurrency(subtotal);
-    const taxAmount = calculateTaxAmount(subtotal);
-    const shippingAmount = calculateShippingAmount(subtotal);
+
+    if (market?.minOrderAmount) {
+      const minOrderAmount = Number(market.minOrderAmount);
+      if (subtotal < minOrderAmount) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'ORDER_BELOW_MINIMUM',
+            message: `当前市场最低下单金额为 ${minOrderAmount}`,
+            minOrderAmount,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    const shippingZonePricing = shippingZone
+      ? {
+          baseFee: shippingZone.baseFee ? Number(shippingZone.baseFee) : undefined,
+          perKgFee: shippingZone.perKgFee ? Number(shippingZone.perKgFee) : undefined,
+          freeShippingThreshold: shippingZone.freeShippingThreshold
+            ? Number(shippingZone.freeShippingThreshold)
+            : undefined,
+          fuelSurcharge: shippingZone.fuelSurcharge ? Number(shippingZone.fuelSurcharge) : undefined,
+          maxWeight: shippingZone.maxWeight ? Number(shippingZone.maxWeight) : undefined,
+        }
+      : undefined;
+
+    const taxRate = market?.taxRate ? Number(market.taxRate) : TAX_RATE;
+    const dutyRate = market?.dutyRate ? Number(market.dutyRate) : undefined;
+    const declaredValue = subtotal;
+
+    const taxAmount = calculateTaxAmount(subtotal, taxRate);
+    const shippingAmount = calculateShippingAmount(subtotal, {
+      zone: shippingZonePricing,
+      totalWeightKg: totalWeight,
+    });
+    const dutyAmount = calculateDutyAmount(declaredValue, {
+      rate: dutyRate,
+      minDeclaredValue: shippingZonePricing?.freeShippingThreshold,
+    });
+    const insuranceAmount = calculateInsuranceAmount(declaredValue);
     let discountAmount = 0;
     let appliedCouponId: string | null = null;
     let appliedCouponCode: string | null = null;
@@ -352,7 +423,7 @@ export async function POST(request: NextRequest) {
     }
 
     const totalAmount = roundCurrency(
-      subtotal + taxAmount + shippingAmount - discountAmount,
+      subtotal + taxAmount + shippingAmount + dutyAmount + insuranceAmount - discountAmount,
     );
 
     // 使用数据库事务创建订单
@@ -369,9 +440,15 @@ export async function POST(request: NextRequest) {
           shippingAmount,
           discountAmount,
           totalAmount,
+          declaredValue,
+          dutyAmount,
+          importTaxAmount: taxAmount,
+          insuranceAmount,
           shippingAddressId: data.shippingAddressId,
           billingAddressId: data.billingAddressId,
           notes: data.notes,
+          marketId: market?.id,
+          shippingZoneId: shippingZone?.id,
         },
       });
 
@@ -446,6 +523,9 @@ export async function POST(request: NextRequest) {
         totalAmount: order.totalAmount,
         status: order.status,
         createdAt: order.createdAt,
+        dutyAmount: order.dutyAmount,
+        shippingAmount: order.shippingAmount,
+        insuranceAmount: order.insuranceAmount,
       },
     }, { status: 201 });
   } catch (error) {

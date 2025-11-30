@@ -11,7 +11,7 @@ const currencySymbolMap: Record<string, string> = {
   CAD: 'C$',
 };
 
-function normalizeCurrency(input?: string) {
+export function normalizeCurrency(input?: string) {
   return (input || 'USD').toUpperCase();
 }
 
@@ -36,4 +36,22 @@ export function formatCurrency(
   return formatter.format(value);
 }
 
+type CurrencyConversionOptions = {
+  precision?: number;
+  fallback?: number;
+};
+
+export function convertCurrency(
+  value: number,
+  rate?: number | null,
+  options: CurrencyConversionOptions = {},
+) {
+  if (!rate || Number.isNaN(rate)) {
+    return options.fallback ?? value;
+  }
+
+  const precision = options.precision ?? 2;
+  const converted = value * rate;
+  return Number(converted.toFixed(precision));
+}
 

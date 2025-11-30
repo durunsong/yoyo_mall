@@ -58,6 +58,63 @@ async function main() {
 
   console.log('✅ 测试用户创建完成:', testUser.email);
 
+  // 初始化系统设置，确保跨境电商的多语种、多币种能力
+  const systemSettings = await prisma.systemSettings.upsert({
+    where: { id: 'global' },
+    update: {
+      siteName: 'Yoyo Mall Global',
+      siteDescription: '面向全球消费者的跨境电商平台',
+      siteUrl: 'https://yoyomall.com',
+      contactEmail: 'support@yoyomall.com',
+      contactPhone: '+86 400-123-4567',
+      defaultLanguage: 'zh-CN',
+      defaultCurrency: 'CNY',
+      defaultCountry: 'CN',
+      supportedCountries: ['CN', 'US', 'DE', 'AU', 'GB'],
+      supportedCurrencies: ['CNY', 'USD', 'EUR', 'GBP', 'AUD'],
+      autoCurrencySwitch: true,
+      autoLanguageSwitch: true,
+      defaultMeasurement: 'METRIC',
+      customsRequireNationalId: true,
+      dutyPrepaid: true,
+      allowPreorder: true,
+      preferredLogistics: {
+        domestic: ['顺丰', '京东物流'],
+        international: ['菜鸟', 'DHL', 'UPS'],
+      },
+      returnPolicyDays: 30,
+      defaultWarehouseCountry: 'CN',
+      allowedPaymentCountries: ['CN', 'US', 'DE', 'AU', 'GB'],
+    },
+    create: {
+      siteName: 'Yoyo Mall Global',
+      siteDescription: '面向全球消费者的跨境电商平台',
+      siteUrl: 'https://yoyomall.com',
+      contactEmail: 'support@yoyomall.com',
+      contactPhone: '+86 400-123-4567',
+      defaultLanguage: 'zh-CN',
+      defaultCurrency: 'CNY',
+      defaultCountry: 'CN',
+      supportedCountries: ['CN', 'US', 'DE', 'AU', 'GB'],
+      supportedCurrencies: ['CNY', 'USD', 'EUR', 'GBP', 'AUD'],
+      autoCurrencySwitch: true,
+      autoLanguageSwitch: true,
+      defaultMeasurement: 'METRIC',
+      customsRequireNationalId: true,
+      dutyPrepaid: true,
+      allowPreorder: true,
+      preferredLogistics: {
+        domestic: ['顺丰', '京东物流'],
+        international: ['菜鸟', 'DHL', 'UPS'],
+      },
+      returnPolicyDays: 30,
+      defaultWarehouseCountry: 'CN',
+      allowedPaymentCountries: ['CN', 'US', 'DE', 'AU', 'GB'],
+    },
+  });
+
+  console.log('✅ 系统设置初始化完成:', systemSettings.siteName);
+
   // 创建商品分类
   const categories = [
     {
@@ -153,6 +210,17 @@ async function main() {
       slug: 'iphone-15-pro',
       description: '全新iPhone 15 Pro，配备钛金属设计，A17 Pro芯片，专业级摄像头系统。支持USB-C接口，配备灵动岛功能。采用航天级钛金属打造，更轻更坚固。配备全新的A17 Pro芯片，性能提升20%，能效提升10%。专业级摄像系统支持7倍光学变焦，ProRAW和ProRes视频录制。',
       shortDesc: '配备A17 Pro芯片的专业级iPhone',
+      hsCode: '8517.12.00',
+      originCountry: 'CN',
+      materials: ['钛合金', '玻璃', '铝合金'],
+      compliance: {
+        battery: 'UN38.3',
+        certifications: ['CE', 'FCC', 'RoHS'],
+      },
+      weight: 0.25,
+      netWeight: 0.22,
+      volumetricWeight: 0.35,
+      packageDimensions: '160x80x60 mm',
       sku: 'IPHONE-15-PRO-128GB',
       price: 999.0,
       comparePrice: 1099.0,
@@ -166,6 +234,17 @@ async function main() {
       slug: 'macbook-air-m3',
       description: '全新MacBook Air搭载M3芯片，性能提升40%，续航长达18小时。轻薄便携，适合移动办公。13.6英寸Liquid Retina显示屏，支持10亿色彩。全新的散热系统，无风扇静音设计。',
       shortDesc: 'M3芯片超薄笔记本',
+      hsCode: '8471.30.10',
+      originCountry: 'CN',
+      materials: ['铝合金', '玻璃'],
+      compliance: {
+        energyStar: true,
+        certifications: ['CE', 'FCC', 'RCM'],
+      },
+      weight: 1.24,
+      netWeight: 1.15,
+      volumetricWeight: 1.6,
+      packageDimensions: '320x230x70 mm',
       sku: 'MACBOOK-AIR-M3-256GB',
       price: 1199.0,
       comparePrice: 1299.0,
@@ -179,6 +258,17 @@ async function main() {
       slug: 'airpods-pro-2',
       description: 'AirPods Pro 第二代，配备主动降噪功能，自适应通透模式，支持空间音频。H2芯片提供更智能的降噪体验，最长续航6小时。IPX4级防水，适合运动佩戴。',
       shortDesc: '主动降噪无线耳机',
+      hsCode: '8518.30.10',
+      originCountry: 'VN',
+      materials: ['塑料', '金属', '硅胶'],
+      compliance: {
+        battery: 'UN38.3',
+        wireless: ['CE', 'FCC'],
+      },
+      weight: 0.08,
+      netWeight: 0.06,
+      volumetricWeight: 0.12,
+      packageDimensions: '110x60x30 mm',
       sku: 'AIRPODS-PRO-2',
       price: 249.0,
       categoryId: mobileCategory?.id,
@@ -191,6 +281,16 @@ async function main() {
       slug: 'samsung-galaxy-s24-ultra',
       description: 'Galaxy S24 Ultra旗舰手机，配备S Pen触控笔，200MP主摄像头，AI图像增强。骁龙8 Gen 3处理器，12GB RAM。6.8英寸QHD+ AMOLED 2X显示屏，支持5000mAh大电池。',
       shortDesc: 'AI驱动的旗舰手机',
+      hsCode: '8517.12.00',
+      originCountry: 'VN',
+      materials: ['铝合金', '玻璃'],
+      compliance: {
+        certifications: ['CE', 'KC', 'FCC'],
+      },
+      weight: 0.26,
+      netWeight: 0.24,
+      volumetricWeight: 0.38,
+      packageDimensions: '170x90x70 mm',
       sku: 'GALAXY-S24-ULTRA-256GB',
       price: 1199.0,
       comparePrice: 1299.0,
@@ -205,6 +305,16 @@ async function main() {
       slug: 'nike-air-max-2024',
       description: 'Nike经典气垫运动鞋2024新款，舒适透气，时尚百搭。采用回收材料制造，环保设计。Max Air气垫提供卓越的缓震效果，适合日常穿着和轻度运动。',
       shortDesc: '经典气垫运动鞋',
+      hsCode: '6404.11.00',
+      originCountry: 'VN',
+      materials: ['合成纤维', '橡胶', '泡棉'],
+      compliance: {
+        sustainability: ['Global Recycled Standard'],
+      },
+      weight: 1.1,
+      netWeight: 1.0,
+      volumetricWeight: 1.3,
+      packageDimensions: '360x240x130 mm',
       sku: 'NIKE-AIRMAX-2024-42',
       price: 159.0,
       comparePrice: 189.0,
@@ -218,6 +328,16 @@ async function main() {
       slug: 'nike-pro-tshirt',
       description: '高性能运动T恤，Dri-FIT速干技术，适合各种运动场景。采用透气网眼设计，快速排汗。修身剪裁，展现运动身材。适合健身、跑步、篮球等各类运动。',
       shortDesc: '速干运动T恤',
+      hsCode: '6109.10.00',
+      originCountry: 'TH',
+      materials: ['聚酯纤维', '氨纶'],
+      compliance: {
+        sustainability: ['OEKO-TEX Standard 100'],
+      },
+      weight: 0.35,
+      netWeight: 0.3,
+      volumetricWeight: 0.4,
+      packageDimensions: '320x280x30 mm',
       sku: 'NIKE-PRO-TSHIRT-L',
       price: 45.0,
       categoryId: mensClothingCategory?.id,
@@ -231,6 +351,17 @@ async function main() {
       slug: 'ikea-markus-chair',
       description: 'MARKUS人体工学办公椅，可调节高度和倾斜角度，舒适支撑，适合长时间办公。高靠背设计，提供颈部支撑。网布材质，透气舒适。承重可达110kg。',
       shortDesc: '人体工学办公椅',
+      hsCode: '9401.30.10',
+      originCountry: 'SE',
+      materials: ['钢', '聚酯纤维', '泡棉'],
+      compliance: {
+        fireRetardant: true,
+        certifications: ['BIFMA'],
+      },
+      weight: 17.0,
+      netWeight: 15.5,
+      volumetricWeight: 22.0,
+      packageDimensions: '1000x600x250 mm',
       sku: 'IKEA-MARKUS-BLACK',
       price: 199.0,
       categoryId: furnitureCategory?.id,
@@ -243,6 +374,16 @@ async function main() {
       slug: 'ikea-billy-bookshelf',
       description: 'BILLY经典书架，可调节层板，多种尺寸可选，适合各种空间。表面经过耐磨处理，易于清洁。可与其他BILLY系列组合使用，创造个性化储物方案。',
       shortDesc: '经典可调节书架',
+      hsCode: '9403.60.90',
+      originCountry: 'SE',
+      materials: ['刨花板', '贴面', '玻璃'],
+      compliance: {
+        forestry: ['FSC Certified'],
+      },
+      weight: 30.0,
+      netWeight: 28.0,
+      volumetricWeight: 35.0,
+      packageDimensions: '2050x800x120 mm',
       sku: 'IKEA-BILLY-WHITE-80',
       price: 89.0,
       categoryId: furnitureCategory?.id,
@@ -314,6 +455,181 @@ async function main() {
   });
 
   console.log('✅ 优惠券创建完成:', coupon.code);
+
+  // 初始化汇率数据
+  const currencyRates = [
+    { baseCurrency: 'USD', targetCurrency: 'CNY', rate: 7.12 },
+    { baseCurrency: 'USD', targetCurrency: 'EUR', rate: 0.91 },
+    { baseCurrency: 'USD', targetCurrency: 'GBP', rate: 0.79 },
+    { baseCurrency: 'CNY', targetCurrency: 'USD', rate: 0.14 },
+    { baseCurrency: 'EUR', targetCurrency: 'USD', rate: 1.1 },
+  ];
+
+  for (const rate of currencyRates) {
+    await prisma.currencyRate.upsert({
+      where: {
+        baseCurrency_targetCurrency: {
+          baseCurrency: rate.baseCurrency,
+          targetCurrency: rate.targetCurrency,
+        },
+      },
+      update: {
+        rate: rate.rate,
+        source: 'seed',
+        fetchedAt: new Date(),
+      },
+      create: {
+        baseCurrency: rate.baseCurrency,
+        targetCurrency: rate.targetCurrency,
+        rate: rate.rate,
+        source: 'seed',
+      },
+    });
+  }
+
+  console.log('✅ 汇率数据初始化完成');
+
+  // 初始化主要销售市场
+  const marketConfigs = [
+    {
+      countryCode: 'CN',
+      countryName: '中国大陆',
+      currency: 'CNY',
+      languages: ['zh-CN'],
+      measurementSystem: 'METRIC',
+      taxRate: 0.13,
+      dutyRate: 0.08,
+      minOrderAmount: 99,
+      restrictedCategories: ['烟草', '酒类'],
+      requiresNationalId: true,
+      logisticsPartners: ['顺丰', '京东物流', '菜鸟'],
+      notes: '国内仓发货，支持实名认证',
+    },
+    {
+      countryCode: 'US',
+      countryName: 'United States',
+      currency: 'USD',
+      languages: ['en-US'],
+      measurementSystem: 'IMPERIAL',
+      taxRate: 0.0,
+      dutyRate: 0.05,
+      minOrderAmount: 79,
+      restrictedCategories: ['食品', '化妆品'],
+      requiresNationalId: false,
+      logisticsPartners: ['UPS', 'USPS', 'DHL'],
+      notes: '海外仓+跨境直邮组合',
+    },
+    {
+      countryCode: 'DE',
+      countryName: 'Germany',
+      currency: 'EUR',
+      languages: ['de-DE', 'en-GB'],
+      measurementSystem: 'METRIC',
+      taxRate: 0.19,
+      dutyRate: 0.07,
+      minOrderAmount: 99,
+      restrictedCategories: ['电池', '化学品'],
+      requiresNationalId: false,
+      logisticsPartners: ['DHL', 'GLS'],
+      notes: '需要提供EPR注册号',
+    },
+  ];
+
+  const marketMap = new Map<string, string>();
+
+  for (const market of marketConfigs) {
+    const record = await prisma.marketConfig.upsert({
+      where: { countryCode: market.countryCode },
+      update: {
+        ...market,
+      },
+      create: {
+        ...market,
+      },
+    });
+
+    marketMap.set(market.countryCode, record.id);
+  }
+
+  console.log('✅ 主要市场配置完成');
+
+  // 初始化物流分区
+  const shippingZones = [
+    {
+      code: 'CN_STANDARD',
+      name: '中国标准配送',
+      description: '覆盖大陆主要省份，72小时内发货',
+      marketCode: 'CN',
+      carrierCodes: ['顺丰', '京东物流'],
+      deliveryMinDays: 2,
+      deliveryMaxDays: 5,
+      baseFee: 12,
+      perKgFee: 2,
+      freeShippingThreshold: 199,
+      fuelSurcharge: 0,
+      maxWeight: 25,
+    },
+    {
+      code: 'US_STANDARD',
+      name: '美国标准配送',
+      description: 'USPS优选线路，带清关服务',
+      marketCode: 'US',
+      carrierCodes: ['USPS', 'UPS'],
+      deliveryMinDays: 7,
+      deliveryMaxDays: 12,
+      baseFee: 15,
+      perKgFee: 5,
+      freeShippingThreshold: 199,
+      fuelSurcharge: 4,
+      maxWeight: 20,
+    },
+    {
+      code: 'US_EXPRESS',
+      name: '美国加急配送',
+      description: 'DHL/UPS快速清关，包含DDP服务',
+      marketCode: 'US',
+      carrierCodes: ['DHL', 'UPS'],
+      deliveryMinDays: 4,
+      deliveryMaxDays: 7,
+      baseFee: 28,
+      perKgFee: 7,
+      freeShippingThreshold: 299,
+      fuelSurcharge: 6,
+      maxWeight: 15,
+    },
+    {
+      code: 'EU_STANDARD',
+      name: '欧盟标准配送',
+      description: 'DHL跨境直邮，含IOSS税号',
+      marketCode: 'DE',
+      carrierCodes: ['DHL', 'GLS'],
+      deliveryMinDays: 8,
+      deliveryMaxDays: 14,
+      baseFee: 18,
+      perKgFee: 6,
+      freeShippingThreshold: 229,
+      fuelSurcharge: 5,
+      maxWeight: 20,
+    },
+  ];
+
+  for (const zone of shippingZones) {
+    const { marketCode, ...zoneData } = zone;
+    const marketId = marketCode ? marketMap.get(marketCode) ?? null : null;
+    await prisma.shippingZone.upsert({
+      where: { code: zone.code },
+      update: {
+        ...zoneData,
+        marketId,
+      },
+      create: {
+        ...zoneData,
+        marketId,
+      },
+    });
+  }
+
+  console.log('✅ 物流分区初始化完成');
 
   console.log('🎉 数据库种子完成！');
 }

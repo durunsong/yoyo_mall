@@ -1,4 +1,9 @@
-import { normalizeProductDetailConfig, defaultProductDetailConfig } from '@/lib/config/product-detail';
+import {
+  normalizeProductDetailConfig,
+  defaultProductDetailConfig,
+} from '@/lib/config/product-detail';
+
+type MeasurementSystem = 'METRIC' | 'IMPERIAL';
 
 export interface SystemSettings {
   siteName: string;
@@ -8,6 +13,19 @@ export interface SystemSettings {
   contactPhone: string | null;
   defaultLanguage: string;
   defaultCurrency: string;
+  defaultCountry: string;
+  supportedCountries: string[];
+  supportedCurrencies: string[];
+  autoCurrencySwitch: boolean;
+  autoLanguageSwitch: boolean;
+  defaultMeasurement: MeasurementSystem;
+  customsRequireNationalId: boolean;
+  dutyPrepaid: boolean;
+  allowPreorder: boolean;
+  preferredLogistics: Record<string, unknown> | null;
+  returnPolicyDays: number;
+  defaultWarehouseCountry: string | null;
+  allowedPaymentCountries: string[];
   stripeEnabled: boolean;
   alipayEnabled: boolean;
   wechatPayEnabled: boolean;
@@ -22,6 +40,19 @@ export const defaultSystemSettings: SystemSettings = {
   contactPhone: '+86 400-123-4567',
   defaultLanguage: 'en-US',
   defaultCurrency: 'CNY',
+  defaultCountry: 'CN',
+  supportedCountries: ['CN', 'US', 'DE', 'AU'],
+  supportedCurrencies: ['CNY', 'USD', 'EUR', 'GBP'],
+  autoCurrencySwitch: true,
+  autoLanguageSwitch: true,
+  defaultMeasurement: 'METRIC',
+  customsRequireNationalId: false,
+  dutyPrepaid: false,
+  allowPreorder: false,
+  preferredLogistics: null,
+  returnPolicyDays: 30,
+  defaultWarehouseCountry: null,
+  allowedPaymentCountries: [],
   stripeEnabled: false,
   alipayEnabled: false,
   wechatPayEnabled: false,
@@ -45,5 +76,4 @@ export function mergeSystemSettings(input?: SystemSettingsInput): SystemSettings
     ),
   };
 }
-
 

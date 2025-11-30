@@ -103,27 +103,34 @@ model Category {
 
 // 商品模型
 model Product {
-  id              String        @id @default(cuid())
-  name            String
-  slug            String        @unique
-  description     String?
-  shortDesc       String?
-  sku             String        @unique
-  price           Decimal       @db.Decimal(10, 2)
-  comparePrice    Decimal?      @db.Decimal(10, 2)
-  currency        String        @default("USD")
-  weight          Decimal?      @db.Decimal(8, 2)
-  dimensions      String?
-  categoryId      String
-  status          ProductStatus @default(DRAFT)
-  isDigital       Boolean       @default(false)
-  trackInventory  Boolean       @default(true)
-  allowOutOfStock Boolean       @default(false)
-  metaTitle       String?
-  metaDesc        String?
-  tags            String[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  description      String?
+  shortDesc        String?
+  hsCode           String?
+  originCountry    String?
+  sku              String        @unique
+  price            Decimal       @db.Decimal(10, 2)
+  comparePrice     Decimal?      @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  weight           Decimal?      @db.Decimal(8, 2)
+  netWeight        Decimal?      @db.Decimal(8, 2)
+  volumetricWeight Decimal?      @db.Decimal(8, 2)
+  packageDimensions String?
+  dimensions       String?
+  materials        String[]      @default([])
+  compliance       Json?
+  categoryId       String
+  status           ProductStatus @default(DRAFT)
+  isDigital        Boolean       @default(false)
+  trackInventory   Boolean       @default(true)
+  allowOutOfStock  Boolean       @default(false)
+  metaTitle        String?
+  metaDesc         String?
+  tags             String[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   category      Category         @relation(fields: [categoryId], references: [id])
   images        ProductImage[]
@@ -190,6 +197,19 @@ model SystemSettings {
   contactPhone    String?
   defaultLanguage String   @default("zh-CN")
   defaultCurrency String   @default("CNY")
+  defaultCountry  String   @default("CN")
+  supportedCountries  String[] @default(["CN", "US", "DE", "AU"])
+  supportedCurrencies String[] @default(["CNY", "USD", "EUR"])
+  autoCurrencySwitch  Boolean  @default(true)
+  autoLanguageSwitch  Boolean  @default(true)
+  defaultMeasurement  MeasurementSystem @default(METRIC)
+  customsRequireNationalId Boolean @default(false)
+  dutyPrepaid      Boolean  @default(false)
+  allowPreorder    Boolean  @default(false)
+  preferredLogistics Json?
+  returnPolicyDays Int?    @default(30)
+  defaultWarehouseCountry String?
+  allowedPaymentCountries String[] @default([])
   
   // 支付设置
   stripeEnabled      Boolean @default(false)
@@ -225,6 +245,68 @@ model SystemSettings {
   updatedAt       DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+model CurrencyRate {
+  id             String   @id @default(cuid())
+  baseCurrency   String
+  targetCurrency String
+  rate           Decimal  @db.Decimal(12, 6)
+  source         String?
+  fetchedAt      DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([baseCurrency, targetCurrency])
+  @@map("currency_rates")
+}
+
+model MarketConfig {
+  id                   String            @id @default(cuid())
+  countryCode          String            @unique
+  countryName          String
+  currency             String            @default("USD")
+  languages            String[]          @default(["en-US"])
+  measurementSystem    MeasurementSystem @default(METRIC)
+  taxRate              Decimal?          @db.Decimal(5, 4)
+  dutyRate             Decimal?          @db.Decimal(5, 4)
+  minOrderAmount       Decimal?          @db.Decimal(10, 2)
+  restrictedCategories String[]          @default([])
+  requiresNationalId   Boolean           @default(false)
+  requiresPostalCode   Boolean           @default(true)
+  logisticsPartners    String[]          @default([])
+  notes                String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  shippingZones ShippingZone[]
+  orders        Order[]
+
+  @@map("market_configs")
+}
+
+model ShippingZone {
+  id                    String   @id @default(cuid())
+  code                  String   @unique
+  name                  String
+  description           String?
+  marketId              String?
+  carrierCodes          String[] @default([])
+  deliveryMinDays       Int?
+  deliveryMaxDays       Int?
+  baseFee               Decimal? @db.Decimal(10, 2)
+  perKgFee              Decimal? @db.Decimal(10, 2)
+  freeShippingThreshold Decimal? @db.Decimal(10, 2)
+  fuelSurcharge         Decimal? @db.Decimal(10, 2)
+  maxWeight             Decimal? @db.Decimal(10, 2)
+  enabled               Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  market MarketConfig? @relation(fields: [marketId], references: [id], onDelete: SetNull)
+  orders Order[]
+
+  @@map("shipping_zones")
 }
 
 // Newsletter 订阅者
@@ -389,8 +471,14 @@ model Order {
   shippingAmount    Decimal     @db.Decimal(10, 2) @default(0)
   discountAmount    Decimal     @db.Decimal(10, 2) @default(0)
   totalAmount       Decimal     @db.Decimal(10, 2)
+  declaredValue     Decimal?    @db.Decimal(10, 2)
+  dutyAmount        Decimal     @db.Decimal(10, 2) @default(0)
+  importTaxAmount   Decimal     @db.Decimal(10, 2) @default(0)
+  insuranceAmount   Decimal     @db.Decimal(10, 2) @default(0)
   shippingAddressId String?
   billingAddressId  String?
+  marketId          String?
+  shippingZoneId    String?
   notes             String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -398,6 +486,8 @@ model Order {
   user            User          @relation(fields: [userId], references: [id])
   shippingAddress Address?      @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
   billingAddress  Address?      @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  market          MarketConfig? @relation(fields: [marketId], references: [id])
+  shippingZone    ShippingZone? @relation(fields: [shippingZoneId], references: [id])
   items           OrderItem[]
   payments        Payment[]
   shipments       Shipment[]
@@ -450,9 +540,14 @@ model Shipment {
   trackingNumber String?
   carrier        String?
   method         String?
+  incoterm       String?
   status         ShipmentStatus @default(PENDING)
   shippedAt      DateTime?
   deliveredAt    DateTime?
+  pickupCountry  String?
+  deliveryCountry String?
+  insured        Boolean        @default(false)
+  customsDocuments Json?
   metadata       Json?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -600,6 +695,11 @@ enum CouponType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_SHIPPING
+}
+
+enum MeasurementSystem {
+  METRIC
+  IMPERIAL
 }
 
 enum AnnouncementActionType {

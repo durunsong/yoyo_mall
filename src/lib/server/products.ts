@@ -112,6 +112,11 @@ function mapHomepageProduct(product: RawHomepageProduct): HomepageProduct {
     availableQuantity,
     allowOutOfStock: product.allowOutOfStock,
     tags: product.tags,
+    originCountry: product.originCountry ?? undefined,
+    hsCode: product.hsCode ?? undefined,
+    materials: product.materials ?? [],
+    netWeight: product.netWeight ? Number(product.netWeight) : undefined,
+    volumetricWeight: product.volumetricWeight ? Number(product.volumetricWeight) : undefined,
   };
 }
 
@@ -181,6 +186,13 @@ function mapProductDetail(product: RawProductDetail): ProductDetailData {
     comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
     currency: product.currency,
     tags: product.tags,
+    originCountry: product.originCountry ?? null,
+    hsCode: product.hsCode ?? null,
+    materials: product.materials ?? [],
+    netWeight: product.netWeight ? Number(product.netWeight) : null,
+    volumetricWeight: product.volumetricWeight ? Number(product.volumetricWeight) : null,
+    packageDimensions: product.packageDimensions ?? null,
+    compliance: product.compliance ?? null,
     category: product.category,
     images: product.images,
     inventory: product.inventory
