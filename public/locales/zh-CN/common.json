@@ -162,5 +162,9 @@
   "categoriesEmptyTitle": "暂无分类",
   "categoriesEmptyDescription": "目前还没有任何分类",
   "submitting": "提交中...",
-  "updating": "更新中..."
+  "updating": "更新中...",
+  "pagination": {
+    "previous": "上一页",
+    "next": "下一页"
+  }
 }

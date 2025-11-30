@@ -14,6 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { useTranslations } from '@/hooks/use-i18n';
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -30,6 +31,7 @@ export function PaginationControls({
   showFirstLast = true,
   maxVisiblePages = 7,
 }: PaginationControlsProps) {
+  const { t } = useTranslations('common');
   // 如果只有一页或没有页面，不显示分页
   if (totalPages <= 1) {
     return null;
@@ -99,7 +101,9 @@ export function PaginationControls({
               }
             }}
             className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-          />
+          >
+            {t('pagination.previous')}
+          </PaginationPrevious>
         </PaginationItem>
 
         {/* 页码按钮 */}
@@ -133,7 +137,9 @@ export function PaginationControls({
               }
             }}
             className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-          />
+          >
+            {t('pagination.next')}
+          </PaginationNext>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

@@ -162,5 +162,9 @@
   "categoriesEmptyTitle": "No categories yet",
   "categoriesEmptyDescription": "There are no categories available at the moment",
   "submitting": "Submitting...",
-  "updating": "Updating..."
+  "updating": "Updating...",
+  "pagination": {
+    "previous": "Previous page",
+    "next": "Next page"
+  }
 }
