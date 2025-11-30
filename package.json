@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
-    "build:turbo": "prisma generate && next build --turbopack",
-    "build:with-prisma": "prisma generate && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "build:turbo": "prisma generate && prisma migrate deploy && next build --turbopack",
+    "build:with-prisma": "prisma generate && prisma migrate deploy && next build",
     "build:analyze": "ANALYZE=true npm run build",
     "start": "next start",
     "lint": "eslint --fix",
