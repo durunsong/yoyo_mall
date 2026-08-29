@@ -12,7 +12,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn('skeleton-wave rounded-md border-0 shadow-none', className)}
+      className={cn('skeleton-wave rounded-md', className, 'border-0 shadow-none')}
       aria-hidden="true"
       {...props}
     />
@@ -22,7 +22,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 export function QuerySkeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn('space-y-3 p-4', className)}
+      className={cn('space-y-3 p-4', className, 'border-0 shadow-none')}
       role="status"
       aria-label="正在加载"
     >

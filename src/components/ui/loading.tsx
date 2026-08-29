@@ -131,6 +131,7 @@ export function Skeleton({ className, animate = true }: SkeletonProps) {
         'rounded-md bg-gray-200',
         animate && 'animate-pulse',
         className,
+        'border-0 shadow-none',
       )}
     />
   );
@@ -141,7 +142,7 @@ export function Skeleton({ className, animate = true }: SkeletonProps) {
  */
 export function ProductCardSkeleton() {
   return (
-    <div className="space-y-4 rounded-lg border bg-white p-4 shadow-sm">
+    <div className="space-y-4 rounded-lg bg-white p-4 shadow-none">
       <Skeleton className="h-48 w-full" />
       <div className="space-y-2">
         <Skeleton className="h-4 w-3/4" />

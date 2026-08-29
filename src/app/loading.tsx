@@ -6,7 +6,7 @@ export default function Loading() {
       className="mx-auto min-h-[60vh] max-w-3xl px-6 py-16"
       aria-live="polite"
     >
-      <QuerySkeleton className="bg-card rounded-lg border" />
+      <QuerySkeleton className="bg-card rounded-lg" />
     </main>
   );
 }
