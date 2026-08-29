@@ -641,6 +641,8 @@ img[loading="lazy"]:not([src]) {
   position: relative;
   overflow: hidden;
   background-color: var(--skeleton-base);
+  border: 0;
+  box-shadow: none;
 }
 
 .skeleton-wave::after {

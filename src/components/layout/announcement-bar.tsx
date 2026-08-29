@@ -161,16 +161,26 @@ export function AnnouncementBar() {
   const height = currentAnnouncement?.height ?? 40;
   const background = currentAnnouncement?.backgroundColor || '#1D4ED8';
   const textColor = currentAnnouncement?.textColor || '#FFFFFF';
+  const nextAnnouncement = announcements.length > 1
+    ? announcements[(currentIndex + 1) % announcements.length]
+    : undefined;
+  const transitionBackground = isTransitioning
+    ? nextAnnouncement?.backgroundColor || background
+    : background;
+  const transitionTextColor = isTransitioning
+    ? nextAnnouncement?.textColor || textColor
+    : textColor;
   const isClickable =
     currentAnnouncement?.actionType && currentAnnouncement.actionType !== 'NONE' &&
     (currentAnnouncement.actionType === 'URL' ? Boolean(currentAnnouncement.linkUrl?.trim()) : true);
 
   const containerStyles: CSSProperties = {
-    backgroundColor: background,
-    color: textColor,
+    backgroundColor: transitionBackground,
+    color: transitionTextColor,
     minHeight: height,
     display: 'flex',
     alignItems: 'center',
+    transition: 'background-color 500ms ease, color 500ms ease',
   };
 
   // 渲染内容节点
@@ -217,17 +227,26 @@ export function AnnouncementBar() {
         }}
       >
         {/* 当前公告 */}
-        <div className="min-w-full flex-shrink-0">
+        <div
+          className="min-w-full flex-shrink-0"
+          style={{
+            color: currentAnnouncement.textColor || '#FFFFFF',
+            minHeight: height,
+          }}
+        >
           {renderContent(currentAnnouncement, `current-${currentIndex}`)}
         </div>
         
         {/* 下一个公告（用于平滑过渡） */}
         {announcements.length > 1 && (
-          <div className="min-w-full flex-shrink-0">
-            {renderContent(
-              announcements[(currentIndex + 1) % announcements.length],
-              `next-${(currentIndex + 1) % announcements.length}`,
-            )}
+          <div
+            className="min-w-full flex-shrink-0"
+            style={{
+              color: nextAnnouncement?.textColor || '#FFFFFF',
+              minHeight: height,
+            }}
+          >
+            {renderContent(nextAnnouncement, `next-${(currentIndex + 1) % announcements.length}`)}
           </div>
         )}
       </div>
@@ -241,7 +260,7 @@ export function AnnouncementBar() {
           type="button"
           onClick={handleClick}
           className="flex w-full items-center justify-center focus:outline-none"
-          style={{ color: textColor }}
+          style={{ color: 'inherit' }}
         >
           {contentNode}
         </button>
@@ -251,4 +270,3 @@ export function AnnouncementBar() {
     </div>
   );
 }
-

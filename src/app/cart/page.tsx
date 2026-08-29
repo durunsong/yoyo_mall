@@ -19,6 +19,7 @@ import {
   Tag,
   X,
   ShoppingBag,
+  LoaderCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -231,7 +232,7 @@ export default function CartPage() {
           <div className="mx-auto max-w-md text-center">
             <div className="mb-6 flex justify-center">
               <div className="rounded-full bg-gray-100 p-6">
-                <ShoppingCart className="h-16 w-16 text-gray-400 animate-pulse" />
+                <LoaderCircle className="h-12 w-12 animate-spin text-slate-400" aria-hidden="true" />
               </div>
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900">

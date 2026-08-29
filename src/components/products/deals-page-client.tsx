@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { TrendingDown, Percent, Sparkles, Star } from 'lucide-react';
+import { Gift, TrendingDown, Percent, Sparkles, Star } from 'lucide-react';
 import ProductCard from '@/components/products/product-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -287,7 +287,9 @@ export function DealsPageClient({
           </div>
         ) : (
           <div className="py-16 text-center">
-            <div className="mb-4 text-4xl text-gray-300">🎁</div>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <Gift className="h-8 w-8" aria-hidden="true" />
+            </div>
             <h3 className="mb-2 text-lg font-semibold text-gray-900">
               {tCommon('dealsEmptyTitle')}
             </h3>
@@ -300,4 +302,3 @@ export function DealsPageClient({
     </div>
   );
 }
-

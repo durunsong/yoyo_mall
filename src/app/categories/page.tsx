@@ -60,7 +60,9 @@ export default async function CategoriesPage() {
           </div>
         ) : (
           <div className="py-16 text-center">
-            <div className="mb-4 text-4xl text-gray-300">📦</div>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <Package className="h-8 w-8" aria-hidden="true" />
+            </div>
             <h3 className="mb-2 text-lg font-semibold text-gray-900">
               {t('categoriesEmptyTitle')}
             </h3>
@@ -73,6 +75,5 @@ export default async function CategoriesPage() {
     </div>
   );
 }
-
 
 

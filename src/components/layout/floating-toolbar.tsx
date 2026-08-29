@@ -28,6 +28,11 @@ import { Separator } from '@/components/ui/separator';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
 import { SUPPORT_HREF } from '@/lib/navigation/support';
 
+const toolbarShellClass =
+  'fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center overflow-hidden rounded-2xl bg-white shadow-lg shadow-slate-900/10 ring-1 ring-slate-200/80 md:right-4 md:flex';
+const toolbarButtonClass =
+  'relative flex h-12 w-full items-center justify-center bg-transparent transition-colors';
+
 export function FloatingToolbar() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -218,9 +223,9 @@ export function FloatingToolbar() {
   // 注意：在移动端（< md 断点）隐藏固定工具栏
   if (!isClient || !currentTime) {
     return (
-      <div className="fixed right-3 top-1/2 z-40 hidden md:flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
+      <div className={toolbarShellClass}>
         {/* 时间显示 - 顶部(占位符) */}
-        <div className="mb-1 w-16 rounded-t-xl bg-white px-2 py-2 text-center shadow-md">
+        <div className="w-16 bg-slate-50/90 px-2 py-2 text-center">
           <div className="text-[10px] leading-tight text-gray-500">UTC+8</div>
           <div className="text-[10px] leading-tight text-gray-500">Oct 29</div>
           <div className="mt-1 text-xs font-bold leading-tight text-gray-900">--:--:--</div>
@@ -228,21 +233,21 @@ export function FloatingToolbar() {
 
         {/* 购物车按钮 */}
         <div className="relative w-16">
-          <button className="relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50">
+          <button className={cn(toolbarButtonClass, 'hover:bg-slate-50')} aria-label="购物车">
             <ShoppingCart className="h-5 w-5 text-gray-700" />
           </button>
         </div>
 
         {/* 心愿单按钮 */}
         <div className="w-16">
-          <button className="flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50">
+          <button className={cn(toolbarButtonClass, 'hover:bg-rose-50')} aria-label="心愿单">
             <Heart className="h-5 w-5 text-gray-700" />
           </button>
         </div>
 
         {/* 在线客服按钮 */}
         <div className="w-16">
-          <button className="flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-green-50 group">
+          <button className={cn(toolbarButtonClass, 'group hover:bg-emerald-50')} aria-label="在线客服">
             <div className="relative">
               <MessageCircle className="h-6 w-6 text-green-600" />
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
@@ -251,12 +256,12 @@ export function FloatingToolbar() {
         </div>
 
         {/* 帮助与客服入口 - 底部 */}
-        <div className="w-16 rounded-b-xl bg-white shadow-md">
+        <div className="w-16">
           <button
             onClick={() => router.push(SUPPORT_HREF)}
             aria-label={t('toolbar.support')}
             title={t('toolbar.support')}
-            className="flex h-12 w-full items-center justify-center rounded-b-xl transition-all hover:bg-blue-50"
+            className={cn(toolbarButtonClass, 'hover:bg-blue-50')}
           >
             <LifeBuoy className="h-6 w-6 text-blue-600" />
           </button>
@@ -266,9 +271,9 @@ export function FloatingToolbar() {
   }
 
   return (
-    <div className="fixed right-3 top-1/2 z-40 hidden md:flex -translate-y-1/2 flex-col items-center gap-0 md:right-4">
+    <div className={toolbarShellClass}>
       {/* 时间显示 - 顶部 */}
-      <div className="mb-1 w-16 rounded-t-xl bg-white px-2 py-2 text-center shadow-md">
+      <div className="w-16 bg-slate-50/90 px-2 py-2 text-center">
         <div className="text-[10px] leading-tight text-gray-500">
           UTC+8
         </div>
@@ -294,9 +299,11 @@ export function FloatingToolbar() {
             <button
               onClick={handleCartClick}
               className={cn(
-                'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-gray-50',
+                toolbarButtonClass,
+                'hover:bg-slate-50',
                 cartAnimation && 'animate-pulse-subtle',
               )}
+              aria-label="购物车"
             >
               <ShoppingCart className="h-5 w-5 text-gray-700" />
               {cartCount > 0 && (
@@ -325,7 +332,9 @@ export function FloatingToolbar() {
             
             {items.length === 0 ? (
               <div className="py-8 text-center">
-                <div className="mb-2 text-4xl">🛒</div>
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                  <ShoppingCart className="h-7 w-7" aria-hidden="true" />
+                </div>
                 <p className="text-sm font-semibold text-gray-600">
                   {t('toolbar.cartEmptyTitle')}
                 </p>
@@ -455,9 +464,11 @@ export function FloatingToolbar() {
         <button
           onClick={handleWishlistClick}
           className={cn(
-            'relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-pink-50',
+            toolbarButtonClass,
+            'hover:bg-rose-50',
             wishlistAnimation && 'animate-pulse-subtle',
           )}
+          aria-label="心愿单"
         >
           <Heart 
             className={cn(
@@ -487,7 +498,8 @@ export function FloatingToolbar() {
       <div className="relative w-16">
         <button
           onClick={() => TawkToAPI.maximize()}
-          className="relative flex h-12 w-full items-center justify-center bg-white transition-all hover:bg-green-50 group"
+          className={cn(toolbarButtonClass, 'group hover:bg-emerald-50')}
+          aria-label="在线客服"
           title="在线客服"
         >
           <div className="relative">
@@ -501,10 +513,11 @@ export function FloatingToolbar() {
 
       {/* 返回顶部按钮 - 仅在滚动时显示 */}
       {showScrollTop && (
-        <div className="mt-1 w-16 mb-1">
+        <div className="w-16 bg-slate-50/40">
           <button
             onClick={scrollToTop}
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-white shadow-md transition-all hover:bg-gray-50 hover:scale-105 animate-fade-in"
+            className={cn(toolbarButtonClass, 'animate-fade-in hover:bg-slate-50')}
+            aria-label={t('toolbar.tooltip.scrollTop')}
             title={t('toolbar.tooltip.scrollTop')}
           >
             <ArrowUp className="h-5 w-5 text-gray-700" />
@@ -513,15 +526,12 @@ export function FloatingToolbar() {
       )}
 
       {/* 帮助与客服入口 - 底部 */}
-      <div className={cn('w-16 bg-white shadow-md rounded-lg', !showScrollTop && 'rounded-b-xl')}>
+      <div className="w-16 bg-slate-50/40">
         <button
           onClick={() => router.push(SUPPORT_HREF)}
           aria-label={t('toolbar.support')}
           title={t('toolbar.support')}
-          className={cn(
-            'flex h-12 w-full items-center justify-center transition-all hover:bg-blue-50',
-            !showScrollTop && 'rounded-b-xl',
-          )}
+          className={cn(toolbarButtonClass, 'hover:bg-blue-50')}
         >
           <LifeBuoy className="h-6 w-6 text-blue-600" />
         </button>
@@ -529,5 +539,3 @@ export function FloatingToolbar() {
     </div>
   );
 }
-
-

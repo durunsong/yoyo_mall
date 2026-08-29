@@ -12,7 +12,8 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn('skeleton-wave rounded-md', className)}
+      className={cn('skeleton-wave rounded-md border-0 shadow-none', className)}
+      aria-hidden="true"
       {...props}
     />
   );
@@ -193,6 +194,5 @@ export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
     </div>
   );
 }
-
 
 
