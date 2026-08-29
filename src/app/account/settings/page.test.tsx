@@ -18,7 +18,8 @@ jest.mock('@/hooks/use-i18n', () => ({
   }),
 }));
 
-import AccountSettingsPage, { PASSWORD_CHANGE_ENDPOINT } from '@/app/account/settings/page';
+import AccountSettingsPage from '@/app/account/settings/page';
+import { PASSWORD_CHANGE_ENDPOINT } from '@/app/account/settings/constants';
 
 describe('AccountSettingsPage', () => {
   beforeEach(() => {

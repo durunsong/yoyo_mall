@@ -214,16 +214,16 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white w-full overflow-x-hidden">
+    <footer className="w-full overflow-x-hidden bg-slate-950 text-white">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-blue-100 to-indigo-400 py-12 w-full overflow-x-hidden">
+      <div className="w-full overflow-x-hidden border-b border-slate-200 bg-slate-100 py-10">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
-              <h3 className="mb-2 text-2xl font-bold text-blue-400" suppressHydrationWarning>
+              <h3 className="mb-2 text-2xl font-bold text-slate-900" suppressHydrationWarning>
                 {mounted ? t('footer.newsletter.title') : ''}
               </h3>
-              <p className="text-blue-400" suppressHydrationWarning>
+              <p className="text-sm text-slate-600" suppressHydrationWarning>
                 {mounted ? t('footer.newsletter.subtitle') : ''}
               </p>
             </div>
@@ -241,10 +241,10 @@ export function Footer() {
                     data-form-type="other"
                     className="flex-1 rounded-l-lg border-2 border-white bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 disabled:bg-gray-100 disabled:cursor-not-allowed md:w-80"
                   />
-                  <button 
+                  <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-r-lg bg-white px-8 py-3 font-semibold text-blue-600 transition-all hover:bg-blue-50 disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="whitespace-nowrap rounded-r-lg bg-slate-900 px-8 py-3 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:opacity-60"
                   >
                     {isSubmitting
                       ? t('footer.newsletter.buttonLoading')

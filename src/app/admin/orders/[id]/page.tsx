@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import {
@@ -104,7 +104,8 @@ interface Order {
   }>;
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,12 +114,12 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   // 加载订单详情
   useEffect(() => {
     fetchOrderDetail();
-  }, [params.id]);
+  }, [id]);
 
   const fetchOrderDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/orders/${params.id}`);
+      const response = await fetch(`/api/admin/orders/${id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -555,6 +556,5 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     </AdminLayout>
   );
 }
-
 
 

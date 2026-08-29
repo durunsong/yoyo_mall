@@ -10,7 +10,7 @@ const DEFAULT_PAGE_SIZE = 10;
 type ProductsSearchParams = Record<string, string | string[] | undefined>;
 
 interface ProductsPageProps {
-  searchParams?: ProductsSearchParams | Promise<ProductsSearchParams | undefined>;
+  searchParams?: Promise<ProductsSearchParams | undefined>;
 }
 
 function parseQuery(searchParams?: ProductsSearchParams): ProductListQuery {
@@ -67,4 +67,3 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     />
   );
 }
-

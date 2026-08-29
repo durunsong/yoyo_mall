@@ -6,10 +6,10 @@ import { getTopCategories } from '@/lib/server/categories';
 const PRODUCT_LIMIT = 10;
 const FEATURED_LIMIT = 5;
 
-type LocaleParams = { locale: string } | undefined;
+type LocaleParams = { locale: string };
 
 interface HomePageProps {
-  params: LocaleParams | Promise<LocaleParams>;
+  params: Promise<LocaleParams>;
 }
 
 export const dynamic = 'force-dynamic';
@@ -41,4 +41,3 @@ export default async function HomePage({ params }: HomePageProps) {
     />
   );
 }
-

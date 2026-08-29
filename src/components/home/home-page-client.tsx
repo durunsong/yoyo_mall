@@ -235,10 +235,10 @@ export function HomePageClient({
                 {t('heroSubtitle')}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
                   <Link href="/products">{t('shopNow')}</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
                   <Link href="/about">{t('learnMore')}</Link>
                 </Button>
               </div>
@@ -407,7 +407,7 @@ export function HomePageClient({
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="secondary" className="mt-4 bg-white text-blue-600 hover:bg-blue-100">
+                    <Button size="sm" variant="secondary" className="mt-4 bg-white text-blue-600 hover:bg-blue-100" asChild>
                       <Link href="/support">{tHome('learnMoreGuarantee')}</Link>
                     </Button>
                   </div>

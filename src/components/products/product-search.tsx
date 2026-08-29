@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { buildProductSearchHref } from '@/lib/products/query';
@@ -45,28 +45,38 @@ export default function ProductSearch({
       }}
     >
       <Input
-        clearable
         type="text"
         placeholder={placeholder}
         aria-label={placeholder}
         autoComplete="off"
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
-        onClear={() => {
-          setSearchValue('');
-          // 清空后也可以触发搜索（显示所有商品）
-          router.push('/products');
-        }}
-        className="pr-10"
+        className="pr-20"
       />
+
+      {searchValue && (
+        <button
+          type="button"
+          onClick={() => {
+            setSearchValue('');
+            onSearch?.('');
+            router.push('/products');
+          }}
+          className="absolute right-11 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="清空搜索"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
+
       <Button
         type="submit"
         variant="ghost"
-        size="sm"
-        className="absolute right-0 top-0 h-full px-3 hover:bg-accent"
+        size="icon"
+        className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 hover:bg-accent"
         aria-label="搜索"
       >
-        <Search className="h-4 w-4" />
+        <Search className="h-4 w-4" aria-hidden="true" />
       </Button>
     </form>
   );

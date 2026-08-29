@@ -205,6 +205,7 @@ export function ShadcnHeader() {
                 size="icon"
                 className="relative md:hidden"
                 onClick={handleWishlistClick}
+                aria-label="心愿单"
               >
                 <Heart 
                   className={`h-4 w-4 ${wishlistCount > 0 ? 'fill-red-500 text-red-500' : ''}`} 

@@ -80,7 +80,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <div className="flex items-center space-x-2">
             <svg
-              className="mr-3 -ml-1 h-4 w-4 animate-spin"
+              className="mr-2 h-4 w-4 shrink-0 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"

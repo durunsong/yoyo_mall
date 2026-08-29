@@ -228,10 +228,12 @@ export function AdminSearch() {
             setResults([]);
             setShowResults(false);
           }}
-          className="pl-10 pr-10 h-10"
+          className="h-10 pl-10 pr-20"
         />
         {loading && (
-          <Loader2 className="absolute right-10 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin z-10" />
+          <span className="absolute right-11 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-background text-muted-foreground" aria-label="正在搜索" role="status">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          </span>
         )}
       </div>
 
@@ -303,6 +305,5 @@ export function AdminSearch() {
     </div>
   );
 }
-
 
 

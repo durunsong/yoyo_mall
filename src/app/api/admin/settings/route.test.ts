@@ -1,6 +1,6 @@
 /** @jest-environment node */
 
-jest.mock('@/app/api/auth/[...nextauth]/route', () => ({
+jest.mock('@/lib/auth', () => ({
   auth: jest.fn(),
 }));
 

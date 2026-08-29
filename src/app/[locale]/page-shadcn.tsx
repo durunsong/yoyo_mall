@@ -37,10 +37,10 @@ export default function HomePage() {
               {t('heroSubtitle')}
             </p>
             <div className="flex justify-center gap-4">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
                 <Link href="/products">{t('shopNow')}</Link>
               </Button>
-              <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
+              <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
                 <Link href="/about">{t('learnMore')}</Link>
               </Button>
             </div>
@@ -200,10 +200,10 @@ export default function HomePage() {
           </h2>
           <p className="mb-8 text-xl text-blue-100">{t('cta.subtitle')}</p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
               <Link href="/register">{t('cta.register')}</Link>
             </Button>
-            <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
+            <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
               <Link href="/products">{t('cta.browse')}</Link>
             </Button>
           </div>

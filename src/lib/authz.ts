@@ -1,4 +1,4 @@
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 
 export function isAdmin(role?: string | null): boolean {
   return role === 'ADMIN' || role === 'SUPER_ADMIN';

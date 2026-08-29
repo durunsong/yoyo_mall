@@ -205,6 +205,7 @@ export function UserNotifications() {
           variant="ghost" 
           size="icon" 
           className="relative hover:bg-gray-100 transition-colors border-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+          aria-label="通知"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (

@@ -1,6 +1,6 @@
 /** @jest-environment node */
 
-jest.mock('@/app/api/auth/[...nextauth]/route', () => ({
+jest.mock('@/lib/auth', () => ({
   auth: jest.fn(),
 }));
 
@@ -12,7 +12,7 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { GET as getSubscribers } from '@/app/api/admin/newsletter/subscribers/route';
 import { GET as exportSubscribers } from '@/app/api/admin/newsletter/export/route';

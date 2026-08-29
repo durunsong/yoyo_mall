@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 import { seedDatabase } from '@/lib/seed-data';
 
 export async function POST(request: NextRequest) {

@@ -3,7 +3,7 @@
  * 在 NextAuth v5 中，使用 auth() 替代 getServerSession()
  */
 
-import { auth as nextAuth } from '@/app/api/auth/[...nextauth]/route';
+import { auth as nextAuth } from '@/lib/auth-server';
 
 /**
  * 获取当前会话
@@ -13,4 +13,3 @@ export const auth = nextAuth;
 
 // 为了兼容性，也导出一个 getServerSession 别名
 export const getServerSession = nextAuth;
-

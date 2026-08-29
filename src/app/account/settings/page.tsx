@@ -26,8 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { Loader2, User, Lock, Bell, Globe, Camera } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
-
-export const PASSWORD_CHANGE_ENDPOINT = '/api/user/change-password';
+import { PASSWORD_CHANGE_ENDPOINT } from './constants';
 
 export default function AccountSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
@@ -730,7 +729,6 @@ export default function AccountSettingsPage() {
     </div>
   );
 }
-
 
 
 
