@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import {
-  CouponError,
-  validateCouponAndCalculateDiscount,
-} from '@/lib/coupon';
+import { CouponError, validateCouponAndCalculateDiscount } from '@/lib/coupon';
 import {
   TAX_RATE,
   calculateShippingAmount,
@@ -20,22 +17,46 @@ import {
 const orderQuerySchema = z.object({
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(20),
-  status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']).optional().nullable(),
-  sortBy: z.enum(['createdAt', 'totalAmount', 'status']).optional().default('createdAt'),
+  status: z
+    .enum([
+      'PENDING',
+      'CONFIRMED',
+      'PROCESSING',
+      'SHIPPED',
+      'DELIVERED',
+      'CANCELLED',
+      'REFUNDED',
+    ])
+    .optional()
+    .nullable(),
+  sortBy: z
+    .enum(['createdAt', 'totalAmount', 'status'])
+    .optional()
+    .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
 // 创建订单验证
 const createOrderSchema = z.object({
-  items: z.array(z.object({
-    productId: z.string().min(1),
-    variantId: z.string().optional(),
-    quantity: z.number().min(1).max(100),
-    unitPrice: z.number().min(0),
-  })).min(1, '订单必须包含至少一个商品'),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        variantId: z.string().optional(),
+        quantity: z.number().min(1).max(100),
+        unitPrice: z.number().min(0),
+      }),
+    )
+    .min(1, '订单必须包含至少一个商品'),
   shippingAddressId: z.string().min(1, '必须提供配送地址'),
   billingAddressId: z.string().optional(),
-  paymentMethod: z.enum(['CREDIT_CARD', 'PAYPAL', 'BANK_TRANSFER', 'APPLE_PAY', 'GOOGLE_PAY']),
+  paymentMethod: z.enum([
+    'CREDIT_CARD',
+    'PAYPAL',
+    'BANK_TRANSFER',
+    'APPLE_PAY',
+    'GOOGLE_PAY',
+  ]),
   notes: z.string().max(500).optional(),
   couponCode: z.string().optional(),
 });
@@ -51,7 +72,7 @@ function generateOrderNumber(): string {
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
@@ -142,10 +163,13 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 统计不同状态的订单数量，方便前端展示标签计数
-    const statusCounts = statusGroups.reduce<Record<string, number>>((acc, item) => {
-      acc[item.status] = item._count.status;
-      return acc;
-    }, {});
+    const statusCounts = statusGroups.reduce<Record<string, number>>(
+      (acc, item) => {
+        acc[item.status] = item._count.status;
+        return acc;
+      },
+      {},
+    );
 
     // 分页信息
     const pagination = {
@@ -174,11 +198,11 @@ export async function GET(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'VALIDATION_ERROR', 
+        {
+          success: false,
+          error: 'VALIDATION_ERROR',
           message: '请求参数无效',
-          details: error.errors, 
+          details: error.errors,
         },
         { status: 400 },
       );
@@ -195,7 +219,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
@@ -216,12 +240,17 @@ export async function POST(request: NextRequest) {
 
     if (!shippingAddress) {
       return NextResponse.json(
-        { success: false, error: 'ADDRESS_NOT_FOUND', message: '配送地址不存在' },
+        {
+          success: false,
+          error: 'ADDRESS_NOT_FOUND',
+          message: '配送地址不存在',
+        },
         { status: 400 },
       );
     }
 
-    const normalizedCountryCode = shippingAddress.country?.toUpperCase() ?? 'CN';
+    const normalizedCountryCode =
+      shippingAddress.country?.toUpperCase() ?? 'CN';
 
     let market = await prisma.marketConfig.findUnique({
       where: { countryCode: normalizedCountryCode },
@@ -254,7 +283,11 @@ export async function POST(request: NextRequest) {
 
       if (!billingAddress) {
         return NextResponse.json(
-          { success: false, error: 'BILLING_ADDRESS_NOT_FOUND', message: '账单地址不存在' },
+          {
+            success: false,
+            error: 'BILLING_ADDRESS_NOT_FOUND',
+            message: '账单地址不存在',
+          },
           { status: 400 },
         );
       }
@@ -276,7 +309,10 @@ export async function POST(request: NextRequest) {
             take: 1,
           },
           variants: {
-            where: { id: item.variantId || undefined },
+            where: {
+              id: item.variantId || undefined,
+              isActive: item.variantId ? true : undefined,
+            },
             include: {
               inventory: true,
               attributes: true,
@@ -287,7 +323,22 @@ export async function POST(request: NextRequest) {
 
       if (!product || product.status !== 'PUBLISHED') {
         return NextResponse.json(
-          { success: false, error: 'PRODUCT_NOT_AVAILABLE', message: `商品 ${item.productId} 不可用` },
+          {
+            success: false,
+            error: 'PRODUCT_NOT_AVAILABLE',
+            message: `商品 ${item.productId} 不可用`,
+          },
+          { status: 400 },
+        );
+      }
+
+      if (item.variantId && product.variants.length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'VARIANT_NOT_FOUND',
+            message: '商品规格不存在或已下架',
+          },
           { status: 400 },
         );
       }
@@ -298,25 +349,33 @@ export async function POST(request: NextRequest) {
       // 验证价格（防止前端价格被篡改）
       if (Math.abs(actualPrice - item.unitPrice) > 0.01) {
         return NextResponse.json(
-          { success: false, error: 'PRICE_MISMATCH', message: '商品价格已变更，请重新确认' },
+          {
+            success: false,
+            error: 'PRICE_MISMATCH',
+            message: '商品价格已变更，请重新确认',
+          },
           { status: 400 },
         );
       }
 
       // 检查库存
       const inventory = variant?.inventory || product.inventory;
-      const availableQuantity = inventory 
-        ? inventory.quantity - inventory.reservedQuantity 
+      const availableQuantity = inventory
+        ? inventory.quantity - inventory.reservedQuantity
         : 0;
 
-      if (product.trackInventory && !product.allowOutOfStock && availableQuantity < item.quantity) {
+      if (
+        product.trackInventory &&
+        !product.allowOutOfStock &&
+        availableQuantity < item.quantity
+      ) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'INSUFFICIENT_STOCK', 
+          {
+            success: false,
+            error: 'INSUFFICIENT_STOCK',
             message: `商品 ${product.name} 库存不足，仅剩 ${availableQuantity} 件`,
             productName: product.name,
-            availableQuantity, 
+            availableQuantity,
           },
           { status: 400 },
         );
@@ -329,6 +388,8 @@ export async function POST(request: NextRequest) {
 
       validatedItems.push({
         ...item,
+        trackInventory: product.trackInventory,
+        allowOutOfStock: product.allowOutOfStock,
         unitPrice: actualPrice,
         totalPrice: lineTotal,
         productSnapshot: {
@@ -341,12 +402,14 @@ export async function POST(request: NextRequest) {
           originCountry: product.originCountry,
           hsCode: product.hsCode,
           materials: product.materials,
-          variant: variant ? {
-            id: variant.id,
-            name: variant.name,
-            sku: variant.sku,
-            attributes: variant.attributes,
-          } : null,
+          variant: variant
+            ? {
+                id: variant.id,
+                name: variant.name,
+                sku: variant.sku,
+                attributes: variant.attributes,
+              }
+            : null,
         },
       });
     }
@@ -370,13 +433,21 @@ export async function POST(request: NextRequest) {
 
     const shippingZonePricing = shippingZone
       ? {
-          baseFee: shippingZone.baseFee ? Number(shippingZone.baseFee) : undefined,
-          perKgFee: shippingZone.perKgFee ? Number(shippingZone.perKgFee) : undefined,
+          baseFee: shippingZone.baseFee
+            ? Number(shippingZone.baseFee)
+            : undefined,
+          perKgFee: shippingZone.perKgFee
+            ? Number(shippingZone.perKgFee)
+            : undefined,
           freeShippingThreshold: shippingZone.freeShippingThreshold
             ? Number(shippingZone.freeShippingThreshold)
             : undefined,
-          fuelSurcharge: shippingZone.fuelSurcharge ? Number(shippingZone.fuelSurcharge) : undefined,
-          maxWeight: shippingZone.maxWeight ? Number(shippingZone.maxWeight) : undefined,
+          fuelSurcharge: shippingZone.fuelSurcharge
+            ? Number(shippingZone.fuelSurcharge)
+            : undefined,
+          maxWeight: shippingZone.maxWeight
+            ? Number(shippingZone.maxWeight)
+            : undefined,
         }
       : undefined;
 
@@ -395,22 +466,16 @@ export async function POST(request: NextRequest) {
     });
     const insuranceAmount = calculateInsuranceAmount(declaredValue);
     let discountAmount = 0;
-    let appliedCouponId: string | null = null;
     let appliedCouponCode: string | null = null;
-
     if (data.couponCode) {
       try {
-        const {
-          discountAmount: couponDiscount,
-          coupon,
-        } =
+        const { discountAmount: couponDiscount, coupon } =
           await validateCouponAndCalculateDiscount({
             code: data.couponCode,
             subtotal,
             shippingAmount,
           });
         discountAmount = couponDiscount;
-        appliedCouponId = coupon.id;
         appliedCouponCode = coupon.code;
       } catch (error) {
         if (error instanceof CouponError) {
@@ -424,90 +489,97 @@ export async function POST(request: NextRequest) {
     }
 
     const totalAmount = roundCurrency(
-      subtotal + taxAmount + shippingAmount + dutyAmount + insuranceAmount - discountAmount,
+      subtotal +
+        taxAmount +
+        shippingAmount +
+        dutyAmount +
+        insuranceAmount -
+        discountAmount,
     );
 
     // 使用数据库事务创建订单
-    const order = await prisma.$transaction(async (tx) => {
-      // 创建订单
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber: generateOrderNumber(),
-          userId: session.user.id,
-          status: 'PENDING',
-          currency: 'USD',
-          subtotal,
-          taxAmount,
-          shippingAmount,
-          discountAmount,
-          totalAmount,
-          declaredValue,
-          dutyAmount,
-          importTaxAmount: taxAmount,
-          insuranceAmount,
-          shippingAddressId: data.shippingAddressId,
-          billingAddressId: data.billingAddressId,
-          notes: data.notes,
-          marketId: market?.id,
-          shippingZoneId: shippingZone?.id,
-        },
-      });
-
-      // 创建订单项目
-      await tx.orderItem.createMany({
-        data: validatedItems.map(item => ({
-          orderId: newOrder.id,
-          productId: item.productId,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          productSnapshot: item.productSnapshot,
-        })),
-      });
-
-      // 预留库存
-      for (const item of validatedItems) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId },
+    const order = await prisma.$transaction(
+      async tx => {
+        // 创建订单
+        const newOrder = await tx.order.create({
+          data: {
+            orderNumber: generateOrderNumber(),
+            userId: session.user.id,
+            status: 'PENDING',
+          currency: market?.currency ?? 'USD',
+            subtotal,
+            taxAmount,
+            shippingAmount,
+            discountAmount,
+            totalAmount,
+            declaredValue,
+            dutyAmount,
+            importTaxAmount: taxAmount,
+            insuranceAmount,
+            couponCode: appliedCouponCode,
+            shippingAddressId: data.shippingAddressId,
+            billingAddressId: data.billingAddressId,
+            notes: data.notes,
+            marketId: market?.id,
+            shippingZoneId: shippingZone?.id,
+          },
         });
 
-        if (product?.trackInventory) {
-          if (item.variantId) {
-            await tx.inventory.updateMany({
-              where: { variantId: item.variantId },
-              data: {
-                reservedQuantity: { increment: item.quantity },
-              },
-            });
-          } else {
-            await tx.inventory.updateMany({
-              where: { productId: item.productId },
-              data: {
-                reservedQuantity: { increment: item.quantity },
-              },
-            });
+        // 创建订单项目
+        await tx.orderItem.createMany({
+          data: validatedItems.map(item => ({
+            orderId: newOrder.id,
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            productSnapshot: item.productSnapshot,
+          })),
+        });
+
+        // 预留库存
+        for (const item of validatedItems) {
+          if (item.trackInventory && !item.allowOutOfStock) {
+            const inventory = item.variantId
+              ? await tx.inventory.findUnique({
+                  where: { variantId: item.variantId },
+                })
+              : await tx.inventory.findUnique({
+                  where: { productId: item.productId },
+                });
+
+            if (
+              !inventory ||
+              inventory.quantity - inventory.reservedQuantity < item.quantity
+            ) {
+              throw new Error('INSUFFICIENT_STOCK');
+            }
+
+            if (item.variantId) {
+              await tx.inventory.updateMany({
+                where: { variantId: item.variantId },
+                data: {
+                  reservedQuantity: { increment: item.quantity },
+                },
+              });
+            } else {
+              await tx.inventory.updateMany({
+                where: { productId: item.productId },
+                data: {
+                  reservedQuantity: { increment: item.quantity },
+                },
+              });
+            }
           }
         }
-      }
 
-      // 更新优惠券使用次数
-      if (appliedCouponId) {
-        await tx.coupon.update({
-          where: { id: appliedCouponId },
-          data: { usageCount: { increment: 1 } },
-        });
-      }
-
-      // 清空用户购物车（可选）
-      await tx.cartItem.deleteMany({
-        where: { userId: session.user.id },
-      });
-
-      return newOrder;
-    }, {
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-    });
+        return newOrder;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
 
     console.log('订单创建成功:', {
       orderId: order.id,
@@ -517,23 +589,26 @@ export async function POST(request: NextRequest) {
       itemCount: validatedItems.length,
     });
 
-    return NextResponse.json({
-      success: true,
-      message: '订单创建成功',
-      data: {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        totalAmount: order.totalAmount,
-        status: order.status,
-        createdAt: order.createdAt,
-        subtotal: order.subtotal,
-        taxAmount: order.taxAmount,
-        dutyAmount: order.dutyAmount,
-        shippingAmount: order.shippingAmount,
-        insuranceAmount: order.insuranceAmount,
-        discountAmount: order.discountAmount,
+    return NextResponse.json(
+      {
+        success: true,
+        message: '订单创建成功',
+        data: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          totalAmount: order.totalAmount,
+          status: order.status,
+          createdAt: order.createdAt,
+          subtotal: order.subtotal,
+          taxAmount: order.taxAmount,
+          dutyAmount: order.dutyAmount,
+          shippingAmount: order.shippingAmount,
+          insuranceAmount: order.insuranceAmount,
+          discountAmount: order.discountAmount,
+        },
       },
-    }, { status: 201 });
+      { status: 201 },
+    );
   } catch (error) {
     console.error('创建订单失败:', error);
 
@@ -546,6 +621,17 @@ export async function POST(request: NextRequest) {
           success: false,
           error: 'TRANSACTION_CONFLICT',
           message: '库存或优惠券状态刚刚发生变化，请刷新后重试',
+        },
+        { status: 409 },
+      );
+    }
+
+    if (error instanceof Error && error.message === 'INSUFFICIENT_STOCK') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INSUFFICIENT_STOCK',
+          message: '库存刚刚发生变化，请刷新后重试',
         },
         { status: 409 },
       );

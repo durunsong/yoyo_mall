@@ -5,7 +5,13 @@ import { useDebounce } from 'use-debounce';
 import { Search, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -22,6 +28,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { formatDate } from '@/lib/utils';
+import { QuerySkeleton } from '@/components/ui/skeleton';
 
 export interface EmailRecipient {
   id: string;
@@ -96,7 +103,9 @@ export function EmailRecipientSelector({
         params.set('search', debouncedSearch);
       }
 
-      const response = await fetch(`/api/admin/email/recipients?${params.toString()}`);
+      const response = await fetch(
+        `/api/admin/email/recipients?${params.toString()}`,
+      );
       const data: RecipientResponse = await response.json();
 
       if (!data.success || !data.data) {
@@ -160,21 +169,25 @@ export function EmailRecipientSelector({
     onChange(nextSelected);
   };
 
-  const allSelectedInPage = recipients.length > 0 && recipients.every(recipient => selected[recipient.id]);
+  const allSelectedInPage =
+    recipients.length > 0 &&
+    recipients.every(recipient => selected[recipient.id]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>收件人</CardTitle>
         <CardDescription>
-          已选择 <span className="font-semibold text-blue-600">{selectedCount}</span> / {maxRecipients} 位用户
+          已选择{' '}
+          <span className="font-semibold text-blue-600">{selectedCount}</span> /{' '}
+          {maxRecipients} 位用户
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-3">
             <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder="搜索邮箱 / 姓名"
                 value={search}
@@ -189,19 +202,25 @@ export function EmailRecipientSelector({
               className="shrink-0"
               title="刷新列表"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+              />
             </Button>
           </div>
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">发送给全部用户</p>
+              <p className="text-sm font-medium text-slate-900">
+                发送给全部用户
+              </p>
               <p className="text-xs text-slate-500">
                 启用后将忽略手动选择，向当前符合条件的全部用户群发
               </p>
             </div>
             <Switch
               checked={mode === 'ALL'}
-              onCheckedChange={checked => onModeChange(checked ? 'ALL' : 'SELECTED')}
+              onCheckedChange={checked =>
+                onModeChange(checked ? 'ALL' : 'SELECTED')
+              }
               disabled={disabled}
             />
           </div>
@@ -218,7 +237,9 @@ export function EmailRecipientSelector({
                 />
                 <Label className="text-sm text-slate-600">当前页全选</Label>
               </div>
-              <Badge variant="secondary">共 {pagination.total} 位潜在收件人</Badge>
+              <Badge variant="secondary">
+                共 {pagination.total} 位潜在收件人
+              </Badge>
             </div>
             <div className="overflow-x-auto">
               <Table>
@@ -235,13 +256,16 @@ export function EmailRecipientSelector({
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-6 text-center text-slate-500">
-                        正在加载收件人...
+                      <TableCell colSpan={6} className="p-0">
+                        <QuerySkeleton />
                       </TableCell>
                     </TableRow>
                   ) : recipients.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-6 text-center text-slate-500">
+                      <TableCell
+                        colSpan={6}
+                        className="py-6 text-center text-slate-500"
+                      >
                         暂无符合条件的用户
                       </TableCell>
                     </TableRow>
@@ -260,19 +284,27 @@ export function EmailRecipientSelector({
                             <span className="font-medium text-slate-900">
                               {recipient.name || '未命名用户'}
                             </span>
-                            <span className="text-xs text-slate-500">{recipient.id}</span>
+                            <span className="text-xs text-slate-500">
+                              {recipient.id}
+                            </span>
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-sm">{recipient.email}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {recipient.email}
+                        </TableCell>
                         <TableCell>
                           <Badge variant="outline">
                             {recipient.country || recipient.locale || '未知'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">{recipient.orderCount}</Badge>
+                          <Badge variant="secondary">
+                            {recipient.orderCount}
+                          </Badge>
                         </TableCell>
-                        <TableCell>{formatDate(recipient.createdAt, 'date')}</TableCell>
+                        <TableCell>
+                          {formatDate(recipient.createdAt, 'date')}
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -292,9 +324,12 @@ export function EmailRecipientSelector({
 
         {mode === 'ALL' && (
           <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-950">
-            <p className="font-medium text-blue-900">当前将向全量用户发送邮件。</p>
+            <p className="font-medium text-blue-900">
+              当前将向全量用户发送邮件。
+            </p>
             <p className="mt-1 text-xs text-blue-800">
-              系统会在发送前自动截取 {maxRecipients} 人的安全上限，如需覆盖更多收件人，请分批次发送或按条件筛选后使用批量发送。
+              系统会在发送前自动截取 {maxRecipients}{' '}
+              人的安全上限，如需覆盖更多收件人，请分批次发送或按条件筛选后使用批量发送。
             </p>
           </div>
         )}

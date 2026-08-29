@@ -29,10 +29,7 @@ async function ensureAdmin() {
   return session;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const session = await ensureAdmin();
@@ -84,6 +81,7 @@ export async function GET(
             id: true,
             paymentMethod: true,
             provider: true,
+            providerTransactionId: true,
             amount: true,
             currency: true,
             status: true,
@@ -143,10 +141,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const session = await ensureAdmin();
@@ -180,7 +175,6 @@ export async function PUT(
       data: order,
     });
   } catch (error) {
-
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -200,4 +194,3 @@ export async function PUT(
     );
   }
 }
-

@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { QuerySkeleton } from '@/components/ui/skeleton';
 
 // 评价类型定义
 interface Review {
@@ -199,20 +200,28 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   };
 
   // 渲染星星
-  const renderStars = (rating: number, interactive = false, size = 'default') => {
+  const renderStars = (
+    rating: number,
+    interactive = false,
+    size = 'default',
+  ) => {
     const sizeClass = size === 'large' ? 'h-6 w-6' : 'h-4 w-4';
     return (
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <button
             key={star}
             type="button"
-            onClick={() => interactive && setReviewForm({ ...reviewForm, rating: star })}
+            onClick={() =>
+              interactive && setReviewForm({ ...reviewForm, rating: star })
+            }
             disabled={!interactive}
             className={interactive ? 'cursor-pointer' : 'cursor-default'}
           >
             {star <= rating ? (
-              <Star className={`${sizeClass} fill-yellow-400 text-yellow-400`} />
+              <Star
+                className={`${sizeClass} fill-yellow-400 text-yellow-400`}
+              />
             ) : (
               <StarOff className={`${sizeClass} text-gray-300`} />
             )}
@@ -250,7 +259,9 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                   <div className="text-5xl font-bold">
                     {statistics.averageRating}
                   </div>
-                  <div className="mt-2">{renderStars(Math.round(statistics.averageRating))}</div>
+                  <div className="mt-2">
+                    {renderStars(Math.round(statistics.averageRating))}
+                  </div>
                   <div className="mt-1 text-sm text-gray-500">
                     基于 {statistics.totalReviews} 条评价
                   </div>
@@ -259,7 +270,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
               {/* 评分分布 */}
               <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating) => {
+                {[5, 4, 3, 2, 1].map(rating => {
                   const count = statistics.ratingDistribution[rating] || 0;
                   const percentage =
                     statistics.totalReviews > 0
@@ -321,9 +332,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
       {/* 评价列表 */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
+        <QuerySkeleton />
       ) : reviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-gray-500">
@@ -333,7 +342,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
         </Card>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review) => (
+          {reviews.map(review => (
             <Card key={review.id}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
@@ -364,17 +373,18 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                   </div>
 
                   {/* 操作按钮 */}
-                  {session?.user?.email && review.user.id === session.user.id && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteReview(review.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  )}
+                  {session?.user?.email &&
+                    review.user.id === session.user.id && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteReview(review.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    )}
                 </div>
 
                 {/* 评价内容 */}
@@ -461,7 +471,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                 id="review-title"
                 placeholder="简短总结您的评价"
                 value={reviewForm.title}
-                onChange={(e) =>
+                onChange={e =>
                   setReviewForm({ ...reviewForm, title: e.target.value })
                 }
                 maxLength={200}
@@ -474,7 +484,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                 id="review-content"
                 placeholder="详细描述您的使用体验..."
                 value={reviewForm.content}
-                onChange={(e) =>
+                onChange={e =>
                   setReviewForm({ ...reviewForm, content: e.target.value })
                 }
                 rows={5}
@@ -510,7 +520,3 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     </div>
   );
 }
-
-
-
-

@@ -43,13 +43,21 @@ import {
   XCircle,
   Truck,
   Loader2,
+  RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { OrderDetailSkeleton } from '@/components/admin/admin-skeleton';
 
 // 订单状态类型
-type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'REFUNDED';
 
 // 订单接口
 interface Order {
@@ -93,6 +101,9 @@ interface Order {
     paymentMethod: string;
     status: string;
     transactionId?: string;
+    providerTransactionId?: string;
+    amount: number;
+    currency: string;
     createdAt: string;
   } | null;
   payments?: Array<{
@@ -104,12 +115,17 @@ interface Order {
   }>;
 }
 
-export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function OrderDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [refunding, setRefunding] = useState(false);
 
   // 加载订单详情
   useEffect(() => {
@@ -137,6 +153,39 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       router.push('/admin/orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefund = async () => {
+    if (!order?.payment || refunding) return;
+    const input = window.prompt('请输入退款金额，留空表示全额退款');
+    if (input === null) return;
+    const parsedAmount = input.trim() ? Number(input) : undefined;
+    if (
+      parsedAmount !== undefined &&
+      (!Number.isFinite(parsedAmount) || parsedAmount <= 0)
+    ) {
+      toast.error('退款金额无效');
+      return;
+    }
+    const amount = parsedAmount;
+
+    try {
+      setRefunding(true);
+      const response = await fetch(`/api/admin/orders/${order.id}/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success)
+        throw new Error(data.message || '退款失败');
+      toast.success(data.message);
+      await fetchOrderDetail();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '退款失败');
+    } finally {
+      setRefunding(false);
     }
   };
 
@@ -231,7 +280,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   if (!order) {
     return (
       <AdminLayout>
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <p className="text-gray-500">订单不存在</p>
         </div>
       </AdminLayout>
@@ -253,17 +302,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">订单详情</h1>
-              <p className="text-gray-600 mt-1">订单号: {order.orderNumber}</p>
+              <p className="mt-1 text-gray-600">订单号: {order.orderNumber}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge variant={getStatusBadgeVariant(order.status)} className="text-sm px-3 py-1">
+            <Badge
+              variant={getStatusBadgeVariant(order.status)}
+              className="px-3 py-1 text-sm"
+            >
               {getStatusText(order.status)}
             </Badge>
             <Select
               value={order.status}
-              onValueChange={(value) => handleUpdateStatus(value as OrderStatus)}
+              onValueChange={value => handleUpdateStatus(value as OrderStatus)}
               disabled={updating}
             >
               <SelectTrigger className="w-40">
@@ -282,9 +334,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* 左侧主要内容 */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* 商品清单 */}
             <Card>
               <CardHeader>
@@ -292,7 +344,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <Package className="h-5 w-5" />
                   商品清单
                 </CardTitle>
-                <CardDescription>共 {order.items.length} 件商品</CardDescription>
+                <CardDescription>
+                  共 {order.items.length} 件商品
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -305,7 +359,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {order.items.map((item) => (
+                    {order.items.map(item => (
                       <TableRow key={item.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -324,11 +378,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                               )}
                             </div>
                             <div>
-                              <div className="font-medium">{item.product.name}</div>
+                              <div className="font-medium">
+                                {item.product.name}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center">×{item.quantity}</TableCell>
+                        <TableCell className="text-center">
+                          ×{item.quantity}
+                        </TableCell>
                         <TableCell className="text-right">
                           {formatPrice(item.unitPrice)}
                         </TableCell>
@@ -346,7 +404,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">商品小计</span>
-                    <span>{formatPrice(order.totalAmount - order.shippingAmount - order.taxAmount + order.discountAmount)}</span>
+                    <span>
+                      {formatPrice(
+                        order.totalAmount -
+                          order.shippingAmount -
+                          order.taxAmount +
+                          order.discountAmount,
+                      )}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">运费</span>
@@ -365,7 +430,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>订单总额</span>
-                    <span className="text-primary">{formatPrice(order.totalAmount)}</span>
+                    <span className="text-primary">
+                      {formatPrice(order.totalAmount)}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -386,7 +453,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                       <div>
                         <div className="text-sm text-gray-600">收货人</div>
                         <div className="font-medium">
-                          {[order.shippingAddress.firstName, order.shippingAddress.lastName]
+                          {[
+                            order.shippingAddress.firstName,
+                            order.shippingAddress.lastName,
+                          ]
                             .filter(Boolean)
                             .join(' ')}
                         </div>
@@ -401,8 +471,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div>
                       <div className="text-sm text-gray-600">收货地址</div>
                       <div className="font-medium">
-                        {order.shippingAddress.country} {order.shippingAddress.state}{' '}
-                        {order.shippingAddress.city} {order.shippingAddress.addressLine1}{' '}
+                        {order.shippingAddress.country}{' '}
+                        {order.shippingAddress.state}{' '}
+                        {order.shippingAddress.city}{' '}
+                        {order.shippingAddress.addressLine1}{' '}
                         {order.shippingAddress.postalCode}
                       </div>
                     </div>
@@ -428,7 +500,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">邮箱</div>
-                  <div className="font-medium text-sm">{order.user.email}</div>
+                  <div className="text-sm font-medium">{order.user.email}</div>
                 </div>
               </CardContent>
             </Card>
@@ -445,23 +517,52 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <CardContent className="space-y-3">
                   <div>
                     <div className="text-sm text-gray-600">支付方式</div>
-                    <div className="font-medium">{order.payment.paymentMethod}</div>
+                    <div className="font-medium">
+                      {order.payment.paymentMethod}
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">支付状态</div>
-                    <Badge variant={order.payment.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                      {order.payment.status === 'COMPLETED' ? '已支付' : '未支付'}
+                    <Badge
+                      variant={
+                        order.payment.status === 'COMPLETED'
+                          ? 'default'
+                          : 'secondary'
+                      }
+                    >
+                      {order.payment.status === 'COMPLETED'
+                        ? '已支付'
+                        : '未支付'}
                     </Badge>
                   </div>
-                  {order.payment.transactionId && (
+                  {order.payment.providerTransactionId && (
                     <div>
                       <div className="text-sm text-gray-600">交易号</div>
-                      <div className="font-mono text-sm">{order.payment.transactionId}</div>
+                      <div className="font-mono text-sm">
+                        {order.payment.providerTransactionId}
+                      </div>
                     </div>
+                  )}
+                  {order.payment.status === 'COMPLETED' && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleRefund}
+                      disabled={refunding}
+                    >
+                      {refunding ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                      )}
+                      {refunding ? '退款处理中' : '发起退款'}
+                    </Button>
                   )}
                   <div>
                     <div className="text-sm text-gray-600">支付时间</div>
-                    <div className="text-sm">{formatDate(order.payment.createdAt)}</div>
+                    <div className="text-sm">
+                      {formatDate(order.payment.createdAt)}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -499,7 +600,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <div className="text-sm text-gray-500">
                           {formatDate(order.updatedAt)}
                         </div>
-                        <div className="text-sm text-gray-600 mt-1">
+                        <div className="mt-1 text-sm text-gray-600">
                           当前状态: {getStatusText(order.status)}
                         </div>
                       </div>
@@ -527,9 +628,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">已送达</div>
-                        <div className="text-sm text-gray-500">
-                          订单已完成
-                        </div>
+                        <div className="text-sm text-gray-500">订单已完成</div>
                       </div>
                     </div>
                   )}
@@ -541,9 +640,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">已取消</div>
-                        <div className="text-sm text-gray-500">
-                          订单已取消
-                        </div>
+                        <div className="text-sm text-gray-500">订单已取消</div>
                       </div>
                     </div>
                   )}
@@ -556,5 +653,3 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     </AdminLayout>
   );
 }
-
-

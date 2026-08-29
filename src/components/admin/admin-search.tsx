@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Search, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  FileText, 
-  Loader2,
+import {
+  Search,
+  Package,
+  ShoppingCart,
+  Users,
+  FileText,
   Layout,
   Settings,
   Globe,
@@ -23,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
+import { QuerySkeleton } from '@/components/ui/skeleton';
 
 /**
  * 搜索结果类型
@@ -57,7 +57,10 @@ export function AdminSearch() {
   // 点击外部关闭搜索结果
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowResults(false);
       }
     }
@@ -77,7 +80,9 @@ export function AdminSearch() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/admin/search?q=${encodeURIComponent(debouncedQuery)}`);
+        const response = await fetch(
+          `/api/admin/search?q=${encodeURIComponent(debouncedQuery)}`,
+        );
         const data = await response.json();
 
         if (data.success) {
@@ -105,11 +110,11 @@ export function AdminSearch() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev));
+        setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -134,33 +139,49 @@ export function AdminSearch() {
   // 获取图标（根据标题和类型智能匹配）
   const getIcon = (result: SearchResult) => {
     const { type, title } = result;
-    
+
     // 页面类型根据标题匹配
     if (type === 'page') {
-      if (title.includes('仪表板')) return <LayoutDashboard className="h-4 w-4 text-blue-500" />;
-      if (title.includes('商品')) return <Package className="h-4 w-4 text-blue-500" />;
-      if (title.includes('订单')) return <ShoppingCart className="h-4 w-4 text-green-500" />;
-      if (title.includes('用户')) return <Users className="h-4 w-4 text-purple-500" />;
-      if (title.includes('数据') || title.includes('分析')) return <BarChart3 className="h-4 w-4 text-indigo-500" />;
-      if (title.includes('首页')) return <Home className="h-4 w-4 text-orange-500" />;
-      if (title.includes('Footer') || title.includes('页脚')) return <Layout className="h-4 w-4 text-pink-500" />;
-      if (title.includes('邮件') || title.includes('订阅')) return <Mail className="h-4 w-4 text-cyan-500" />;
-      if (title.includes('通知')) return <Bell className="h-4 w-4 text-yellow-500" />;
-      if (title.includes('系统') || title.includes('设置')) return <Settings className="h-4 w-4 text-gray-500" />;
+      if (title.includes('仪表板'))
+        return <LayoutDashboard className="h-4 w-4 text-blue-500" />;
+      if (title.includes('商品'))
+        return <Package className="h-4 w-4 text-blue-500" />;
+      if (title.includes('订单'))
+        return <ShoppingCart className="h-4 w-4 text-green-500" />;
+      if (title.includes('用户'))
+        return <Users className="h-4 w-4 text-purple-500" />;
+      if (title.includes('数据') || title.includes('分析'))
+        return <BarChart3 className="h-4 w-4 text-indigo-500" />;
+      if (title.includes('首页'))
+        return <Home className="h-4 w-4 text-orange-500" />;
+      if (title.includes('Footer') || title.includes('页脚'))
+        return <Layout className="h-4 w-4 text-pink-500" />;
+      if (title.includes('邮件') || title.includes('订阅'))
+        return <Mail className="h-4 w-4 text-cyan-500" />;
+      if (title.includes('通知'))
+        return <Bell className="h-4 w-4 text-yellow-500" />;
+      if (title.includes('系统') || title.includes('设置'))
+        return <Settings className="h-4 w-4 text-gray-500" />;
       return <FileText className="h-4 w-4 text-gray-500" />;
     }
-    
+
     // 设置类型根据标题匹配
     if (type === 'setting') {
-      if (title.includes('网站')) return <Globe className="h-4 w-4 text-blue-500" />;
-      if (title.includes('支付')) return <CreditCard className="h-4 w-4 text-green-500" />;
-      if (title.includes('邮件')) return <Mail className="h-4 w-4 text-cyan-500" />;
-      if (title.includes('通知')) return <Bell className="h-4 w-4 text-yellow-500" />;
-      if (title.includes('商详')) return <Sparkles className="h-4 w-4 text-purple-500" />;
-      if (title.includes('公告')) return <Megaphone className="h-4 w-4 text-orange-500" />;
+      if (title.includes('网站'))
+        return <Globe className="h-4 w-4 text-blue-500" />;
+      if (title.includes('支付'))
+        return <CreditCard className="h-4 w-4 text-green-500" />;
+      if (title.includes('邮件'))
+        return <Mail className="h-4 w-4 text-cyan-500" />;
+      if (title.includes('通知'))
+        return <Bell className="h-4 w-4 text-yellow-500" />;
+      if (title.includes('商详'))
+        return <Sparkles className="h-4 w-4 text-purple-500" />;
+      if (title.includes('公告'))
+        return <Megaphone className="h-4 w-4 text-orange-500" />;
       return <Settings className="h-4 w-4 text-gray-500" />;
     }
-    
+
     // 数据类型
     switch (type) {
       case 'product':
@@ -214,13 +235,13 @@ export function AdminSearch() {
     <div ref={searchRef} className="w-full max-w-md">
       {/* 搜索输入框 */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+        <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
         <Input
           clearable
           type="text"
           placeholder="搜索商品、订单、用户..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={e => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query && setShowResults(true)}
           onClear={() => {
@@ -228,27 +249,22 @@ export function AdminSearch() {
             setResults([]);
             setShowResults(false);
           }}
-          className="h-10 pl-10 pr-20"
+          className="h-10 pr-20 pl-10"
         />
-        {loading && (
-          <span className="absolute right-11 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-background text-muted-foreground" aria-label="正在搜索" role="status">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          </span>
-        )}
       </div>
 
       {/* 搜索结果下拉框 */}
       {showResults && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[32rem] overflow-y-auto">
+        <div className="absolute z-50 mt-2 max-h-[32rem] w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
           {results.length > 0 ? (
             <div className="py-1">
               {results.map((result, index) => (
                 <button
                   key={result.id}
                   onClick={() => handleResultClick(result)}
-                  className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors border-l-2 ${
-                    index === selectedIndex 
-                      ? 'bg-blue-50 border-blue-500' 
+                  className={`flex w-full items-start gap-3 border-l-2 px-4 py-3 transition-colors hover:bg-gray-50 ${
+                    index === selectedIndex
+                      ? 'border-blue-500 bg-blue-50'
                       : 'border-transparent'
                   }`}
                 >
@@ -256,22 +272,26 @@ export function AdminSearch() {
                   <div className="mt-0.5 flex-shrink-0">{getIcon(result)}</div>
 
                   {/* 内容 */}
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-900 truncate">
+                  <div className="min-w-0 flex-1 text-left">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="truncate text-sm font-medium text-gray-900">
                         {result.title}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${getTypeLabelColor(result.type)}`}>
+                      <span
+                        className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${getTypeLabelColor(result.type)}`}
+                      >
                         {getTypeLabel(result.type)}
                       </span>
                       {result.parent && (
-                        <span className="text-xs text-gray-400 flex-shrink-0">
+                        <span className="flex-shrink-0 text-xs text-gray-400">
                           · {result.parent}
                         </span>
                       )}
                     </div>
                     {result.subtitle && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{result.subtitle}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-gray-500">
+                        {result.subtitle}
+                      </p>
                     )}
                   </div>
                 </button>
@@ -280,14 +300,13 @@ export function AdminSearch() {
           ) : (
             <div className="px-4 py-8 text-center text-sm text-gray-500">
               {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>搜索中...</span>
-                </div>
+                <QuerySkeleton className="px-0 py-3" />
               ) : (
                 <div>
-                  <p className="text-gray-400 mb-1">未找到相关结果</p>
-                  <p className="text-xs text-gray-400">试试搜索"商品"、"订单"或"系统设置"</p>
+                  <p className="mb-1 text-gray-400">未找到相关结果</p>
+                  <p className="text-xs text-gray-400">
+                    试试搜索"商品"、"订单"或"系统设置"
+                  </p>
                 </div>
               )}
             </div>
@@ -295,9 +314,11 @@ export function AdminSearch() {
 
           {/* 搜索提示 */}
           {!loading && results.length > 0 && (
-            <div className="px-4 py-2 border-t border-gray-100 bg-gray-50 text-xs text-gray-400 flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-2 text-xs text-gray-400">
               <span>找到 {results.length} 个结果</span>
-              <span className="hidden md:inline">使用 ↑↓ 导航 · Enter 选择 · ESC 关闭</span>
+              <span className="hidden md:inline">
+                使用 ↑↓ 导航 · Enter 选择 · ESC 关闭
+              </span>
             </div>
           )}
         </div>
@@ -305,5 +326,3 @@ export function AdminSearch() {
     </div>
   );
 }
-
-

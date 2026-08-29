@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe';
 import type { OrderStatus } from '@prisma/client';
+import { toStripeMinorUnits } from '@/lib/payments/stripe-transition';
 
 // 配置缺失时延迟到支付动作返回错误，避免构建阶段加载 API 路由就失败。
 export const stripe = process.env.STRIPE_SECRET_KEY
@@ -39,12 +40,14 @@ export async function createPaymentIntent({
   orderId,
   customerId,
   metadata = {},
+  idempotencyKey,
 }: {
   amount: number;
   currency?: string;
   orderId: string;
   customerId?: string;
   metadata?: Record<string, string>;
+  idempotencyKey?: string;
 }) {
   if (!stripe) {
     return { success: false, error: STRIPE_NOT_CONFIGURED };
@@ -54,20 +57,23 @@ export async function createPaymentIntent({
     // 将金额转换为最小货币单位（分）
     const amountInCents = Math.round(amount * 100);
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents,
-      currency: currency.toLowerCase(),
-      customer: customerId,
-      metadata: {
-        orderId,
-        ...metadata,
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: amountInCents,
+        currency: currency.toLowerCase(),
+        customer: customerId,
+        metadata: {
+          orderId,
+          ...metadata,
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        // 设置收据邮箱
+        ...(customerId && { receipt_email: undefined }), // 会自动使用客户的邮箱
       },
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      // 设置收据邮箱
-      ...(customerId && { receipt_email: undefined }), // 会自动使用客户的邮箱
-    });
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
 
     return {
       success: true,
@@ -96,7 +102,7 @@ export async function confirmPayment(paymentIntentId: string) {
 
   try {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
+
     return {
       success: true,
       data: {
@@ -106,6 +112,7 @@ export async function confirmPayment(paymentIntentId: string) {
         currency: paymentIntent.currency,
         created: paymentIntent.created,
         metadata: paymentIntent.metadata,
+        clientSecret: paymentIntent.client_secret,
       },
     };
   } catch (error) {
@@ -121,25 +128,38 @@ export async function confirmPayment(paymentIntentId: string) {
 export async function createRefund({
   paymentIntentId,
   amount,
+  amountInMinorUnits,
+  currency = 'USD',
   reason = 'requested_by_customer',
   metadata = {},
+  idempotencyKey,
 }: {
   paymentIntentId: string;
   amount?: number;
+  amountInMinorUnits?: number;
+  currency?: string;
   reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer';
   metadata?: Record<string, string>;
+  idempotencyKey?: string;
 }) {
   if (!stripe) {
     return { success: false, error: STRIPE_NOT_CONFIGURED };
   }
 
   try {
-    const refund = await stripe.refunds.create({
-      payment_intent: paymentIntentId,
-      amount: amount ? Math.round(amount * 100) : undefined, // 如果不指定金额则全额退款
-      reason,
-      metadata,
-    });
+    const refund = await stripe.refunds.create(
+      {
+        payment_intent: paymentIntentId,
+        amount:
+          amountInMinorUnits ??
+          (amount === undefined
+            ? undefined
+            : toStripeMinorUnits(amount, currency)),
+        reason,
+        metadata,
+      },
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
 
     return {
       success: true,
@@ -232,12 +252,14 @@ export function verifyWebhookSignature(
 }
 
 // 处理支付状态映射
-export function mapStripeStatusToOrderStatus(stripeStatus: string): OrderStatus {
+export function mapStripeStatusToOrderStatus(
+  stripeStatus: string,
+): OrderStatus {
   const statusMap: Record<string, OrderStatus> = {
     requires_payment_method: 'PENDING',
     requires_confirmation: 'PENDING',
     requires_action: 'PENDING',
-    processing: 'PROCESSING',
+    processing: 'PENDING',
     requires_capture: 'CONFIRMED',
     succeeded: 'CONFIRMED',
     canceled: 'CANCELLED',

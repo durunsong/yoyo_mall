@@ -539,6 +539,7 @@ model Order {
   dutyAmount        Decimal     @default(0) @db.Decimal(10, 2)
   importTaxAmount   Decimal     @default(0) @db.Decimal(10, 2)
   insuranceAmount   Decimal     @default(0) @db.Decimal(10, 2)
+  couponCode        String?
   shippingAddressId String?
   billingAddressId  String?
   marketId          String?

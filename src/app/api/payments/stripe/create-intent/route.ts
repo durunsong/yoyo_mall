@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createPaymentIntent, getOrCreateStripeCustomer } from '@/lib/stripe';
+import {
+  confirmPayment,
+  createPaymentIntent,
+  getOrCreateStripeCustomer,
+} from '@/lib/stripe';
+import { isPaymentIntentAmountMatching } from '@/lib/payments/stripe-transition';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -16,7 +21,7 @@ const createPaymentIntentSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '请先登录' },
@@ -57,10 +62,10 @@ export async function POST(request: NextRequest) {
     // 检查订单状态
     if (order.status !== 'PENDING') {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'INVALID_ORDER_STATUS', 
-          message: `订单状态为 ${order.status}，无法支付`, 
+        {
+          success: false,
+          error: 'INVALID_ORDER_STATUS',
+          message: `订单状态为 ${order.status}，无法支付`,
         },
         { status: 400 },
       );
@@ -75,12 +80,70 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingPayment && existingPayment.providerTransactionId) {
-      const existingMetadata = isRecord(existingPayment.metadata) ? existingPayment.metadata : undefined;
+      const existingMetadata = isRecord(existingPayment.metadata)
+        ? existingPayment.metadata
+        : {};
+      let clientSecret =
+        typeof existingMetadata.clientSecret === 'string'
+          ? existingMetadata.clientSecret
+          : null;
+
+      if (!clientSecret) {
+        const existingIntent = await confirmPayment(
+          existingPayment.providerTransactionId,
+        );
+        if (!existingIntent.success || !existingIntent.data) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'PAYMENT_INTENT_UNAVAILABLE',
+              message: '支付意图已失效，请重新发起支付',
+            },
+            { status: 409 },
+          );
+        }
+        if (
+          !isPaymentIntentAmountMatching({
+            stripeAmountInMinorUnits: existingIntent.data.amount,
+            storedAmount: Number(order.totalAmount),
+            stripeCurrency: existingIntent.data.currency,
+            storedCurrency: order.currency,
+          })
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'PAYMENT_AMOUNT_MISMATCH',
+              message: '支付金额已变化，请重新下单',
+            },
+            { status: 409 },
+          );
+        }
+        clientSecret = existingIntent.data.clientSecret;
+        if (clientSecret) {
+          await prisma.payment.update({
+            where: { id: existingPayment.id },
+            data: { metadata: { ...existingMetadata, clientSecret } },
+          });
+        }
+      }
+
+      if (!clientSecret) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'PAYMENT_INTENT_UNAVAILABLE',
+            message: '支付意图缺少客户端密钥，请重试',
+          },
+          { status: 409 },
+        );
+      }
+
       return NextResponse.json({
         success: true,
         message: '使用现有支付意图',
         data: {
-          clientSecret: existingMetadata?.clientSecret,
+          clientSecret,
           paymentId: existingPayment.id,
           paymentIntentId: existingPayment.providerTransactionId,
           amount: Number(order.totalAmount),
@@ -98,10 +161,10 @@ export async function POST(request: NextRequest) {
 
     if (!customerResult.success || !customerResult.data) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'CUSTOMER_CREATION_FAILED', 
-          message: '创建支付客户失败', 
+        {
+          success: false,
+          error: 'CUSTOMER_CREATION_FAILED',
+          message: '创建支付客户失败',
         },
         { status: 500 },
       );
@@ -118,17 +181,29 @@ export async function POST(request: NextRequest) {
         orderNumber: order.orderNumber,
         itemCount: order.items.length.toString(),
       },
+      idempotencyKey: `order:${order.id}`,
     });
 
     if (!paymentIntentResult.success || !paymentIntentResult.data) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'PAYMENT_INTENT_FAILED', 
+        {
+          success: false,
+          error: 'PAYMENT_INTENT_FAILED',
           message: '创建支付意图失败',
-          details: paymentIntentResult.error, 
+          details: paymentIntentResult.error,
         },
         { status: 500 },
+      );
+    }
+
+    if (!paymentIntentResult.data.clientSecret) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'PAYMENT_INTENT_UNAVAILABLE',
+          message: '支付意图缺少客户端密钥，请重试',
+        },
+        { status: 502 },
       );
     }
 

@@ -19,6 +19,27 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   );
 }
 
+export function QuerySkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn('space-y-3 p-4', className)}
+      role="status"
+      aria-label="正在加载"
+    >
+      {[0, 1].map(index => (
+        <div key={index} className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3.5 w-3/5" />
+            <Skeleton className="h-3 w-2/5" />
+          </div>
+          <Skeleton className="h-7 w-16 shrink-0 rounded-md" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // 卡片骨架屏
 export function CardSkeleton() {
   return (
@@ -52,9 +73,9 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 // 产品卡片骨架屏
 export function ProductCardSkeleton() {
   return (
-    <div className="rounded-lg bg-white overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-lg bg-white shadow-sm">
       <Skeleton className="h-48 w-full" />
-      <div className="p-4 space-y-3">
+      <div className="space-y-3 p-4">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
         <div className="flex items-center justify-between">
@@ -70,8 +91,8 @@ export function ProductCardSkeleton() {
 export function OrderCardSkeleton() {
   return (
     <div className="rounded-lg bg-white p-6 shadow-sm">
-      <div className="flex items-start justify-between mb-4">
-        <div className="space-y-2 flex-1">
+      <div className="mb-4 flex items-start justify-between">
+        <div className="flex-1 space-y-2">
           <Skeleton className="h-5 w-40" />
           <Skeleton className="h-4 w-32" />
         </div>
@@ -105,7 +126,7 @@ export function PageSkeleton() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}
@@ -126,27 +147,27 @@ export function PageSkeleton() {
 // 通知列表项骨架屏
 export function NotificationItemSkeleton() {
   return (
-    <div className="p-4 transition-colors relative">
+    <div className="relative p-4 transition-colors">
       <div className="flex items-start gap-4 pl-4">
         {/* 图标骨架 - 匹配实际图标容器（p-2 rounded-full，图标 h-5 w-5） */}
-        <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
-        
+        <Skeleton className="h-9 w-9 flex-shrink-0 rounded-full" />
+
         {/* 内容骨架 */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             {/* 标题 */}
-            <Skeleton className="h-4 w-32 mb-1" />
-            
+            <Skeleton className="mb-1 h-4 w-32" />
+
             {/* 删除按钮骨架 */}
-            <Skeleton className="h-4 w-4 rounded flex-shrink-0 opacity-0" />
+            <Skeleton className="h-4 w-4 flex-shrink-0 rounded opacity-0" />
           </div>
-          
+
           {/* 消息内容 - 匹配实际的两行文本 */}
-          <Skeleton className="h-3.5 w-full mt-1" />
-          <Skeleton className="h-3.5 w-3/4 mt-1" />
-          
+          <Skeleton className="mt-1 h-3.5 w-full" />
+          <Skeleton className="mt-1 h-3.5 w-3/4" />
+
           {/* 时间 */}
-          <Skeleton className="h-3 w-20 mt-2" />
+          <Skeleton className="mt-2 h-3 w-20" />
         </div>
       </div>
     </div>
@@ -156,7 +177,7 @@ export function NotificationItemSkeleton() {
 // 通知页面骨架屏
 export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="bg-card text-card-foreground rounded-lg shadow-sm">
         {/* 头部骨架 - 匹配 CardHeader 结构（p-4），但内容使用 flex items-center justify-between */}
         <div className="p-4 shadow-sm">
@@ -167,7 +188,7 @@ export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
               <Skeleton className="h-6 w-24" />
               <Skeleton className="h-5 w-16 rounded-full" />
             </div>
-            
+
             {/* 右侧：筛选按钮 - 匹配实际按钮布局 */}
             <div className="flex gap-2">
               <Skeleton className="h-9 w-16 rounded-md" />
@@ -183,7 +204,7 @@ export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
             {Array.from({ length: items }).map((_, i) => {
               const isLast = i === items - 1;
               return (
-                <div key={i} className={!isLast ? 'shadow-sm mb-2' : ''}>
+                <div key={i} className={!isLast ? 'mb-2 shadow-sm' : ''}>
                   <NotificationItemSkeleton />
                 </div>
               );
@@ -194,5 +215,3 @@ export function NotificationsPageSkeleton({ items = 5 }: { items?: number }) {
     </div>
   );
 }
-
-
