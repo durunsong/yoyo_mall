@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { ShadcnHeader } from './shadcn-header';
 import { Footer } from './footer';
 import { FloatingToolbar } from './floating-toolbar';
+import { CartDrawer } from '@/components/cart/cart-drawer';
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
       <Footer />
       {/* 浮动工具栏 */}
       <FloatingToolbar />
+      <CartDrawer />
     </div>
   );
 }

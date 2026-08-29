@@ -53,8 +53,10 @@
     "defaultUserName": "用户",
     "memberBadge": "会员",
     "editProfile": "编辑资料",
-    "ordersTitle": "我的订单",
-    "viewAllOrders": "查看所有订单",
+  "ordersTitle": "我的订单",
+  "viewAllOrders": "查看所有订单",
+  "loadFailed": "账户摘要加载失败",
+  "retry": "重试",
     "quickLinks": {
       "orders": {
         "title": "我的订单",
@@ -134,6 +136,7 @@
     "emptyTitle": "心愿单是空的",
     "emptyDescription": "开始添加您喜欢的商品",
     "addToCart": "加入购物车",
+    "addingToCart": "正在加入...",
     "remove": "移除",
     "outOfStock": "已售罄",
     "off": "折扣",
@@ -249,4 +252,3 @@
     }
   }
 }
-

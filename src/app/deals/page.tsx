@@ -4,7 +4,7 @@ import { getSystemSettings } from '@/lib/server/system-settings';
 import { getDictionaries } from '@/lib/server/translations';
 import { getCurrencySymbol } from '@/lib/currency';
 
-export const revalidate = 600;
+export const dynamic = 'force-dynamic';
 
 export default async function DealsPage() {
   const [settings, products] = await Promise.all([
@@ -25,5 +25,4 @@ export default async function DealsPage() {
     />
   );
 }
-
 

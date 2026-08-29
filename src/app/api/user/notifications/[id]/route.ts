@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -26,8 +27,22 @@ export async function DELETE(
       );
     }
 
-    // TODO: 在实际应用中，应该在数据库中删除通知
-    // 当前为简化实现，直接返回成功
+    const deleted = await prisma.userNotification.updateMany({
+      where: { id: notificationId, userId: session.user.id },
+      data: {
+        metadata: {
+          dismissed: true,
+          dismissedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    if (deleted.count === 0) {
+      return NextResponse.json(
+        { success: false, error: '通知不存在' },
+        { status: 404 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -42,4 +57,3 @@ export async function DELETE(
     );
   }
 }
-

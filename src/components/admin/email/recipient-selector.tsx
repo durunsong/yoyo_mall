@@ -291,9 +291,9 @@ export function EmailRecipientSelector({
         )}
 
         {mode === 'ALL' && (
-          <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50/70 p-4 text-sm text-slate-700">
+          <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-950">
             <p className="font-medium text-blue-900">当前将向全量用户发送邮件。</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-blue-800">
               系统会在发送前自动截取 {maxRecipients} 人的安全上限，如需覆盖更多收件人，请分批次发送或按条件筛选后使用批量发送。
             </p>
           </div>
@@ -302,4 +302,3 @@ export function EmailRecipientSelector({
     </Card>
   );
 }
-

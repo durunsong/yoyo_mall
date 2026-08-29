@@ -27,6 +27,8 @@ import { toast } from 'sonner';
 import { Loader2, User, Lock, Bell, Globe, Camera } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 
+export const PASSWORD_CHANGE_ENDPOINT = '/api/user/change-password';
+
 export default function AccountSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
@@ -87,11 +89,13 @@ export default function AccountSettingsPage() {
     fetchProfile();
   }, [status, session]);
 
-  // 如果未登录,跳转到登录页
-  if (status === 'unauthenticated') {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [router, status]);
+
+  if (status !== 'authenticated') return null;
 
   // 头像上传
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -203,8 +207,8 @@ export default function AccountSettingsPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/user/password', {
-        method: 'PATCH',
+      const response = await fetch(PASSWORD_CHANGE_ENDPOINT, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
@@ -232,7 +236,7 @@ export default function AccountSettingsPage() {
     }
   };
 
-  const showSkeleton = status === 'loading' || profileLoading;
+  const showSkeleton = profileLoading;
 
   const SkeletonBlock = useMemo(
     () => (
@@ -726,8 +730,6 @@ export default function AccountSettingsPage() {
     </div>
   );
 }
-
-
 
 
 

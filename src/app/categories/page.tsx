@@ -7,7 +7,7 @@ import { getSystemSettings } from '@/lib/server/system-settings';
 import { getDictionaries } from '@/lib/server/translations';
 import { createTranslator } from '@/lib/i18n/dictionary';
 
-export const revalidate = 1800;
+export const dynamic = 'force-dynamic';
 
 export default async function CategoriesPage() {
   const [categories, settings] = await Promise.all([
@@ -73,7 +73,6 @@ export default async function CategoriesPage() {
     </div>
   );
 }
-
 
 
 

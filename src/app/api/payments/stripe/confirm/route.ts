@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { confirmPayment, mapStripeStatusToOrderStatus } from '@/lib/stripe';
+import { shouldApplyInventoryTransition } from '@/lib/payments/inventory-transition';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -96,11 +98,16 @@ export async function POST(request: NextRequest) {
 
     // 使用事务更新支付和订单状态
     const result = await prisma.$transaction(async (tx) => {
-      // 更新支付状态
+      const paymentWasOpen = payment.status === 'PENDING' || payment.status === 'PROCESSING';
+      const orderWasPending = payment.order.status === 'PENDING';
       const existingMetadata = isRecord(payment.metadata) ? payment.metadata : {};
 
-      const updatedPayment = await tx.payment.update({
-        where: { id: payment.id },
+      // 只有第一笔确认请求可以从开放状态转换支付，后续请求保持幂等。
+      const transition = await tx.payment.updateMany({
+        where: {
+          id: payment.id,
+          status: { in: ['PENDING', 'PROCESSING'] },
+        },
         data: {
           status: newPaymentStatus,
           metadata: {
@@ -111,6 +118,11 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // 读取支付状态，兼容并发请求已经完成状态转换的情况。
+      const updatedPayment = await tx.payment.findUniqueOrThrow({
+        where: { id: payment.id },
+      });
+
       // 更新订单状态
       const updatedOrder = await tx.order.update({
         where: { id: payment.orderId },
@@ -118,7 +130,15 @@ export async function POST(request: NextRequest) {
       });
 
       // 如果支付成功，处理库存
-      if (stripePayment.status === 'succeeded' && payment.order.status === 'PENDING') {
+      const applyInventory =
+        transition.count > 0 &&
+        shouldApplyInventoryTransition({
+          stripeStatus: stripePayment.status,
+          paymentWasOpen,
+          orderWasPending,
+        });
+
+      if (applyInventory && stripePayment.status === 'succeeded') {
         for (const item of payment.order.items) {
           if (item.product?.trackInventory) {
             // 将预留库存转为实际减少
@@ -144,7 +164,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 如果支付失败或取消，释放预留库存
-      if (['canceled', 'failed'].includes(stripePayment.status)) {
+      if (applyInventory && ['canceled', 'failed'].includes(stripePayment.status)) {
         for (const item of payment.order.items) {
           if (item.product?.trackInventory) {
             if (item.variantId) {
@@ -167,6 +187,8 @@ export async function POST(request: NextRequest) {
       }
 
       return { updatedPayment, updatedOrder };
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     });
 
     console.log('支付状态更新成功:', {
@@ -206,6 +228,20 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('确认支付失败:', error);
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2034'
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'TRANSACTION_CONFLICT',
+          message: '支付状态刚刚发生变化，请刷新订单后重试',
+        },
+        { status: 409 },
+      );
+    }
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

@@ -68,6 +68,7 @@
     "cartItemsValue": "{{count}} 件",
     "cartTotalLabel": "总计",
     "viewCart": "查看购物车",
+    "support": "帮助与客服",
     "tooltip": {
       "remove": "删除",
       "decrease": "减少数量",
@@ -79,9 +80,7 @@
       "loginRequired": "请先登录",
       "removed": "已从购物车移除",
       "updateFailed": "更新失败，请稍后重试",
-      "deleteFailed": "删除失败，请稍后重试",
-      "discordComingSoon": "Discord 功能即将上线"
+      "deleteFailed": "删除失败，请稍后重试"
     }
   }
 }
-

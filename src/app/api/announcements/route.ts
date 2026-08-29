@@ -85,15 +85,30 @@ export async function GET(request: NextRequest) {
 
     const where = query.active === 'true' ? { isActive: true } : {};
 
-    const announcements = await prisma.announcement.findMany({
-      where,
-      orderBy: { sortOrder: 'asc' },
-    });
+    let announcements;
+    try {
+      announcements = await prisma.announcement.findMany({
+        where,
+        orderBy: { sortOrder: 'asc' },
+      });
+    } catch (error) {
+      console.warn('[announcements] Falling back to an empty public feed:', error);
+      return NextResponse.json({
+        success: true,
+        data: [],
+        config: null,
+        meta: { total: 0 },
+      });
+    }
 
     let config = null;
 
     if (query.includeConfig === 'true') {
-      config = await ensureAnnouncementConfig();
+      try {
+        config = await ensureAnnouncementConfig();
+      } catch (error) {
+        console.warn('[announcements] Falling back to default announcement config:', error);
+      }
     }
 
     return NextResponse.json({
@@ -171,5 +186,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 

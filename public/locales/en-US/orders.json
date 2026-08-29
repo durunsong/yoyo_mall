@@ -7,9 +7,12 @@
   "tabs": {
     "all": "All ({{count}})",
     "pending": "Pending Payment ({{count}})",
+    "confirmed": "Confirmed ({{count}})",
     "processing": "Processing ({{count}})",
     "shipped": "Shipped ({{count}})",
-    "delivered": "Completed ({{count}})"
+    "delivered": "Completed ({{count}})",
+    "cancelled": "Cancelled ({{count}})",
+    "refunded": "Refunded ({{count}})"
   },
   "empty": {
     "title": "No Orders Yet",
@@ -23,11 +26,50 @@
     "viewDetail": "View Details",
     "quantity": "Quantity: {{count}}"
   },
+  "summary": {
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "duty": "Duty",
+    "insurance": "Shipping insurance",
+    "discount": "Discount",
+    "total": "Total"
+  },
   "actions": {
     "payNow": "Pay Now",
     "trackShipment": "Track Shipment",
     "reviewProduct": "Review Product",
     "cancelOrder": "Cancel Order"
+  },
+  "detail": {
+    "title": "Order Details",
+    "itemsTitle": "Items",
+    "shippingTitle": "Shipping information",
+    "shipmentTitle": "Shipment",
+    "summaryTitle": "Cost breakdown",
+    "paymentStatus": "Payment status",
+    "unknownProduct": "Product unavailable",
+    "back": "Back",
+    "backToOrders": "Back to orders",
+    "retry": "Try again",
+    "loadFailed": "Couldn't load order details",
+    "loadFailedDescription": "Check your connection and try again.",
+    "payment": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+    "shipmentStatus": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "in_transit": "In transit",
+      "delivered": "Delivered",
+      "returned": "Returned"
+    }
   },
   "status": {
     "pending": "Pending Payment",
@@ -43,4 +85,3 @@
     "loadFailed": "Failed to load orders"
   }
 }
-

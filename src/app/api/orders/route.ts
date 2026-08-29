@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import {
@@ -504,6 +505,8 @@ export async function POST(request: NextRequest) {
       });
 
       return newOrder;
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     });
 
     console.log('订单创建成功:', {
@@ -523,13 +526,30 @@ export async function POST(request: NextRequest) {
         totalAmount: order.totalAmount,
         status: order.status,
         createdAt: order.createdAt,
+        subtotal: order.subtotal,
+        taxAmount: order.taxAmount,
         dutyAmount: order.dutyAmount,
         shippingAmount: order.shippingAmount,
         insuranceAmount: order.insuranceAmount,
+        discountAmount: order.discountAmount,
       },
     }, { status: 201 });
   } catch (error) {
     console.error('创建订单失败:', error);
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2034'
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'TRANSACTION_CONFLICT',
+          message: '库存或优惠券状态刚刚发生变化，请刷新后重试',
+        },
+        { status: 409 },
+      );
+    }
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

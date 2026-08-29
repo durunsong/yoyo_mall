@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { toast } from 'sonner';
+import { normalizeMoney } from '@/lib/money';
 
 interface Order {
   id: string;
@@ -47,7 +48,7 @@ interface Order {
 }
 
 // 前端展示用的订单状态列表，需与后端保持一致
-const ORDER_STATUS_LIST = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'] as const;
+const ORDER_STATUS_LIST = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'] as const;
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -62,9 +63,12 @@ export default function OrdersPage() {
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
     PENDING: 0,
+    CONFIRMED: 0,
     PROCESSING: 0,
     SHIPPED: 0,
     DELIVERED: 0,
+    CANCELLED: 0,
+    REFUNDED: 0,
   });
 
   // 检查登录状态
@@ -93,20 +97,31 @@ export default function OrdersPage() {
         const data = await response.json();
 
         if (data.success) {
-          setOrders(data.data);
+          const normalizedOrders: Order[] = (data.data ?? []).map((order: Order) => ({
+            ...order,
+            totalAmount: normalizeMoney(order.totalAmount),
+            items: order.items.map((item) => ({
+              ...item,
+              unitPrice: normalizeMoney(item.unitPrice),
+            })),
+          }));
+          setOrders(normalizedOrders);
 
           // 优先使用后端返回的统计数据，缺失时回退到前端计算
           const fallbackCounts = ORDER_STATUS_LIST.reduce<Record<string, number>>((acc, currentStatus) => {
-            acc[currentStatus] = data.data.filter((order: Order) => order.status === currentStatus).length;
+            acc[currentStatus] = normalizedOrders.filter((order) => order.status === currentStatus).length;
             return acc;
           }, {});
 
           setStatusCounts({
             all: data.counts?.all ?? data.data.length,
             PENDING: data.counts?.PENDING ?? fallbackCounts.PENDING ?? 0,
+            CONFIRMED: data.counts?.CONFIRMED ?? fallbackCounts.CONFIRMED ?? 0,
             PROCESSING: data.counts?.PROCESSING ?? fallbackCounts.PROCESSING ?? 0,
             SHIPPED: data.counts?.SHIPPED ?? fallbackCounts.SHIPPED ?? 0,
             DELIVERED: data.counts?.DELIVERED ?? fallbackCounts.DELIVERED ?? 0,
+            CANCELLED: data.counts?.CANCELLED ?? fallbackCounts.CANCELLED ?? 0,
+            REFUNDED: data.counts?.REFUNDED ?? fallbackCounts.REFUNDED ?? 0,
           });
         } else {
           toast.error(t('toast.fetchFailed'));
@@ -299,6 +314,9 @@ export default function OrdersPage() {
             <TabsTrigger value="PENDING">
               {t('tabs.pending', { count: statusCounts.PENDING })}
             </TabsTrigger>
+            <TabsTrigger value="CONFIRMED">
+              {t('tabs.confirmed', { count: statusCounts.CONFIRMED })}
+            </TabsTrigger>
             <TabsTrigger value="PROCESSING">
               {t('tabs.processing', { count: statusCounts.PROCESSING })}
             </TabsTrigger>
@@ -307,6 +325,12 @@ export default function OrdersPage() {
             </TabsTrigger>
             <TabsTrigger value="DELIVERED">
               {t('tabs.delivered', { count: statusCounts.DELIVERED })}
+            </TabsTrigger>
+            <TabsTrigger value="CANCELLED">
+              {t('tabs.cancelled', { count: statusCounts.CANCELLED })}
+            </TabsTrigger>
+            <TabsTrigger value="REFUNDED">
+              {t('tabs.refunded', { count: statusCounts.REFUNDED })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -434,23 +458,24 @@ export default function OrdersPage() {
                   {/* 订单操作按钮 */}
                   <div className="mt-4 flex gap-2">
                     {order.status === 'PENDING' && (
-                      <Button variant="outline" size="sm">
-                        {t('actions.payNow')}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/checkout?orderId=${order.id}`}>
+                          {t('actions.payNow')}
+                        </Link>
                       </Button>
                     )}
                     {order.status === 'SHIPPED' && (
-                      <Button variant="outline" size="sm">
-                        {t('actions.trackShipment')}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/account/orders/${order.id}`}>
+                          {t('actions.trackShipment')}
+                        </Link>
                       </Button>
                     )}
                     {order.status === 'DELIVERED' && (
-                      <Button variant="outline" size="sm">
-                        {t('actions.reviewProduct')}
-                      </Button>
-                    )}
-                    {order.status === 'PENDING' && (
-                      <Button variant="outline" size="sm" className="text-red-600">
-                        {t('actions.cancelOrder')}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/account/orders/${order.id}`}>
+                          {t('actions.reviewProduct')}
+                        </Link>
                       </Button>
                     )}
                   </div>

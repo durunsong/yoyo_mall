@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Bell, Package, Heart, Gift, X } from 'lucide-react';
+import { Bell, Package, Heart, Gift, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -245,7 +245,7 @@ export function UserNotifications() {
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
             <div className="py-12 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-foreground" aria-label="加载中" />
               <p className="text-sm text-gray-500 mt-2">加载中...</p>
             </div>
           ) : notifications.length === 0 ? (
@@ -337,4 +337,3 @@ export function UserNotifications() {
     </DropdownMenu>
   );
 }
-

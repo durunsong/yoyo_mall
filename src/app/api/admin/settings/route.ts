@@ -123,10 +123,11 @@ export async function PUT(request: NextRequest) {
     if (body.stripeEnabled !== undefined) updateData.stripeEnabled = body.stripeEnabled;
     if (body.stripePublicKey !== undefined) updateData.stripePublicKey = body.stripePublicKey || null;
     if (body.stripeSecretKey !== undefined) updateData.stripeSecretKey = body.stripeSecretKey || null;
-    if (body.alipayEnabled !== undefined) updateData.alipayEnabled = body.alipayEnabled;
+    // 支付宝和微信支付尚未接入完整的支付、回调与退款链路，禁止后台误启用。
+    if (body.alipayEnabled !== undefined) updateData.alipayEnabled = false;
     if (body.alipayAppId !== undefined) updateData.alipayAppId = body.alipayAppId || null;
     if (body.alipayPrivateKey !== undefined) updateData.alipayPrivateKey = body.alipayPrivateKey || null;
-    if (body.wechatPayEnabled !== undefined) updateData.wechatPayEnabled = body.wechatPayEnabled;
+    if (body.wechatPayEnabled !== undefined) updateData.wechatPayEnabled = false;
     if (body.wechatPayMchId !== undefined) updateData.wechatPayMchId = body.wechatPayMchId || null;
     if (body.wechatPayApiKey !== undefined) updateData.wechatPayApiKey = body.wechatPayApiKey || null;
     
@@ -197,4 +198,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

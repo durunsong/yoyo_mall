@@ -24,6 +24,10 @@
     "missingField": "请填写 {{field}}"
   },
   "toast": {
+    "loginRequired": "请先登录后再结算",
+    "cartEmpty": "购物车为空，请返回重新选择商品",
+    "orderFailed": "订单创建失败，请检查库存后重试",
+    "orderNotResumable": "该订单无法继续支付，请返回订单列表查看状态",
     "createPaymentFailed": "创建支付失败",
     "paymentInitFailed": "支付初始化失败",
     "paymentFailed": "支付失败",
@@ -44,6 +48,9 @@
     "successDescription": "您的订单已确认，我们将尽快为您发货。",
     "viewOrders": "查看订单详情"
   },
+  "detail": {
+    "unknownProduct": "商品信息不可用"
+  },
   "summary": {
     "title": "订单摘要",
     "itemsCount": "{{count}} 件商品",
@@ -51,6 +58,9 @@
     "subtotal": "小计",
     "shipping": "运费",
     "tax": "税费",
+    "duty": "关税",
+    "insurance": "运输保险",
+    "discount": "优惠",
     "total": "总计",
     "freeLabel": "免运费",
     "standardShipping": "标准配送",
@@ -59,4 +69,3 @@
   },
   "freeShippingNote": "满 {{amount}} 可享免运费"
 }
-

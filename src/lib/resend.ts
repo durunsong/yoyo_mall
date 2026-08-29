@@ -9,8 +9,10 @@ if (!process.env.RESEND_API_KEY) {
   console.warn('⚠️ RESEND_API_KEY 未配置，邮件功能将无法使用');
 }
 
-// 初始化 Resend 客户端
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// 配置缺失时延迟到发送动作返回错误，避免构建阶段加载 API 路由就失败。
+export const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 // 默认发件人配置
 export const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Yobuy <noreply@yoyomall.com>';
@@ -31,6 +33,13 @@ export async function sendEmail({
   text?: string;
   from?: string;
 }) {
+  if (!resend) {
+    return {
+      success: false,
+      error: '邮件服务未配置，请先设置 RESEND_API_KEY',
+    };
+  }
+
   try {
     const result = await resend.emails.send({
       from,
@@ -107,4 +116,3 @@ export async function sendBatchEmails({
     };
   }
 }
-

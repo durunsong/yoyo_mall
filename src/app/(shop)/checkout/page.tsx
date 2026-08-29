@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import {
@@ -32,7 +32,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import {
   calculateShippingAmount,
   calculateTaxAmount,
-  SHIPPING_FREE_THRESHOLD,
+  calculateCheckoutTotals,
 } from '@/lib/pricing';
 
 // Stripe Promise
@@ -51,10 +51,13 @@ enum CheckoutStep {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumeOrderId = searchParams?.get('orderId') ?? null;
   const { t } = useStaticTranslations('checkout');
   const { data: session, status } = useSession();
   const {
     items,
+    addItem,
     clearCart,
     coupon: appliedCoupon,
     clearCoupon,
@@ -65,6 +68,20 @@ export default function CheckoutPage() {
   const [shippingAddressId, setShippingAddressId] = useState<string | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);
   const [creatingOrder, setCreatingOrder] = useState(false);
+  const [creatingCheckout, setCreatingCheckout] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [resumeLoading, setResumeLoading] = useState(Boolean(resumeOrderId));
+  const [serverTotals, setServerTotals] = useState<{
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    duty: number;
+    insurance: number;
+    discount: number;
+    total: number;
+  } | null>(null);
   const [orderResult, setOrderResult] = useState<{
     id: string;
     orderNumber: string;
@@ -177,6 +194,89 @@ export default function CheckoutPage() {
     }
   };
 
+  useEffect(() => {
+    if (!resumeOrderId || status !== 'authenticated') return;
+    let active = true;
+
+    const resumePendingOrder = async () => {
+      try {
+        const response = await fetch(`/api/orders/${resumeOrderId}`, { cache: 'no-store' });
+        const payload = await response.json();
+        const pendingOrder = payload?.data;
+        if (!response.ok || !payload?.success || !pendingOrder || pendingOrder.status !== 'PENDING') {
+          throw new Error(t('toast.orderNotResumable'));
+        }
+
+        if (!active) return;
+        setPendingOrderId(pendingOrder.id);
+        setShippingAddressId(pendingOrder.shippingAddress?.id ?? null);
+        setShippingAddress({
+          firstName: pendingOrder.shippingAddress?.firstName ?? '',
+          lastName: pendingOrder.shippingAddress?.lastName ?? '',
+          email: session?.user?.email ?? '',
+          phone: pendingOrder.shippingAddress?.phone ?? '',
+          address: pendingOrder.shippingAddress?.addressLine1 ?? '',
+          city: pendingOrder.shippingAddress?.city ?? '',
+          state: pendingOrder.shippingAddress?.state ?? '',
+          postalCode: pendingOrder.shippingAddress?.postalCode ?? '',
+          country: pendingOrder.shippingAddress?.country ?? 'US',
+        });
+        clearCart();
+        pendingOrder.items?.forEach((item: any) => {
+          addItem({
+            id: item.id,
+            productId: item.productId,
+            quantity: Number(item.quantity),
+            price: Number(item.unitPrice),
+            name: item.product?.name ?? item.productSnapshot?.name ?? t('detail.unknownProduct'),
+            image: item.product?.images?.[0]?.url ?? item.productSnapshot?.image ?? '',
+            variantId: item.variantId ?? undefined,
+            attributes: item.variant?.attributes ?? undefined,
+          });
+        });
+        setServerTotals({
+          subtotal: Number(pendingOrder.subtotal),
+          shipping: Number(pendingOrder.shippingAmount),
+          tax: Number(pendingOrder.taxAmount),
+          duty: Number(pendingOrder.dutyAmount),
+          insurance: Number(pendingOrder.insuranceAmount),
+          discount: Number(pendingOrder.discountAmount),
+          total: Number(pendingOrder.totalAmount),
+        });
+
+        const intentResponse = await fetch('/api/payments/stripe/create-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: pendingOrder.id }),
+        });
+        const intentPayload = await intentResponse.json();
+        if (!intentResponse.ok || !intentPayload?.success || !intentPayload.data?.clientSecret) {
+          throw new Error(intentPayload?.message || t('toast.createPaymentFailed'));
+        }
+
+        if (active) {
+          setClientSecret(intentPayload.data.clientSecret);
+          setPaymentId(intentPayload.data.paymentId ?? null);
+          setPaymentIntentId(intentPayload.data.paymentIntentId ?? null);
+          setCurrentStep(CheckoutStep.PAYMENT);
+        }
+      } catch (error) {
+        console.error('Failed to resume pending order:', error);
+        if (active) {
+          toast.error(error instanceof Error ? error.message : t('toast.orderNotResumable'));
+          router.push('/account/orders');
+        }
+      } finally {
+        if (active) setResumeLoading(false);
+      }
+    };
+
+    resumePendingOrder();
+    return () => {
+      active = false;
+    };
+  }, [addItem, clearCart, resumeOrderId, router, session?.user?.email, status, t]);
+
   // 计算总价
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -184,7 +284,18 @@ export default function CheckoutPage() {
   );
   const shipping = calculateShippingAmount(subtotal);
   const tax = calculateTaxAmount(subtotal);
-  const total = subtotal + shipping + tax;
+  const totals = calculateCheckoutTotals({
+    subtotal,
+    shipping,
+    tax,
+    discount: appliedCoupon?.discount,
+  });
+  const displayedTotals = serverTotals ?? {
+    ...totals,
+    duty: 0,
+    insurance: 0,
+  };
+  const { discount, total } = displayedTotals;
 
   // 验证地址
   const validateAddress = () => {
@@ -201,6 +312,7 @@ export default function CheckoutPage() {
 
   // 进入支付步骤
   const handleProceedToPayment = async () => {
+    if (creatingCheckout) return;
     if (!validateAddress()) return;
 
     if (!session?.user) {
@@ -209,69 +321,96 @@ export default function CheckoutPage() {
       return;
     }
 
+    setCreatingCheckout(true);
     try {
-      await ensureShippingAddressId();
-      // 创建支付意图
+      let orderId = pendingOrderId;
+      if (!orderId) {
+        const ensuredAddressId = await ensureShippingAddressId();
+        const cartResponse = await fetch('/api/cart');
+        const cartData = await cartResponse.json();
+        if (!cartResponse.ok || !cartData.success || !cartData.data?.items?.length) {
+          throw new Error(t('toast.cartEmpty'));
+        }
+
+        const orderResponse = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: cartData.data.items.map((item: any) => ({
+              productId: item.productId,
+              variantId: item.variantId ?? undefined,
+              quantity: item.quantity,
+              unitPrice: Number(item.price),
+            })),
+            shippingAddressId: ensuredAddressId,
+            paymentMethod: 'CREDIT_CARD',
+            couponCode: appliedCoupon?.code,
+          }),
+        });
+
+        const orderData = await orderResponse.json();
+        if (!orderResponse.ok || !orderData.success || !orderData.data?.id) {
+          throw new Error(orderData.message || t('toast.orderFailed'));
+        }
+
+        orderId = orderData.data.id;
+        setPendingOrderId(orderId);
+        setServerTotals({
+          subtotal: Number(orderData.data.subtotal ?? subtotal),
+          shipping: Number(orderData.data.shippingAmount ?? shipping),
+          tax: Number(orderData.data.taxAmount ?? tax),
+          duty: Number(orderData.data.dutyAmount ?? 0),
+          insurance: Number(orderData.data.insuranceAmount ?? 0),
+          discount: Number(orderData.data.discountAmount ?? appliedCoupon?.discount ?? 0),
+          total: Number(orderData.data.totalAmount ?? total),
+        });
+      }
+
       const response = await fetch('/api/payments/stripe/create-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(total * 100), // 转换为分
-          currency: 'usd',
-        }),
+        body: JSON.stringify({ orderId }),
       });
 
       const data = await response.json();
       
-      if (data.success) {
-        setClientSecret(data.clientSecret);
+      if (response.ok && data.success && data.data?.clientSecret) {
+        setClientSecret(data.data.clientSecret);
+        setPaymentId(data.data.paymentId ?? null);
+        setPaymentIntentId(data.data.paymentIntentId ?? null);
         setCurrentStep(CheckoutStep.PAYMENT);
       } else {
-        toast.error(t('toast.createPaymentFailed'));
+        throw new Error(data.message || t('toast.createPaymentFailed'));
       }
     } catch (error) {
       console.error('Payment intent error:', error);
       toast.error(
         error instanceof Error ? error.message : t('toast.paymentInitFailed'),
       );
+    } finally {
+      setCreatingCheckout(false);
     }
   };
 
   const handlePaymentSuccess = async () => {
+    if (creatingOrder || !pendingOrderId || !paymentId || !paymentIntentId) return;
     try {
       setCreatingOrder(true);
-      const ensuredAddressId = await ensureShippingAddressId();
-
-      const cartResponse = await fetch('/api/cart');
-      const cartData = await cartResponse.json();
-
-      if (!cartResponse.ok || !cartData.success || !cartData.data?.items?.length) {
-        throw new Error(t('toast.cartEmpty'));
-      }
-
-      const orderResponse = await fetch('/api/orders', {
+      const confirmationResponse = await fetch('/api/payments/stripe/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cartData.data.items.map((item: any) => ({
-            productId: item.productId,
-            variantId: item.variantId ?? undefined,
-            quantity: item.quantity,
-            unitPrice: Number(item.price),
-          })),
-          shippingAddressId: ensuredAddressId,
-          paymentMethod: 'CREDIT_CARD',
-          couponCode: appliedCoupon?.code,
+          paymentIntentId,
+          paymentId,
         }),
       });
 
-      const orderResult = await orderResponse.json();
-
-      if (!orderResponse.ok || !orderResult.success) {
-        throw new Error(orderResult.message || t('toast.orderFailed'));
+      const confirmationData = await confirmationResponse.json();
+      if (!confirmationResponse.ok || !confirmationData.success) {
+        throw new Error(confirmationData.message || t('toast.orderFailed'));
       }
 
-      setOrderResult(orderResult.data);
+      setOrderResult(confirmationData.data.order);
       setCurrentStep(CheckoutStep.REVIEW);
       clearCart();
       clearCoupon();
@@ -292,10 +431,10 @@ export default function CheckoutPage() {
 
   // 如果购物车为空，跳转回购物车
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !resumeLoading && !resumeOrderId) {
       router.push('/cart');
     }
-  }, [items, router]);
+  }, [items, resumeLoading, resumeOrderId, router]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -479,9 +618,9 @@ export default function CheckoutPage() {
                     className="w-full"
                     size="lg"
                     onClick={handleProceedToPayment}
-                    disabled={savingAddress}
+                    disabled={savingAddress || creatingCheckout}
                   >
-                    {savingAddress ? (
+                    {savingAddress || creatingCheckout ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         {t('actions.processing')}
@@ -603,27 +742,45 @@ export default function CheckoutPage() {
 
                   {/* 价格明细 */}
                   <div className="space-y-2">
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-emerald-700">
+                        <span>{t('summary.discount')}</span>
+                        <span>-{currencySymbol}{discount.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{t('summary.subtotal')}</span>
                       <span>
                         {currencySymbol}
-                        {subtotal.toFixed(2)}
+                        {displayedTotals.subtotal.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{t('summary.shipping')}</span>
                       <span>
                         {currencySymbol}
-                        {shipping.toFixed(2)}
+                        {displayedTotals.shipping.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{t('summary.tax')}</span>
                       <span>
                         {currencySymbol}
-                        {tax.toFixed(2)}
+                        {displayedTotals.tax.toFixed(2)}
                       </span>
                     </div>
+                    {displayedTotals.duty > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">{t('summary.duty')}</span>
+                        <span>{currencySymbol}{displayedTotals.duty.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {displayedTotals.insurance > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">{t('summary.insurance')}</span>
+                        <span>{currencySymbol}{displayedTotals.insurance.toFixed(2)}</span>
+                      </div>
+                    )}
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>{t('summary.total')}</span>

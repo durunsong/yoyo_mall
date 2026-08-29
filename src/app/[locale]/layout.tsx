@@ -5,15 +5,15 @@
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: Promise<unknown>;
 }
 
 export default async function LocaleLayout({
   children,
   params,
 }: LocaleLayoutProps) {
-  // 等待 params（Next.js 15 要求）
-  const { locale } = await params;
+  // 动态段由 Next 传入，当前布局只负责渲染子页面。
+  await params;
 
   // 我们的 i18n 系统在客户端组件中处理语言切换
   // 这里只需要渲染子组件

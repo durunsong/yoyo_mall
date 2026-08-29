@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         data: {
           clientSecret: existingMetadata?.clientSecret,
           paymentId: existingPayment.id,
+          paymentIntentId: existingPayment.providerTransactionId,
           amount: Number(order.totalAmount),
           currency: order.currency,
         },

@@ -12,7 +12,7 @@ interface HomePageProps {
   params: LocaleParams | Promise<LocaleParams>;
 }
 
-export const revalidate = 600;
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage({ params }: HomePageProps) {
   const resolvedParams = await params;
@@ -41,5 +41,4 @@ export default async function HomePage({ params }: HomePageProps) {
     />
   );
 }
-
 

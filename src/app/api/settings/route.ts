@@ -10,6 +10,20 @@ import {
   normalizeProductDetailConfig,
 } from '@/lib/config/product-detail';
 
+const defaultPublicSettings = {
+  siteName: 'Yobuy',
+  siteDescription: '您的跨境电商平台',
+  siteUrl: 'https://yoyomall.com',
+  contactEmail: 'support@yoyomall.com',
+  contactPhone: '+86 400-123-4567',
+  defaultLanguage: 'en-US',
+  defaultCurrency: 'CNY',
+  stripeEnabled: false,
+  alipayEnabled: false,
+  wechatPayEnabled: false,
+  productDetailConfig: defaultProductDetailConfig,
+};
+
 /**
  * GET /api/settings
  * 获取公开的系统设置（不包含敏感信息）
@@ -30,6 +44,7 @@ export async function GET(request: NextRequest) {
         defaultCurrency: true,
         // 支付方式启用状态（不包含密钥）
         stripeEnabled: true,
+        // 支付宝和微信支付尚未接入完整链路，历史值不对外暴露为可用。
         alipayEnabled: true,
         wechatPayEnabled: true,
         productDetailConfig: true,
@@ -40,19 +55,7 @@ export async function GET(request: NextRequest) {
     if (!settings) {
       return NextResponse.json({
         success: true,
-        data: {
-          siteName: 'Yobuy',
-          siteDescription: '您的跨境电商平台',
-          siteUrl: 'https://yoyomall.com',
-          contactEmail: 'support@yoyomall.com',
-          contactPhone: '+86 400-123-4567',
-          defaultLanguage: 'en-US',
-          defaultCurrency: 'CNY',
-          stripeEnabled: false,
-          alipayEnabled: false,
-          wechatPayEnabled: false,
-          productDetailConfig: defaultProductDetailConfig,
-        },
+        data: defaultPublicSettings,
       });
     }
 
@@ -62,19 +65,16 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         ...settings,
+        alipayEnabled: false,
+        wechatPayEnabled: false,
         productDetailConfig: normalizedConfig,
       },
     });
   } catch (error: any) {
-    console.error('获取系统设置失败:', error);
-    
-    return NextResponse.json(
-      {
-        success: false,
-        error: '获取系统设置失败',
-      },
-      { status: 500 },
-    );
+    console.warn('[settings] Falling back to default public settings:', error);
+    return NextResponse.json({
+      success: true,
+      data: defaultPublicSettings,
+    });
   }
 }
-

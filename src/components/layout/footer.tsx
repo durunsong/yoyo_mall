@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { usePathname } from 'next/navigation';
+import { filterUsableSocialLinks } from '@/lib/footer/social';
 
 // Footer配置类型
 interface FooterLink {
@@ -51,7 +52,7 @@ interface FooterContact {
 }
 
 interface FooterSocial {
-  id: string;
+  id?: string;
   name: string;
   icon: string;
   href: string;
@@ -142,6 +143,12 @@ export function Footer() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const socialLinks = filterUsableSocialLinks(
+    configLoaded && footerConfig?.socials && footerConfig.socials.length > 0
+      ? footerConfig.socials
+      : defaultSocialLinks,
+  );
 
   // 加载Footer配置
   useEffect(() => {
@@ -237,7 +244,7 @@ export function Footer() {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-r-lg bg-white px-8 py-3 font-semibold text-blue-600 transition-all hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="rounded-r-lg bg-white px-8 py-3 font-semibold text-blue-600 transition-all hover:bg-blue-50 disabled:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
                   >
                     {isSubmitting
                       ? t('footer.newsletter.buttonLoading')
@@ -361,29 +368,28 @@ export function Footer() {
             </div>
 
             {/* Social Links - 从数据库加载或使用默认配置 */}
-            <div className="flex items-center space-x-4">
-              <span className="hidden text-sm text-gray-300 md:inline">
-                {t('footer.followUs')}:
-              </span>
-              {(configLoaded && footerConfig?.socials && footerConfig.socials.length > 0
-                ? footerConfig.socials
-                : defaultSocialLinks
-              ).map((social) => {
-                const Icon = iconMap[social.icon] || Mail;
-                return (
-                  <Link
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`text-gray-300 transition-colors ${social.color || 'hover:text-white'}`}
-                    aria-label={social.name}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </Link>
-                );
-              })}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex items-center space-x-4">
+                <span className="hidden text-sm text-gray-300 md:inline">
+                  {t('footer.followUs')}:
+                </span>
+                {socialLinks.map((social) => {
+                  const Icon = iconMap[social.icon] || Mail;
+                  return (
+                    <Link
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`text-gray-300 transition-colors ${social.color || 'hover:text-white'}`}
+                      aria-label={social.name}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -7,13 +7,14 @@ import { getDictionaries } from '@/lib/server/translations';
 import { auth } from '@/lib/auth';
 
 interface ProductDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const product = await getProductDetail(params.id);
+  const { id } = await params;
+  const product = await getProductDetail(id);
 
   if (!product) {
     notFound();
@@ -32,7 +33,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         })
       : [];
 
-  const headersList = headers();
+  const headersList = await headers();
   const protocol = headersList.get('x-forwarded-proto') ?? 'http';
   const host =
     headersList.get('host') ??
@@ -55,5 +56,3 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     />
   );
 }
-
-

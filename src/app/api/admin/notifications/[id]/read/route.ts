@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -24,8 +25,17 @@ export async function POST(
       );
     }
 
-    // TODO: 在实际应用中,应该在数据库中更新通知状态
-    // 当前为简化实现,直接返回成功
+    const updated = await prisma.userNotification.updateMany({
+      where: { id: notificationId, userId: session.user.id, read: false },
+      data: { read: true, readAt: new Date() },
+    });
+
+    if (updated.count === 0) {
+      return NextResponse.json(
+        { success: false, error: '通知不存在' },
+        { status: 404 },
+      );
+    }
     
     return NextResponse.json({
       success: true,
@@ -40,6 +50,5 @@ export async function POST(
     );
   }
 }
-
 
 

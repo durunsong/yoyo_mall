@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AdminEmailSendType, AdminEmailStatus } from '@prisma/client';
+import { AdminEmailSendType, AdminEmailStatus, Prisma, UserRole } from '@prisma/client';
 import sanitizeHtml from 'sanitize-html';
 import { z } from 'zod';
 
@@ -67,11 +67,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const whereClause =
+    const whereClause: Prisma.UserWhereInput =
       sendType === 'ALL'
         ? {
             role: {
-              in: ['CUSTOMER', 'GUEST'],
+              in: [UserRole.CUSTOMER],
             },
           }
         : {
@@ -256,4 +256,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

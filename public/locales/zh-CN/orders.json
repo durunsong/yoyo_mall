@@ -7,9 +7,12 @@
   "tabs": {
     "all": "全部 ({{count}})",
     "pending": "待付款 ({{count}})",
+    "confirmed": "已确认 ({{count}})",
     "processing": "处理中 ({{count}})",
     "shipped": "已发货 ({{count}})",
-    "delivered": "已完成 ({{count}})"
+    "delivered": "已完成 ({{count}})",
+    "cancelled": "已取消 ({{count}})",
+    "refunded": "已退款 ({{count}})"
   },
   "empty": {
     "title": "暂无订单",
@@ -23,11 +26,50 @@
     "viewDetail": "查看详情",
     "quantity": "数量: {{count}}"
   },
+  "summary": {
+    "subtotal": "小计",
+    "shipping": "运费",
+    "tax": "税费",
+    "duty": "关税",
+    "insurance": "运输保险",
+    "discount": "优惠",
+    "total": "总计"
+  },
   "actions": {
     "payNow": "立即付款",
     "trackShipment": "查看物流",
     "reviewProduct": "评价商品",
     "cancelOrder": "取消订单"
+  },
+  "detail": {
+    "title": "订单详情",
+    "itemsTitle": "商品清单",
+    "shippingTitle": "收货信息",
+    "shipmentTitle": "物流信息",
+    "summaryTitle": "费用明细",
+    "paymentStatus": "支付状态",
+    "unknownProduct": "商品信息不可用",
+    "back": "返回",
+    "backToOrders": "返回订单列表",
+    "retry": "重新加载",
+    "loadFailed": "订单详情加载失败",
+    "loadFailedDescription": "请检查网络连接后重试。",
+    "payment": {
+      "pending": "待处理",
+      "processing": "处理中",
+      "completed": "已完成",
+      "failed": "失败",
+      "cancelled": "已取消",
+      "refunded": "已退款"
+    },
+    "shipmentStatus": {
+      "pending": "待处理",
+      "processing": "处理中",
+      "shipped": "已发货",
+      "in_transit": "运输中",
+      "delivered": "已送达",
+      "returned": "已退回"
+    }
   },
   "status": {
     "pending": "待付款",
@@ -43,4 +85,3 @@
     "loadFailed": "加载订单失败"
   }
 }
-

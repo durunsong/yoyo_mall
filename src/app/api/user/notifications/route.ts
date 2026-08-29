@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { mergeNotificationReadStates } from '@/lib/notifications/read-state';
 
 // 通知类型
 type NotificationType = 'order' | 'system' | 'promotion' | 'wishlist';
@@ -15,11 +16,85 @@ type NotificationType = 'order' | 'system' | 'promotion' | 'wishlist';
 interface Notification {
   id: string;
   type: NotificationType;
+  category: NotificationCategory;
   title: string;
   message: string;
   read: boolean;
   link?: string;
   createdAt: Date;
+}
+
+type NotificationCategory =
+  | 'ORDER_PLACED'
+  | 'ORDER_CONFIRMED'
+  | 'ORDER_PROCESSING'
+  | 'ORDER_SHIPPED'
+  | 'ORDER_DELIVERED'
+  | 'ORDER_CANCELLED'
+  | 'ORDER_REFUNDED'
+  | 'ACCOUNT_WELCOME'
+  | 'ACCOUNT_SECURITY'
+  | 'PROMOTION_START';
+
+const notificationTypes: Record<NotificationType, 'ORDER' | 'SYSTEM' | 'PROMOTION'> = {
+  order: 'ORDER',
+  system: 'SYSTEM',
+  promotion: 'PROMOTION',
+  wishlist: 'PROMOTION',
+};
+
+async function persistNotifications(userId: string, notifications: Notification[]) {
+  if (notifications.length === 0) return notifications;
+
+  await Promise.all(
+    notifications.map((notification) =>
+      prisma.userNotification.upsert({
+        where: { id: notification.id },
+        create: {
+          id: notification.id,
+          userId,
+          type: notificationTypes[notification.type],
+          category: notification.category,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          read: notification.read,
+        },
+        update: {
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          category: notification.category,
+        },
+      }),
+    ),
+  );
+
+  const savedStates = await prisma.userNotification.findMany({
+    where: {
+      userId,
+      id: { in: notifications.map((notification) => notification.id) },
+    },
+    select: { id: true, read: true, metadata: true },
+  });
+
+  return mergeNotificationReadStates(
+    notifications,
+    new Map(
+      savedStates.map((state) => [
+        state.id,
+        {
+          read: state.read,
+          dismissed: Boolean(
+            state.metadata &&
+              typeof state.metadata === 'object' &&
+              !Array.isArray(state.metadata) &&
+              (state.metadata as { dismissed?: unknown }).dismissed === true,
+          ),
+        },
+      ]),
+    ),
+  );
 }
 
 /**
@@ -48,8 +123,9 @@ export async function GET(request: NextRequest) {
     if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
       // 为管理员生成系统通知示例
       notifications.push({
-        id: `admin-system-1`,
+        id: `admin-system-${userId}`,
         type: 'system',
+        category: 'ACCOUNT_WELCOME',
         title: '欢迎使用管理系统',
         message: '您已成功登录管理系统，可以开始管理您的商城了',
         read: false,
@@ -69,8 +145,9 @@ export async function GET(request: NextRequest) {
 
       if (newOrdersCount > 0) {
         notifications.push({
-          id: `admin-orders-${newOrdersCount}`,
+          id: `admin-orders-${userId}-${newOrdersCount}`,
           type: 'system',
+          category: 'ORDER_PLACED',
           title: '新订单提醒',
           message: `您有 ${newOrdersCount} 个新订单待处理`,
           read: false,
@@ -81,8 +158,9 @@ export async function GET(request: NextRequest) {
 
       // 添加促销通知示例
       notifications.push({
-        id: `admin-promotion-1`,
+        id: `admin-promotion-${userId}`,
         type: 'promotion',
+        category: 'PROMOTION_START',
         title: '限时优惠活动',
         message: '全场商品8折优惠，仅限今天！',
         read: false,
@@ -138,8 +216,9 @@ export async function GET(request: NextRequest) {
       }
 
       notifications.push({
-        id: `order-${order.id}`,
+        id: `user-${userId}-order-${order.id}`,
         type,
+        category: `ORDER_${order.status}` as NotificationCategory,
         title,
         message,
         read: false, // 可以根据需要从数据库读取已读状态
@@ -148,27 +227,7 @@ export async function GET(request: NextRequest) {
       });
       });
 
-      // 2. 获取心愿单商品降价通知（示例）
-    const wishlistItems = await prisma.wishlistItem.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-          },
-        },
-      },
-      take: 5,
-    });
-
-      // 这里可以添加价格变化检测逻辑
-      // 暂时跳过，因为需要价格历史记录
-
-      // 3. 系统通知（账户安全提醒等）
+      // 系统通知（账户安全提醒等）
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -185,6 +244,7 @@ export async function GET(request: NextRequest) {
           notifications.push({
             id: `system-password-${userId}`,
             type: 'system',
+            category: 'ACCOUNT_SECURITY',
             title: '账户安全提醒',
             message: '您的密码已超过90天未更改，建议定期更改密码',
             read: false,
@@ -195,16 +255,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const persistedNotifications = await persistNotifications(userId, notifications);
+
     // 按时间排序
-    notifications.sort(
+    persistedNotifications.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
 
     // 应用筛选
     const filteredNotifications =
       filter === 'unread'
-        ? notifications.filter((n) => !n.read)
-        : notifications;
+        ? persistedNotifications.filter((n) => !n.read)
+        : persistedNotifications;
 
     return NextResponse.json({
       success: true,
@@ -212,8 +274,8 @@ export async function GET(request: NextRequest) {
         ...n,
         createdAt: n.createdAt.toISOString(), // 序列化为ISO字符串
       })),
-      total: notifications.length,
-      unreadCount: notifications.filter((n) => !n.read).length,
+      total: persistedNotifications.length,
+      unreadCount: persistedNotifications.filter((n) => !n.read).length,
     });
   } catch (error) {
     console.error('获取通知失败:', error);
@@ -238,12 +300,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: 在实际应用中，应该在数据库中更新通知状态
-    // 当前为简化实现，直接返回成功
+    const updated = await prisma.userNotification.updateMany({
+      where: { userId: session.user.id, read: false },
+      data: { read: true, readAt: new Date() },
+    });
 
     return NextResponse.json({
       success: true,
       message: '已标记所有通知为已读',
+      count: updated.count,
     });
   } catch (error) {
     console.error('标记已读失败:', error);
@@ -253,4 +318,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

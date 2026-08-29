@@ -1,19 +1,6 @@
-/**
- * Next.js App组件
- * 配置next-i18next
- */
-
 import type { AppProps } from 'next/app';
-import { appWithTranslation } from 'next-i18next';
-import { RootProviders } from '@/components/providers/root-providers';
-import '../app/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <RootProviders>
-      <Component {...pageProps} />
-    </RootProviders>
-  );
+/** Pages Router 兼容入口；业务页面统一使用 App Router。 */
+export default function LegacyApp({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />;
 }
-
-export default appWithTranslation(MyApp);

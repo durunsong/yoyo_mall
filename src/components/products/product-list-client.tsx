@@ -19,6 +19,8 @@ import { createTranslator, type TranslationDictionary } from '@/lib/i18n/diction
 import type { HomepageProduct } from '@/types/product';
 import type { CategorySummary } from '@/types/category';
 import type { ProductListPagination, ProductListQuery } from '@/lib/server/products';
+import { buildProductQueryString } from '@/lib/products/query';
+import { addProductToServerCart } from '@/lib/cart/client';
 
 interface ProductsPageClientProps {
   initialProducts: HomepageProduct[];
@@ -28,7 +30,7 @@ interface ProductsPageClientProps {
   translations: TranslationDictionary;
 }
 
-const DEFAULT_LIMIT = 12;
+const DEFAULT_LIMIT = 10;
 
 export function ProductsPageClient({
   initialProducts,
@@ -39,13 +41,13 @@ export function ProductsPageClient({
 }: ProductsPageClientProps) {
   const t = useMemo(() => createTranslator(translations), [translations]);
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/products';
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const { data: session } = useSession();
   const wishlistStore = useWishlistStore();
   const { openModal } = useAuthModal();
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
 
   const [keyword, setKeyword] = useState(initialQuery.search ?? '');
   const [activeCategory, setActiveCategory] = useState(initialQuery.category ?? 'all');
@@ -56,6 +58,7 @@ export function ProductsPageClient({
   );
   const [currentPage, setCurrentPage] = useState(initialQuery.page ?? 1);
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const [cartLoadingId, setCartLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     setKeyword(initialQuery.search ?? '');
@@ -68,54 +71,15 @@ export function ProductsPageClient({
     setCurrentPage(initialQuery.page ?? 1);
   }, [initialQuery.search, initialQuery.category, initialQuery.sortBy, initialQuery.sortOrder, initialQuery.page]);
 
-  const buildQueryString = (overrides: Partial<ProductListQuery>) => {
-    const params = new URLSearchParams(searchParams?.toString() ?? '');
-
-    const nextSearch = overrides.search !== undefined ? overrides.search : initialQuery.search ?? '';
-    if (nextSearch && nextSearch.length > 0) {
-      params.set('search', nextSearch);
-    } else {
-      params.delete('search');
-    }
-
-    const nextCategory = overrides.category ?? initialQuery.category ?? 'all';
-    if (nextCategory && nextCategory !== 'all') {
-      params.set('category', nextCategory);
-    } else {
-      params.delete('category');
-    }
-
-    const nextSortBy = overrides.sortBy ?? initialQuery.sortBy;
-    const nextSortOrder = overrides.sortOrder ?? initialQuery.sortOrder;
-    if (nextSortBy && nextSortOrder && !(nextSortBy === 'createdAt' && nextSortOrder === 'desc')) {
-      params.set('sortBy', nextSortBy);
-      params.set('sortOrder', nextSortOrder);
-    } else {
-      params.delete('sortBy');
-      params.delete('sortOrder');
-    }
-
-    const nextPage = overrides.page ?? initialQuery.page ?? 1;
-    if (nextPage > 1) {
-      params.set('page', String(nextPage));
-    } else {
-      params.delete('page');
-    }
-
-    const nextLimit = overrides.limit ?? initialQuery.limit ?? DEFAULT_LIMIT;
-    if (nextLimit !== DEFAULT_LIMIT) {
-      params.set('limit', String(nextLimit));
-    } else {
-      params.delete('limit');
-    }
-
-    const queryString = params.toString();
-    return queryString ? `${pathname}?${queryString}` : pathname;
-  };
-
   const navigateWithQuery = (overrides: Partial<ProductListQuery>) => {
     startTransition(() => {
-      router.push(buildQueryString(overrides));
+      router.push(
+        buildProductQueryString({
+          pathname,
+          currentSearch: searchParams?.toString(),
+          overrides,
+        }),
+      );
     });
   };
 
@@ -144,6 +108,14 @@ export function ProductsPageClient({
     navigateWithQuery({ sortBy: sortBy as ProductListQuery['sortBy'], sortOrder: sortOrder as ProductListQuery['sortOrder'], page: 1 });
   };
 
+  const handleResetFilters = () => {
+    setKeyword('');
+    setActiveCategory('all');
+    setSort('default');
+    setCurrentPage(1);
+    startTransition(() => router.push(pathname));
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     navigateWithQuery({ page });
@@ -153,23 +125,19 @@ export function ProductsPageClient({
   };
 
   const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
+    if (cartLoadingId) return;
     if (!session?.user) {
       openModal('login');
       toast.info(t('toast.loginRequired'));
       return;
     }
 
+    setCartLoadingId(product.id);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id, quantity: 1 }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
+      const serverItem = await addProductToServerCart(product.id) as { id?: string } | undefined;
+      if (serverItem) {
         addItem({
+          id: serverItem.id,
           productId: product.id,
           quantity: 1,
           price: product.price,
@@ -177,12 +145,15 @@ export function ProductsPageClient({
           image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
         toast.success(t('toast.addSuccess'));
+        openCart();
       } else {
-        toast.error(data.message || t('toast.addFailed'));
+        toast.error(t('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
       toast.error(t('toast.networkError'));
+    } finally {
+      setCartLoadingId(null);
     }
   };
 
@@ -315,17 +286,35 @@ export function ProductsPageClient({
                 {category.name}
               </Button>
             ))}
+            {(keyword || activeCategory !== 'all' || sort !== 'default') && (
+              <Button variant="ghost" size="sm" onClick={handleResetFilters} disabled={isPending}>
+                {t('resetFilters') || 'Reset filters'}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {initialPagination && (
-        <div className="mb-4 text-sm text-muted-foreground">
+        <div className="mb-4 flex items-center justify-between gap-3 text-sm text-muted-foreground">
           {t('totalProducts', { count: initialPagination.total })}
+          {isPending && <span role="status">{t('loading') || 'Loading...'}</span>}
         </div>
       )}
 
-      {initialProducts.length > 0 ? (
+      {isPending ? (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" aria-hidden="true">
+          {Array.from({ length: effectiveLimit }).map((_, index) => (
+            <div key={index} className="overflow-hidden rounded-lg border bg-card">
+              <div className="aspect-square animate-pulse bg-muted" />
+              <div className="space-y-3 p-4">
+                <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+                <div className="h-6 w-2/5 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : initialProducts.length > 0 ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {initialProducts.map((product) => (
@@ -336,6 +325,7 @@ export function ProductsPageClient({
                 onAddToWishlist={handleToggleWishlist}
                 isWishlisted={wishlistStore.items.some((item) => item.productId === product.id)}
                 wishlistLoading={wishlistLoadingId === product.id}
+                addToCartLoading={cartLoadingId === product.id}
               />
             ))}
           </div>
@@ -369,5 +359,3 @@ export function ProductsPageClient({
     </div>
   );
 }
-
-

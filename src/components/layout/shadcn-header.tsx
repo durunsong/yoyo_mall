@@ -9,7 +9,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, User, Menu, Bell, ShoppingCart, Heart } from 'lucide-react';
+import { Search, User, Menu, Bell, ShoppingCart, Heart, LifeBuoy } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
@@ -50,6 +50,7 @@ import { useWishlistStore } from '@/store/wishlist-store';
 import { toast } from 'sonner';
 import { TawkToAPI } from '@/components/chat/tawk-to-widget';
 import { MessageCircle } from 'lucide-react';
+import { SUPPORT_HREF } from '@/lib/navigation/support';
 
 // 导航菜单配置（去掉 Home，Logo 已可回到首页）
 const getNavItems = (t: (key: string) => string) => [
@@ -72,7 +73,7 @@ export function ShadcnHeader() {
   const { t: tCommon } = useStaticTranslations('common');
 
   // 获取购物车和心愿单数据
-  const { items: cartItems } = useCartStore();
+  const { items: cartItems, openCart } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
   
   // 计算购物车商品总数量
@@ -90,11 +91,6 @@ export function ShadcnHeader() {
       return;
     }
     router.push('/account/wishlist');
-  };
-
-  // 处理Discord点击
-  const handleDiscordClick = () => {
-    toast.info('Discord功能即将上线，敬请期待！');
   };
 
   // 处理客服点击
@@ -184,24 +180,23 @@ export function ShadcnHeader() {
                 <Search className="h-4 w-4" />
               </Button>
 
-              {/* 购物车按钮 - 在移动端显示 */}
+              {/* 购物车按钮 */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative md:hidden"
-                asChild
+                className="relative"
+                onClick={openCart}
+                aria-label="打开购物车"
               >
-                <Link href="/cart">
-                  <ShoppingCart className="h-4 w-4" />
-                  {cartCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-1 -right-1 h-4 min-w-4 justify-center p-0 text-[10px]"
-                    >
-                      {cartCount > 99 ? '99+' : cartCount}
-                    </Badge>
-                  )}
-                </Link>
+                <ShoppingCart className="h-4 w-4" />
+                {cartCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -right-1 -top-1 h-4 min-w-4 justify-center p-0 text-[10px]"
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </Badge>
+                )}
               </Button>
 
               {/* 心愿单按钮 - 在移动端显示 */}
@@ -243,7 +238,6 @@ export function ShadcnHeader() {
                     >
                       <Avatar className="mr-2 h-6 w-6">
                         <AvatarImage
-                          key={(session.user as any).avatar || (session.user as any).image || Date.now()}
                           src={(session.user as any).avatar || (session.user as any).image || '/avatars/default-avatar.svg'}
                           alt={session.user.name || 'User Avatar'}
                         />
@@ -287,7 +281,7 @@ export function ShadcnHeader() {
                         className="relative flex-1 justify-start"
                         onClick={() => {
                           setMobileMenuOpen(false);
-                          router.push('/cart');
+                          openCart();
                         }}
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
@@ -363,7 +357,7 @@ export function ShadcnHeader() {
 
                     <Separator />
 
-                    {/* 客服、Discord 和语言切换 */}
+                    {/* 客服、帮助中心和语言切换 */}
                     <div className="space-y-2">
                       {/* 在线客服按钮 */}
                       <Button
@@ -378,19 +372,16 @@ export function ShadcnHeader() {
                         在线客服
                       </Button>
 
-                      {/* Discord按钮 */}
+                      {/* 帮助与客服 */}
                       <Button
                         variant="outline"
                         className="w-full justify-start"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          handleDiscordClick();
-                        }}
+                        asChild
                       >
-                        <svg className="mr-2 h-4 w-4 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
-                        </svg>
-                        Discord
+                        <Link href={SUPPORT_HREF} onClick={() => setMobileMenuOpen(false)}>
+                          <LifeBuoy className="mr-2 h-4 w-4 text-blue-600" />
+                          {tNav('support')}
+                        </Link>
                       </Button>
 
                       {/* 语言切换 */}
@@ -410,7 +401,6 @@ export function ShadcnHeader() {
                           <div className="flex items-center gap-3 px-3">
                             <Avatar className="h-8 w-8">
                               <AvatarImage 
-                                key={(session.user as any).avatar || (session.user as any).image || Date.now()}
                                 src={(session.user as any).avatar || (session.user as any).image || '/avatars/default-avatar.svg'} 
                               />
                               <AvatarFallback>{(session.user?.name || 'U').slice(0, 1)}</AvatarFallback>

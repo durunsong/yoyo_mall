@@ -962,19 +962,14 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>支付宝</CardTitle>
-                      <CardDescription>配置支付宝支付</CardDescription>
+                      <CardDescription>暂未接入支付链路</CardDescription>
                     </div>
-                    <Switch
-                      checked={paymentSettings.alipayEnabled}
-                      onCheckedChange={(checked) =>
-                        setPaymentSettings({ ...paymentSettings, alipayEnabled: checked })
-                      }
-                    />
+                    <Switch checked={false} disabled aria-label="支付宝支付暂未接入" />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-500">
-                    支付宝配置功能即将推出...
+                    当前仅支持 Stripe。完成支付、回调和退款链路后再开放支付宝配置。
                   </p>
                 </CardContent>
               </Card>
@@ -985,22 +980,14 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>微信支付</CardTitle>
-                      <CardDescription>配置微信支付</CardDescription>
+                      <CardDescription>暂未接入支付链路</CardDescription>
                     </div>
-                    <Switch
-                      checked={paymentSettings.wechatPayEnabled}
-                      onCheckedChange={(checked) =>
-                        setPaymentSettings({
-                          ...paymentSettings,
-                          wechatPayEnabled: checked,
-                        })
-                      }
-                    />
+                    <Switch checked={false} disabled aria-label="微信支付暂未接入" />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-500">
-                    微信支付配置功能即将推出...
+                    当前仅支持 Stripe。完成支付、回调和退款链路后再开放微信支付配置。
                   </p>
                 </CardContent>
               </Card>

@@ -6,15 +6,15 @@
 import Stripe from 'stripe';
 import type { OrderStatus } from '@prisma/client';
 
-// 创建Stripe实例
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('缺少STRIPE_SECRET_KEY环境变量');
-}
+// 配置缺失时延迟到支付动作返回错误，避免构建阶段加载 API 路由就失败。
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-02-24.acacia',
+      typescript: true,
+    })
+  : null;
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-02-24.acacia',
-  typescript: true,
-});
+const STRIPE_NOT_CONFIGURED = '支付服务未配置，请先设置 STRIPE_SECRET_KEY';
 
 // 支付方法映射
 export const PAYMENT_METHODS = {
@@ -46,6 +46,10 @@ export async function createPaymentIntent({
   customerId?: string;
   metadata?: Record<string, string>;
 }) {
+  if (!stripe) {
+    return { success: false, error: STRIPE_NOT_CONFIGURED };
+  }
+
   try {
     // 将金额转换为最小货币单位（分）
     const amountInCents = Math.round(amount * 100);
@@ -86,6 +90,10 @@ export async function createPaymentIntent({
 
 // 确认支付
 export async function confirmPayment(paymentIntentId: string) {
+  if (!stripe) {
+    return { success: false, error: STRIPE_NOT_CONFIGURED };
+  }
+
   try {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
@@ -121,6 +129,10 @@ export async function createRefund({
   reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer';
   metadata?: Record<string, string>;
 }) {
+  if (!stripe) {
+    return { success: false, error: STRIPE_NOT_CONFIGURED };
+  }
+
   try {
     const refund = await stripe.refunds.create({
       payment_intent: paymentIntentId,
@@ -158,6 +170,10 @@ export async function getOrCreateStripeCustomer({
   email: string;
   name?: string;
 }) {
+  if (!stripe) {
+    return { success: false, error: STRIPE_NOT_CONFIGURED };
+  }
+
   try {
     // 首先尝试通过元数据查找现有客户
     const existingCustomers = await stripe.customers.search({
@@ -199,6 +215,10 @@ export function verifyWebhookSignature(
   signature: string,
   secret: string,
 ) {
+  if (!stripe) {
+    return { success: false, error: STRIPE_NOT_CONFIGURED };
+  }
+
   try {
     const event = stripe.webhooks.constructEvent(payload, signature, secret);
     return { success: true, data: event };

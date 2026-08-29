@@ -5,11 +5,11 @@ function isAdminRole(role?: string | null) {
   return role === 'ADMIN' || role === 'SUPER_ADMIN';
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdminPage = pathname.startsWith('/admin');
   const isAdminApi = pathname.startsWith('/api/admin');
-  // 允许管理员初始化端点跳过鉴权（内部自校验/仅开发环境或需密钥）
+
   if (pathname === '/api/admin/create-admin') {
     return NextResponse.next();
   }
@@ -45,5 +45,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/admin/:path*', '/api/admin/:path*'],
 };
-
-

@@ -68,6 +68,7 @@
     "cartItemsValue": "{{count}} item(s)",
     "cartTotalLabel": "Total",
     "viewCart": "View Cart",
+    "support": "Help and support",
     "tooltip": {
       "remove": "Remove",
       "decrease": "Decrease quantity",
@@ -79,9 +80,7 @@
       "loginRequired": "Please sign in",
       "removed": "Removed from cart",
       "updateFailed": "Update failed. Please try again later.",
-      "deleteFailed": "Delete failed. Please try again later.",
-      "discordComingSoon": "Discord integration is coming soon"
+      "deleteFailed": "Delete failed. Please try again later."
     }
   }
 }
-

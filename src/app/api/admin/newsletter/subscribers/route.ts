@@ -5,13 +5,14 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { isAdmin } from '@/lib/authz';
 
 export async function GET() {
   try {
     const session = await auth();
 
     // 验证管理员权限
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || !isAdmin(session.user.role)) {
       return NextResponse.json(
         { success: false, error: 'UNAUTHORIZED', message: '需要管理员权限' },
         { status: 403 },
@@ -48,4 +49,3 @@ export async function GET() {
     );
   }
 }
-

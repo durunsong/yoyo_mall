@@ -43,11 +43,11 @@ export async function GET(request: NextRequest) {
       socials,
     });
   } catch (error) {
-    console.error('获取Footer配置失败:', error);
-    return NextResponse.json(
-      { error: '获取Footer配置失败' },
-      { status: 500 }
-    );
+    console.warn('[footer] Falling back to built-in public configuration:', error);
+    return NextResponse.json({
+      sections: [],
+      contacts: [],
+      socials: [],
+    });
   }
 }
-

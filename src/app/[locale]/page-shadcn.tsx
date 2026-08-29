@@ -185,7 +185,7 @@ export default function HomePage() {
               <div className="text-gray-600">{t('stats.brands')}</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-purple-600">98.5%</div>
+              <div className="mb-2 text-4xl font-bold text-emerald-600">98.5%</div>
               <div className="text-gray-600">{t('stats.satisfaction')}</div>
             </div>
           </div>

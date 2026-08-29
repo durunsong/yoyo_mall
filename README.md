@@ -1,12 +1,12 @@
 # Yobuy - 跨境电商网站完整开发方案
 
-![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
-![React](https://img.shields.io/badge/React-19.1-blue?style=for-the-badge&logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-06B6D4?style=for-the-badge&logo=tailwindcss)
-![Progress](https://img.shields.io/badge/整体完成度-92%25-success?style=for-the-badge)
-![Admin](https://img.shields.io/badge/管理后台-90%25-success?style=for-the-badge)
-![Status](https://img.shields.io/badge/状态-生产就绪-brightgreen?style=for-the-badge)
+![Progress](https://img.shields.io/badge/核心功能-已打通-success?style=for-the-badge)
+![Admin](https://img.shields.io/badge/管理后台-持续迭代-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/状态-部署前需配置-yellow?style=for-the-badge)
 
 一个功能完整的跨境电商网站开发方案，专为独立站全栈开发工程师设计，支持PC+移动端，具备完整的国际化和支付功能。
 
@@ -14,14 +14,14 @@
 
 完整的购物流程已打通：**浏览商品 → 加入购物车 → 应用优惠券 → 结算支付 → 订单管理 → 商品评价 → 心愿单**
 
-🎉 **项目状态：生产就绪** - 所有核心功能已完成，可立即投入使用！
+**项目状态：核心链路可用** - 部署前请配置数据库、认证、邮件和 Stripe 等运行环境。
 
 ## 🌟 特性
 
-- ⚡ **现代技术栈**: Next.js 15 + React 19 + TypeScript
+- ⚡ **现代技术栈**: Next.js 16 + React 19 + TypeScript
 - 📱 **响应式设计**: PC+移动端一套代码，完美适配
 - 🌍 **国际化支持**: 多语言、多币种、多时区
-- 💳 **多支付方式**: Stripe、PayPal、Apple Pay
+- 💳 **支付**: Stripe（支付宝、微信支付暂未接入）
 - 🛒 **完整电商功能**: 商品管理、订单处理、库存管理
 - 🔐 **安全可靠**: 身份认证、数据加密、防攻击
 - 🚀 **性能优化**: SSR/SSG、图片优化、代码分割
@@ -39,14 +39,14 @@ graph TB
     E --> F[Prisma ORM]
     F --> G[PostgreSQL]
     E --> H[第三方服务]
-    H --> I[Stripe/PayPal]
+    H --> I[Stripe]
     H --> J[Cloudinary]
     H --> K[邮件服务]
 ```
 
 ### 前端技术栈
 
-- **框架**: Next.js 15 (App Router)
+- **框架**: Next.js 16 (App Router, Node.js 20.9+)
 - **UI库**: React 19
 - **类型系统**: TypeScript 5.0
 - **样式方案**: Tailwind CSS + shadcn/ui
@@ -60,7 +60,7 @@ graph TB
 - **API**: Next.js API Routes
 - **数据库**: PostgreSQL + Prisma ORM
 - **认证**: NextAuth.js
-- **支付**: Stripe + PayPal
+- **支付**: Stripe
 - **文件存储**: Cloudinary
 - **缓存**: Redis (可选)
 
@@ -231,7 +231,7 @@ git push origin feature/product-catalog
 - ✅ 图片优化(AVIF/WebP、懒加载)
 - ✅ 代码分割和懒加载
 - ✅ 安全Headers配置
-- 🚧 单元测试(规划中)
+- ✅ 单元测试与回归检查（42 项）
 
 ## 🧪 测试和部署
 

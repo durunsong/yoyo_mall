@@ -4,7 +4,7 @@ import { getActiveCategories } from '@/lib/server/categories';
 import { getSystemSettings } from '@/lib/server/system-settings';
 import { getDictionaries } from '@/lib/server/translations';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 const DEFAULT_PAGE_SIZE = 10;
 
 type ProductsSearchParams = Record<string, string | string[] | undefined>;
@@ -67,5 +67,4 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     />
   );
 }
-
 

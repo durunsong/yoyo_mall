@@ -22,14 +22,15 @@ model User {
   updatedAt DateTime @updatedAt
 
   // 关联关系
-  profile      UserProfile?
-  addresses    Address[]
-  orders       Order[]
-  reviews      Review[]
-  wishlist     WishlistItem[]
-  cartItems    CartItem[]
-  loginRecords LoginRecord[]
+  profile        UserProfile?
+  addresses      Address[]
+  orders         Order[]
+  reviews        Review[]
+  wishlist       WishlistItem[]
+  cartItems      CartItem[]
+  loginRecords   LoginRecord[]
   adminEmailLogs AdminEmailLog[]
+  notifications  UserNotification[]
 
   @@map("users")
 }
@@ -43,8 +44,8 @@ model UserProfile {
   phone       String?
   dateOfBirth DateTime?
   gender      Gender?
-  bio         String?   // 个人简介
-  location    String?   // 所在地
+  bio         String? // 个人简介
+  location    String? // 所在地
   locale      String    @default("zh-CN")
   timezone    String    @default("Asia/Shanghai")
   createdAt   DateTime  @default(now())
@@ -74,7 +75,7 @@ model Address {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   shippingOrders Order[] @relation("OrderShippingAddress")
   billingOrders  Order[] @relation("OrderBillingAddress")
 
@@ -83,16 +84,16 @@ model Address {
 
 // 商品分类
 model Category {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String   @unique
   description String?
   image       String?
   parentId    String?
-  isActive    Boolean   @default(true)
-  sortOrder   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children Category[] @relation("CategoryHierarchy")
@@ -103,34 +104,34 @@ model Category {
 
 // 商品模型
 model Product {
-  id               String        @id @default(cuid())
-  name             String
-  slug             String        @unique
-  description      String?
-  shortDesc        String?
-  hsCode           String?
-  originCountry    String?
-  sku              String        @unique
-  price            Decimal       @db.Decimal(10, 2)
-  comparePrice     Decimal?      @db.Decimal(10, 2)
-  currency         String        @default("USD")
-  weight           Decimal?      @db.Decimal(8, 2)
-  netWeight        Decimal?      @db.Decimal(8, 2)
-  volumetricWeight Decimal?      @db.Decimal(8, 2)
+  id                String        @id @default(cuid())
+  name              String
+  slug              String        @unique
+  description       String?
+  shortDesc         String?
+  hsCode            String?
+  originCountry     String?
+  sku               String        @unique
+  price             Decimal       @db.Decimal(10, 2)
+  comparePrice      Decimal?      @db.Decimal(10, 2)
+  currency          String        @default("USD")
+  weight            Decimal?      @db.Decimal(8, 2)
+  netWeight         Decimal?      @db.Decimal(8, 2)
+  volumetricWeight  Decimal?      @db.Decimal(8, 2)
   packageDimensions String?
-  dimensions       String?
-  materials        String[]      @default([])
-  compliance       Json?
-  categoryId       String
-  status           ProductStatus @default(DRAFT)
-  isDigital        Boolean       @default(false)
-  trackInventory   Boolean       @default(true)
-  allowOutOfStock  Boolean       @default(false)
-  metaTitle        String?
-  metaDesc         String?
-  tags             String[]
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  dimensions        String?
+  materials         String[]      @default([])
+  compliance        Json?
+  categoryId        String
+  status            ProductStatus @default(DRAFT)
+  isDigital         Boolean       @default(false)
+  trackInventory    Boolean       @default(true)
+  allowOutOfStock   Boolean       @default(false)
+  metaTitle         String?
+  metaDesc          String?
+  tags              String[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   category      Category         @relation(fields: [categoryId], references: [id])
   images        ProductImage[]
@@ -159,20 +160,20 @@ model ProductImage {
 }
 
 model Announcement {
-  id              String                    @id @default(cuid())
+  id              String                 @id @default(cuid())
   title           String?
   content         String?
   imageUrl        String?
   backgroundColor String?
   textColor       String?
   height          Int?
-  isActive        Boolean                   @default(true)
-  sortOrder       Int                       @default(0)
-  actionType      AnnouncementActionType    @default(NONE)
+  isActive        Boolean                @default(true)
+  sortOrder       Int                    @default(0)
+  actionType      AnnouncementActionType @default(NONE)
   linkUrl         String?
-  openInNewTab    Boolean                   @default(false)
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
+  openInNewTab    Boolean                @default(false)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
 
   @@map("announcements")
 }
@@ -188,61 +189,61 @@ model AnnouncementConfig {
 
 // 系统设置
 model SystemSettings {
-  id              String   @id @default("global")
+  id                       String            @id @default("global")
   // 网站基本信息
-  siteName        String   @default("Yobuy")
-  siteDescription String?
-  siteUrl         String?
-  contactEmail    String?
-  contactPhone    String?
-  defaultLanguage String   @default("zh-CN")
-  defaultCurrency String   @default("CNY")
-  defaultCountry  String   @default("CN")
-  supportedCountries  String[] @default(["CN", "US", "DE", "AU"])
-  supportedCurrencies String[] @default(["CNY", "USD", "EUR"])
-  autoCurrencySwitch  Boolean  @default(true)
-  autoLanguageSwitch  Boolean  @default(true)
-  defaultMeasurement  MeasurementSystem @default(METRIC)
-  customsRequireNationalId Boolean @default(false)
-  dutyPrepaid      Boolean  @default(false)
-  allowPreorder    Boolean  @default(false)
-  preferredLogistics Json?
-  returnPolicyDays Int?    @default(30)
-  defaultWarehouseCountry String?
-  allowedPaymentCountries String[] @default([])
-  
+  siteName                 String            @default("Yobuy")
+  siteDescription          String?
+  siteUrl                  String?
+  contactEmail             String?
+  contactPhone             String?
+  defaultLanguage          String            @default("zh-CN")
+  defaultCurrency          String            @default("CNY")
+  defaultCountry           String            @default("CN")
+  supportedCountries       String[]          @default(["CN", "US", "DE", "AU"])
+  supportedCurrencies      String[]          @default(["CNY", "USD", "EUR"])
+  autoCurrencySwitch       Boolean           @default(true)
+  autoLanguageSwitch       Boolean           @default(true)
+  defaultMeasurement       MeasurementSystem @default(METRIC)
+  customsRequireNationalId Boolean           @default(false)
+  dutyPrepaid              Boolean           @default(false)
+  allowPreorder            Boolean           @default(false)
+  preferredLogistics       Json?
+  returnPolicyDays         Int?              @default(30)
+  defaultWarehouseCountry  String?
+  allowedPaymentCountries  String[]          @default([])
+
   // 支付设置
-  stripeEnabled      Boolean @default(false)
-  stripePublicKey    String?
-  stripeSecretKey    String?
-  alipayEnabled      Boolean @default(false)
-  alipayAppId        String?
-  alipayPrivateKey   String?
-  wechatPayEnabled   Boolean @default(false)
-  wechatPayMchId     String?
-  wechatPayApiKey    String?
-  
+  stripeEnabled    Boolean @default(false)
+  stripePublicKey  String?
+  stripeSecretKey  String?
+  alipayEnabled    Boolean @default(false)
+  alipayAppId      String?
+  alipayPrivateKey String?
+  wechatPayEnabled Boolean @default(false)
+  wechatPayMchId   String?
+  wechatPayApiKey  String?
+
   // 邮件设置
-  smtpHost           String?
-  smtpPort           Int?    @default(587)
-  smtpUser           String?
-  smtpPassword       String?
-  smtpSecure         Boolean @default(false)
-  emailFrom          String?
-  emailFromName      String?
-  
+  smtpHost      String?
+  smtpPort      Int?    @default(587)
+  smtpUser      String?
+  smtpPassword  String?
+  smtpSecure    Boolean @default(false)
+  emailFrom     String?
+  emailFromName String?
+
   // 通知设置
-  orderNotifications     Boolean @default(true)
-  userNotifications      Boolean @default(true)
-  inventoryAlerts        Boolean @default(true)
-  emailNotifications     Boolean @default(true)
-  smsNotifications       Boolean @default(false)
+  orderNotifications Boolean @default(true)
+  userNotifications  Boolean @default(true)
+  inventoryAlerts    Boolean @default(true)
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(false)
 
   // 商详页展示配置（JSON 存储）
-  productDetailConfig    Json?   @default("{}")
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  productDetailConfig Json? @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("system_settings")
 }
@@ -311,18 +312,18 @@ model ShippingZone {
 
 // Newsletter 订阅者
 model NewsletterSubscriber {
-  id              String              @id @default(cuid())
-  email           String              @unique
-  status          SubscriberStatus    @default(PENDING)
-  subscribedAt    DateTime            @default(now())
-  confirmedAt     DateTime?
-  unsubscribedAt  DateTime?
-  verifyToken     String?             @unique
-  unsubscribeToken String?            @unique
-  source          String?             // 订阅来源（footer, popup等）
-  metadata        Json?               // 额外信息（如订阅页面、UTM参数等）
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id               String           @id @default(cuid())
+  email            String           @unique
+  status           SubscriberStatus @default(PENDING)
+  subscribedAt     DateTime         @default(now())
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
+  verifyToken      String?          @unique
+  unsubscribeToken String?          @unique
+  source           String? // 订阅来源（footer, popup等）
+  metadata         Json? // 额外信息（如订阅页面、UTM参数等）
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([email])
   @@index([status])
@@ -331,21 +332,21 @@ model NewsletterSubscriber {
 
 // Newsletter 发送记录
 model NewsletterCampaign {
-  id              String              @id @default(cuid())
-  subject         String
-  content         String              @db.Text
-  htmlContent     String?             @db.Text
-  status          CampaignStatus      @default(DRAFT)
-  scheduledAt     DateTime?
-  sentAt          DateTime?
-  recipientCount  Int                 @default(0)
-  successCount    Int                 @default(0)
-  failureCount    Int                 @default(0)
-  openCount       Int                 @default(0)
-  clickCount      Int                 @default(0)
-  createdBy       String
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id             String         @id @default(cuid())
+  subject        String
+  content        String         @db.Text
+  htmlContent    String?        @db.Text
+  status         CampaignStatus @default(DRAFT)
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  recipientCount Int            @default(0)
+  successCount   Int            @default(0)
+  failureCount   Int            @default(0)
+  openCount      Int            @default(0)
+  clickCount     Int            @default(0)
+  createdBy      String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([status])
   @@index([createdAt])
@@ -353,42 +354,105 @@ model NewsletterCampaign {
 }
 
 enum SubscriberStatus {
-  PENDING       // 待验证
-  ACTIVE        // 已激活
-  UNSUBSCRIBED  // 已取消订阅
-  BOUNCED       // 邮件退回
+  PENDING // 待验证
+  ACTIVE // 已激活
+  UNSUBSCRIBED // 已取消订阅
+  BOUNCED // 邮件退回
 }
 
 enum CampaignStatus {
-  DRAFT         // 草稿
-  SCHEDULED     // 已计划
-  SENDING       // 发送中
-  SENT          // 已发送
-  FAILED        // 发送失败
+  DRAFT // 草稿
+  SCHEDULED // 已计划
+  SENDING // 发送中
+  SENT // 已发送
+  FAILED // 发送失败
 }
 
 model AdminEmailLog {
-  id             String            @id @default(cuid())
+  id             String             @id @default(cuid())
   subject        String
-  content        String            @db.Text
-  htmlContent    String?           @db.Text
+  content        String             @db.Text
+  htmlContent    String?            @db.Text
   complianceInfo Json?
   sendType       AdminEmailSendType
-  status         AdminEmailStatus  @default(PENDING)
-  recipientCount Int               @default(0)
-  successCount   Int               @default(0)
-  failureCount   Int               @default(0)
+  status         AdminEmailStatus   @default(PENDING)
+  recipientCount Int                @default(0)
+  successCount   Int                @default(0)
+  failureCount   Int                @default(0)
   failureReason  String?
   recipients     Json
   createdById    String
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([status])
   @@map("admin_email_logs")
+}
+
+enum NotificationType {
+  ORDER
+  SYSTEM
+  PROMOTION
+  WISHLIST
+  CART
+  PRODUCT
+  ACCOUNT
+  SHIPPING
+  PAYMENT
+  REVIEW
+  CUSTOM
+}
+
+enum NotificationCategory {
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  ORDER_PROCESSING
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+  ORDER_REFUNDED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SHIPPING_UPDATE
+  PRODUCT_RESTOCKED
+  PRODUCT_PRICE_DROP
+  CART_ABANDONMENT
+  WISHLIST_PRICE_DROP
+  WISHLIST_RESTOCKED
+  ACCOUNT_WELCOME
+  ACCOUNT_SECURITY
+  PROMOTION_START
+  PROMOTION_ENDING
+  REVIEW_REMINDER
+  CUSTOM_MESSAGE
+}
+
+model UserNotification {
+  id          String               @id
+  userId      String
+  type        NotificationType
+  category    NotificationCategory
+  title       String
+  message     String
+  link        String?
+  read        Boolean              @default(false)
+  readAt      DateTime?
+  readOnClick Boolean              @default(true)
+  metadata    Json?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([category])
+  @@index([createdAt])
+  @@map("user_notifications")
 }
 
 enum AdminEmailSendType {
@@ -419,11 +483,11 @@ model ProductVariant {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  product     Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
-  attributes  VariantAttribute[]
-  inventory   Inventory?
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
+  product    Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributes VariantAttribute[]
+  inventory  Inventory?
+  orderItems OrderItem[]
+  cartItems  CartItem[]
 
   @@map("product_variants")
 }
@@ -467,14 +531,14 @@ model Order {
   status            OrderStatus @default(PENDING)
   currency          String      @default("USD")
   subtotal          Decimal     @db.Decimal(10, 2)
-  taxAmount         Decimal     @db.Decimal(10, 2) @default(0)
-  shippingAmount    Decimal     @db.Decimal(10, 2) @default(0)
-  discountAmount    Decimal     @db.Decimal(10, 2) @default(0)
+  taxAmount         Decimal     @default(0) @db.Decimal(10, 2)
+  shippingAmount    Decimal     @default(0) @db.Decimal(10, 2)
+  discountAmount    Decimal     @default(0) @db.Decimal(10, 2)
   totalAmount       Decimal     @db.Decimal(10, 2)
   declaredValue     Decimal?    @db.Decimal(10, 2)
-  dutyAmount        Decimal     @db.Decimal(10, 2) @default(0)
-  importTaxAmount   Decimal     @db.Decimal(10, 2) @default(0)
-  insuranceAmount   Decimal     @db.Decimal(10, 2) @default(0)
+  dutyAmount        Decimal     @default(0) @db.Decimal(10, 2)
+  importTaxAmount   Decimal     @default(0) @db.Decimal(10, 2)
+  insuranceAmount   Decimal     @default(0) @db.Decimal(10, 2)
   shippingAddressId String?
   billingAddressId  String?
   marketId          String?
@@ -535,22 +599,22 @@ model Payment {
 
 // 物流信息
 model Shipment {
-  id             String         @id @default(cuid())
-  orderId        String
-  trackingNumber String?
-  carrier        String?
-  method         String?
-  incoterm       String?
-  status         ShipmentStatus @default(PENDING)
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
-  pickupCountry  String?
-  deliveryCountry String?
-  insured        Boolean        @default(false)
+  id               String         @id @default(cuid())
+  orderId          String
+  trackingNumber   String?
+  carrier          String?
+  method           String?
+  incoterm         String?
+  status           ShipmentStatus @default(PENDING)
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  pickupCountry    String?
+  deliveryCountry  String?
+  insured          Boolean        @default(false)
   customsDocuments Json?
-  metadata       Json?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -602,9 +666,9 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variant ProductVariant?  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId, variantId])
   @@map("cart_items")
@@ -612,20 +676,20 @@ model CartItem {
 
 // 优惠券模型
 model Coupon {
-  id               String      @id @default(cuid())
-  code             String      @unique
-  name             String
-  description      String?
-  type             CouponType
-  value            Decimal     @db.Decimal(10, 2)
-  minimumAmount    Decimal?    @db.Decimal(10, 2)
-  usageLimit       Int?
-  usageCount       Int         @default(0)
-  isActive         Boolean     @default(true)
-  startsAt         DateTime?
-  expiresAt        DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id            String     @id @default(cuid())
+  code          String     @unique
+  name          String
+  description   String?
+  type          CouponType
+  value         Decimal    @db.Decimal(10, 2)
+  minimumAmount Decimal?   @db.Decimal(10, 2)
+  usageLimit    Int?
+  usageCount    Int        @default(0)
+  isActive      Boolean    @default(true)
+  startsAt      DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@map("coupons")
 }
@@ -726,11 +790,11 @@ model LoginRecord {
 
 // 首页配置模型
 model HomeConfig {
-  id          String   @id @default(cuid())
-  isActive    Boolean  @default(true)
-  modules     Json     // 存储所有模块的配置信息
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  isActive  Boolean  @default(true)
+  modules   Json // 存储所有模块的配置信息
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("home_configs")
 }
@@ -751,70 +815,70 @@ model HomeBanner {
 
 // Footer配置 - 区块模型
 model FooterSection {
-  id          String       @id @default(cuid())
-  key         String       @unique // company, customer, account, legal
-  title       String       // 区块标题
-  titleEn     String?      // 英文标题
-  titleZh     String?      // 中文标题
-  sortOrder   Int          @default(0)
-  isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  
+  id        String   @id @default(cuid())
+  key       String   @unique // company, customer, account, legal
+  title     String // 区块标题
+  titleEn   String? // 英文标题
+  titleZh   String? // 中文标题
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // 关联的链接
-  links       FooterLink[]
+  links FooterLink[]
 
   @@map("footer_sections")
 }
 
 // Footer链接模型
 model FooterLink {
-  id          String        @id @default(cuid())
-  sectionId   String
-  name        String        // 链接名称
-  nameEn      String?       // 英文名称
-  nameZh      String?       // 中文名称
-  href        String        // 链接地址
-  sortOrder   Int           @default(0)
-  isActive    Boolean       @default(true)
-  openInNew   Boolean       @default(false) // 是否在新窗口打开
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
+  id        String   @id @default(cuid())
+  sectionId String
+  name      String // 链接名称
+  nameEn    String? // 英文名称
+  nameZh    String? // 中文名称
+  href      String // 链接地址
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  openInNew Boolean  @default(false) // 是否在新窗口打开
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // 关联的区块
-  section     FooterSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  section FooterSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@map("footer_links")
 }
 
 // Footer联系信息模型
 model FooterContact {
-  id          String   @id @default(cuid())
-  type        String   // email, phone, address
-  label       String   // 标签
-  labelEn     String?  // 英文标签
-  labelZh     String?  // 中文标签
-  value       String   // 值
-  icon        String?  // 图标名称 (lucide-react)
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  type      String // email, phone, address
+  label     String // 标签
+  labelEn   String? // 英文标签
+  labelZh   String? // 中文标签
+  value     String // 值
+  icon      String? // 图标名称 (lucide-react)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("footer_contacts")
 }
 
 // Footer社交媒体链接模型
 model FooterSocial {
-  id          String   @id @default(cuid())
-  name        String   // Facebook, Twitter, Instagram, YouTube等
-  icon        String   // 图标名称 (lucide-react)
-  href        String   // 链接地址
-  color       String?  // hover颜色类名
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String // Facebook, Twitter, Instagram, YouTube等
+  icon      String // 图标名称 (lucide-react)
+  href      String // 链接地址
+  color     String? // hover颜色类名
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("footer_socials")
 }

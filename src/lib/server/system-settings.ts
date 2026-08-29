@@ -8,9 +8,16 @@ import {
 } from '@/lib/settings/system-settings';
 
 export async function getSystemSettings(): Promise<SystemSettings> {
-  const record = await prisma.systemSettings.findUnique({
-    where: { id: 'global' },
-  });
+  let record;
+
+  try {
+    record = await prisma.systemSettings.findUnique({
+      where: { id: 'global' },
+    });
+  } catch (error) {
+    console.warn('[settings] Falling back to defaults:', error);
+    return defaultSystemSettings;
+  }
 
   if (!record) {
     return defaultSystemSettings;
@@ -33,15 +40,19 @@ export async function getSystemSettings(): Promise<SystemSettings> {
     customsRequireNationalId: record.customsRequireNationalId,
     dutyPrepaid: record.dutyPrepaid,
     allowPreorder: record.allowPreorder,
-    preferredLogistics: record.preferredLogistics,
+    preferredLogistics:
+      record.preferredLogistics &&
+      typeof record.preferredLogistics === 'object' &&
+      !Array.isArray(record.preferredLogistics)
+        ? (record.preferredLogistics as Record<string, unknown>)
+        : null,
     returnPolicyDays: record.returnPolicyDays ?? defaultSystemSettings.returnPolicyDays,
     defaultWarehouseCountry: record.defaultWarehouseCountry,
     allowedPaymentCountries: record.allowedPaymentCountries,
     stripeEnabled: record.stripeEnabled,
-    alipayEnabled: record.alipayEnabled,
-    wechatPayEnabled: record.wechatPayEnabled,
+    // 这两个渠道尚未接入完整链路，历史配置也不能让前台误显示为可用。
+    alipayEnabled: false,
+    wechatPayEnabled: false,
     productDetailConfig: record.productDetailConfig,
   });
 }
-
-

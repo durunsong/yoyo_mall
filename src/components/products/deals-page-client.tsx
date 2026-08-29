@@ -12,6 +12,7 @@ import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { toast } from 'sonner';
+import { addProductToServerCart } from '@/lib/cart/client';
 import { createTranslator, type TranslationDictionary } from '@/lib/i18n/dictionary';
 import type { HomepageProduct } from '@/types/product';
 
@@ -60,32 +61,27 @@ export function DealsPageClient({
     }, 0);
   }, [discountedProducts]);
 
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
   const wishlistStore = useWishlistStore();
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const [cartLoadingId, setCartLoadingId] = useState<string | null>(null);
 
   const handleAddToCart = async (product: HomepageProduct) => {
+    if (cartLoadingId) return;
     if (!session?.user) {
       openModal('login');
       toast.info(tProduct('toast.loginRequired'));
       return;
     }
 
+    setCartLoadingId(product.id);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-        }),
-      });
-      const data = await response.json();
-
-      if (data.success) {
+      const serverItem = await addProductToServerCart(product.id) as { id?: string } | undefined;
+      if (serverItem) {
         addItem({
+          id: serverItem.id,
           productId: product.id,
           quantity: 1,
           price: product.price,
@@ -93,12 +89,15 @@ export function DealsPageClient({
           image: product.image || product.images?.[0]?.url || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
         toast.success(tProduct('toast.addSuccess'));
+        openCart();
       } else {
-        toast.error(data.message || tProduct('toast.addFailed'));
+        toast.error(tProduct('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
       toast.error(tProduct('toast.networkError'));
+    } finally {
+      setCartLoadingId(null);
     }
   };
 
@@ -280,6 +279,7 @@ export function DealsPageClient({
                     onAddToWishlist={() => handleToggleWishlist(product.id)}
                     isWishlisted={wishlistStore.items.some(item => item.productId === product.id)}
                     wishlistLoading={wishlistLoadingId === product.id}
+                    addToCartLoading={cartLoadingId === product.id}
                   />
                 ))}
               </div>
@@ -300,5 +300,4 @@ export function DealsPageClient({
     </div>
   );
 }
-
 

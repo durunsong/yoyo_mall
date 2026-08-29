@@ -60,10 +60,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const authEnabled = Boolean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET);
+
   return (
     <html suppressHydrationWarning>
       <body className={`${fontSans.variable} font-sans antialiased`}>
-        <RootProviders>
+        <RootProviders authEnabled={authEnabled}>
           <ConditionalLayout>
             {children}
           </ConditionalLayout>

@@ -91,6 +91,73 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * PATCH /api/admin/home-banners?id=...
+ * 更新单条轮播图内容
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const { session, isAdmin } = await checkAdminPermission();
+    if (!session?.user || !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: '无权限访问' },
+        { status: 403 },
+      );
+    }
+
+    const id = new URL(request.url).searchParams.get('id');
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少ID参数' },
+        { status: 400 },
+      );
+    }
+
+    const body = await request.json();
+    const data: { imageUrl?: string; linkUrl?: string; altText?: string } = {};
+
+    if (body.imageUrl !== undefined) {
+      if (typeof body.imageUrl !== 'string' || !body.imageUrl.trim()) {
+        return NextResponse.json(
+          { success: false, error: '图片URL不能为空' },
+          { status: 400 },
+        );
+      }
+      data.imageUrl = body.imageUrl.trim();
+    }
+    if (body.linkUrl !== undefined) {
+      data.linkUrl = typeof body.linkUrl === 'string' ? body.linkUrl.trim() : '';
+    }
+    if (body.altText !== undefined) {
+      data.altText = typeof body.altText === 'string' ? body.altText.trim() : '';
+    }
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json(
+        { success: false, error: '没有可更新的字段' },
+        { status: 400 },
+      );
+    }
+
+    const banner = await prisma.homeBanner.update({
+      where: { id },
+      data,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: banner,
+      message: '更新成功',
+    });
+  } catch (error) {
+    console.error('更新轮播图失败:', error);
+    return NextResponse.json(
+      { success: false, error: '更新轮播图失败' },
+      { status: 500 },
+    );
+  }
+}
+
+/**
  * PUT /api/admin/home-banners
  * 批量更新轮播图顺序
  */
@@ -182,4 +249,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-

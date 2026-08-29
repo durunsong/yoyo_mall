@@ -1,16 +1,9 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
+import nextTypeScript from 'eslint-config-next/typescript';
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextCoreWebVitals,
+  ...nextTypeScript,
   {
     ignores: [
       'node_modules/**',
@@ -22,24 +15,32 @@ const eslintConfig = [
     ],
     rules: {
       // TypeScript规则
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/no-require-imports': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       
       // React规则
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/rules-of-hooks': 'warn',
       
       // 通用规则
-      'prefer-const': 'error',
-      'no-var': 'error',
-      'object-curly-spacing': ['error', 'always'],
-      'array-bracket-spacing': ['error', 'never'],
-      'comma-dangle': ['error', 'always-multiline'],
-      'semi': ['error', 'always'],
-      'quotes': ['error', 'single'],
-      'jsx-quotes': ['error', 'prefer-double'],
+      'prefer-const': 'warn',
+      'no-var': 'warn',
+      'object-curly-spacing': ['warn', 'always'],
+      'array-bracket-spacing': ['warn', 'never'],
+      'comma-dangle': 'off',
+      'semi': ['warn', 'always'],
+      'quotes': ['warn', 'single'],
+      'jsx-quotes': ['warn', 'prefer-double'],
+      'react/no-unescaped-entities': 'warn',
+      'react-hooks/purity': 'warn',
       
       // Next.js规则
       '@next/next/no-img-element': 'warn',

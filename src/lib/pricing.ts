@@ -27,8 +27,41 @@ export type DutyCalcOptions = {
   minDeclaredValue?: number;
 };
 
+export type CheckoutTotalsInput = {
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  discount?: number;
+};
+
+export type CheckoutTotals = CheckoutTotalsInput & { discount: number; total: number };
+
 export function roundCurrency(value: number) {
   return Number(value.toFixed(2));
+}
+
+export function calculateCheckoutTotals({
+  subtotal,
+  shipping,
+  tax,
+  discount = 0,
+}: CheckoutTotalsInput): CheckoutTotals {
+  const normalizedSubtotal = roundCurrency(Math.max(0, subtotal));
+  const normalizedShipping = roundCurrency(Math.max(0, shipping));
+  const normalizedTax = roundCurrency(Math.max(0, tax));
+  const normalizedDiscount = roundCurrency(
+    Math.min(Math.max(0, discount), normalizedSubtotal + normalizedShipping + normalizedTax),
+  );
+
+  return {
+    subtotal: normalizedSubtotal,
+    shipping: normalizedShipping,
+    tax: normalizedTax,
+    discount: normalizedDiscount,
+    total: roundCurrency(
+      Math.max(0, normalizedSubtotal + normalizedShipping + normalizedTax - normalizedDiscount),
+    ),
+  };
 }
 
 export function calculateShippingAmount(

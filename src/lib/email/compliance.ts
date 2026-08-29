@@ -5,11 +5,11 @@
 
 import { SystemSettings, defaultSystemSettings } from '@/lib/settings/system-settings';
 
-export interface EmailComplianceMeta {
+export interface EmailComplianceMeta extends Record<string, string | null> {
   siteName: string;
   siteUrl: string;
   contactEmail: string;
-  contactPhone?: string | null;
+  contactPhone: string | null;
   unsubscribeUrl: string;
   generatedAt: string;
 }
@@ -94,10 +94,9 @@ export function buildComplianceFooter(
       siteName: mergedSettings.siteName,
       siteUrl,
       contactEmail,
-      contactPhone,
+      contactPhone: contactPhone ?? null,
       unsubscribeUrl,
       generatedAt: new Date().toISOString(),
     },
   };
 }
-

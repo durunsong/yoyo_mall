@@ -112,6 +112,13 @@ export default function NotificationsPage() {
   // 删除通知
   const deleteNotification = async (notificationId: string) => {
     try {
+      const response = await fetch(`/api/admin/notifications/${notificationId}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || '删除失败');
+      }
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       toast.success('已删除通知');
     } catch (error) {
@@ -305,6 +312,5 @@ export default function NotificationsPage() {
     </AdminLayout>
   );
 }
-
 
 

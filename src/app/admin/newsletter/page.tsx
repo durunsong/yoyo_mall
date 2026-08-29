@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -246,19 +247,21 @@ export default function NewsletterAdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>营销活动</CardTitle>
-                    <CardDescription>创建和管理邮件营销活动（开发中）</CardDescription>
+                    <CardDescription>从邮件工作台创建、预览并发送营销邮件</CardDescription>
                   </div>
-                  <Button>
-                    <Send className="mr-2 h-4 w-4" />
-                    新建活动
+                  <Button asChild>
+                    <Link href="/admin/email">
+                      <Send className="mr-2 h-4 w-4" />
+                      新建活动
+                    </Link>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12 text-muted-foreground">
                   <Send className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>营销活动功能即将上线</p>
-                  <p className="text-sm mt-2">您将能够创建和发送批量营销邮件</p>
+                  <p>准备向订阅者发送一封新邮件？</p>
+                  <p className="text-sm mt-2">在邮件工作台中选择收件人、编辑内容并确认合规声明后即可发送。</p>
                 </div>
               </CardContent>
             </Card>
@@ -268,4 +271,3 @@ export default function NewsletterAdminPage() {
     </AdminLayout>
   );
 }
-

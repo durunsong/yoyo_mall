@@ -25,6 +25,7 @@
   "preorderHint": "Pre-orders are accepted and will be fulfilled with priority",
   "preOrder": "Pre-order",
   "addToCart": "Add to Cart",
+  "addingToCart": "Adding...",
   "buyNow": "Buy Now",
   "addToWishlist": "Add to Wishlist",
   "removeFromWishlist": "Remove from Wishlist",

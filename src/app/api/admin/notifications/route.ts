@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { mergeNotificationReadStates } from '@/lib/notifications/read-state';
 
 /**
  * 获取管理员通知列表
@@ -100,8 +101,9 @@ export async function GET(_request: NextRequest) {
     const notifications = [
       // 新订单通知
       ...recentOrders.map((order) => ({
-        id: `order-${order.id}`,
+        id: `admin-order-${session.user.id}-${order.id}`,
         type: 'order' as const,
+        category: 'ORDER_PLACED' as const,
         title: '新订单',
         message: `${order.user.name || order.user.email} 下单 ${order.orderNumber},金额 $${Number(order.totalAmount).toFixed(2)}`,
         url: `/admin/orders?id=${order.id}`,
@@ -111,8 +113,9 @@ export async function GET(_request: NextRequest) {
 
       // 库存预警通知
       ...lowStockProducts.map((product) => ({
-        id: `stock-${product.id}`,
+        id: `admin-stock-${session.user.id}-${product.id}`,
         type: 'product' as const,
+        category: 'PRODUCT_RESTOCKED' as const,
         title: '库存预警',
         message: `商品 "${product.name}" 库存不足,当前库存: ${product.inventory?.quantity || 0}`,
         url: `/admin/products?id=${product.id}`,
@@ -122,8 +125,9 @@ export async function GET(_request: NextRequest) {
 
       // 新用户注册通知
       ...recentUsers.map((user) => ({
-        id: `user-${user.id}`,
+        id: `admin-user-${session.user.id}-${user.id}`,
         type: 'user' as const,
+        category: 'ACCOUNT_WELCOME' as const,
         title: '新用户注册',
         message: `${user.name || user.email} 注册了账号`,
         url: `/admin/users?id=${user.id}`,
@@ -132,15 +136,65 @@ export async function GET(_request: NextRequest) {
       })),
     ];
 
+    await Promise.all(
+      notifications.map((notification) =>
+        prisma.userNotification.upsert({
+          where: { id: notification.id },
+          create: {
+            id: notification.id,
+            userId: session.user.id,
+            type: notification.type === 'order' ? 'ORDER' : notification.type === 'product' ? 'PRODUCT' : 'SYSTEM',
+            category: notification.category,
+            title: notification.title,
+            message: notification.message,
+            link: notification.url,
+            read: notification.read,
+          },
+          update: {
+            title: notification.title,
+            message: notification.message,
+            link: notification.url,
+            category: notification.category,
+          },
+        }),
+      ),
+    );
+
+    const savedStates = await prisma.userNotification.findMany({
+      where: {
+        userId: session.user.id,
+        id: { in: notifications.map((notification) => notification.id) },
+      },
+      select: { id: true, read: true, metadata: true },
+    });
+
+    const activeNotifications = mergeNotificationReadStates(
+      notifications,
+      new Map(
+        savedStates.map((state) => [
+          state.id,
+          {
+            read: state.read,
+            dismissed: Boolean(
+              state.metadata &&
+                typeof state.metadata === 'object' &&
+                !Array.isArray(state.metadata) &&
+                (state.metadata as { dismissed?: unknown }).dismissed === true,
+            ),
+          },
+        ]),
+      ),
+    );
+
     // 按时间排序
-    notifications.sort((a, b) => 
+    activeNotifications.sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
     return NextResponse.json({
       success: true,
-      notifications: notifications.slice(0, 20), // 最多返回20条
-      total: notifications.length,
+      notifications: activeNotifications.slice(0, 20), // 最多返回20条
+      total: activeNotifications.length,
     });
   } catch (error) {
     console.error('获取通知失败:', error);
@@ -155,4 +209,3 @@ export async function GET(_request: NextRequest) {
     );
   }
 }
-

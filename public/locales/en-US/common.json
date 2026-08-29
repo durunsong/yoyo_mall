@@ -121,7 +121,9 @@
     "browse": "Browse Products"
   },
   "addToCart": "Add to Cart",
+  "addingToCart": "Adding...",
   "addToWishlist": "Add to Wishlist",
+  "removeFromWishlist": "Remove from Wishlist",
   "outOfStock": "Out of Stock",
   "inStock": "In Stock",
   "featured": "Featured",

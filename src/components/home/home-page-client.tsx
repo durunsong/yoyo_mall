@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
+import { addProductToServerCart } from '@/lib/cart/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -108,11 +109,12 @@ export function HomePageClient({
     [categories, fallbackCategories, iconSequence],
   );
 
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const wishlistStore = useWishlistStore();
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const [cartLoadingId, setCartLoadingId] = useState<string | null>(null);
 
   const combinedProductMap = useMemo(() => {
     const map = new Map<string, HomepageProduct>();
@@ -124,26 +126,19 @@ export function HomePageClient({
   const hasProducts = featuredProducts.length > 0 || newArrivalProducts.length > 0;
 
   const handleAddToCart = async (product: { id: string; name: string; price: number; image?: string }) => {
+    if (cartLoadingId) return;
     if (!session?.user) {
       openModal('login');
       toast.info(tHome('toast.loginRequired'));
       return;
     }
 
+    setCartLoadingId(product.id);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
+      const serverItem = await addProductToServerCart(product.id) as { id?: string } | undefined;
+      if (serverItem) {
         addItem({
+          id: serverItem.id,
           productId: product.id,
           quantity: 1,
           price: product.price,
@@ -151,12 +146,15 @@ export function HomePageClient({
           image: product.image || 'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png',
         });
         toast.success(tHome('toast.addSuccess'));
+        openCart();
       } else {
-        toast.error(data.message || tHome('toast.addFailed'));
+        toast.error(tHome('toast.addFailed'));
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
       toast.error(tHome('toast.networkError'));
+    } finally {
+      setCartLoadingId(null);
     }
   };
 
@@ -492,6 +490,7 @@ export function HomePageClient({
                         onAddToWishlist={handleToggleWishlist}
                         isWishlisted={wishlistStore.items.some((item) => item.productId === product.id)}
                         wishlistLoading={wishlistLoadingId === product.id}
+                        addToCartLoading={cartLoadingId === product.id}
                       />
                     ))}
                   </div>
@@ -525,6 +524,7 @@ export function HomePageClient({
                         onAddToWishlist={handleToggleWishlist}
                         isWishlisted={wishlistStore.items.some((item) => item.productId === product.id)}
                         wishlistLoading={wishlistLoadingId === product.id}
+                        addToCartLoading={cartLoadingId === product.id}
                       />
                     ))}
                   </div>
@@ -537,5 +537,3 @@ export function HomePageClient({
     </div>
   );
 }
-
-

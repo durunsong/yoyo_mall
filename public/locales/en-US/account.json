@@ -53,8 +53,10 @@
     "defaultUserName": "User",
     "memberBadge": "Member",
     "editProfile": "Edit Profile",
-    "ordersTitle": "My Orders",
-    "viewAllOrders": "View All Orders",
+  "ordersTitle": "My Orders",
+  "viewAllOrders": "View All Orders",
+  "loadFailed": "We couldn't load your account summary",
+  "retry": "Retry",
     "quickLinks": {
       "orders": {
         "title": "My Orders",
@@ -134,6 +136,7 @@
     "emptyTitle": "Your wishlist is empty",
     "emptyDescription": "Start adding items you like",
     "addToCart": "Add to Cart",
+    "addingToCart": "Adding...",
     "remove": "Remove",
     "outOfStock": "Out of Stock",
     "off": "Off",
@@ -249,4 +252,3 @@
     }
   }
 }
-

@@ -39,6 +39,7 @@ import {
 import { Loader2, Plus, GripVertical, Trash2, Save, Upload, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { getBannerMutation } from '@/lib/admin/home-banners';
 
 interface Banner {
   id: string;
@@ -118,6 +119,7 @@ export default function HomeBannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
 
   // 新轮播图表单数据
   const [newBanner, setNewBanner] = useState({
@@ -125,6 +127,26 @@ export default function HomeBannersPage() {
     linkUrl: '',
     altText: '',
   });
+
+  const resetBannerForm = () => {
+    setEditingBannerId(null);
+    setNewBanner({ imageUrl: '', linkUrl: '', altText: '' });
+  };
+
+  const openCreateBanner = () => {
+    resetBannerForm();
+    setDialogOpen(true);
+  };
+
+  const openEditBanner = (banner: Banner) => {
+    setEditingBannerId(banner.id);
+    setNewBanner({
+      imageUrl: banner.imageUrl,
+      linkUrl: banner.linkUrl || '',
+      altText: banner.altText || '',
+    });
+    setDialogOpen(true);
+  };
 
   // 拖拽传感器
   const sensors = useSensors(
@@ -219,39 +241,42 @@ export default function HomeBannersPage() {
     }
   };
 
-  // 创建轮播图
-  const createBanner = async () => {
+  // 创建或更新轮播图
+  const saveBanner = async () => {
     if (!newBanner.imageUrl) {
       toast.error('请上传图片');
       return;
     }
 
     try {
-      const response = await fetch('/api/admin/home-banners', {
-        method: 'POST',
+      const mutation = getBannerMutation(editingBannerId, {
+        imageUrl: newBanner.imageUrl,
+        linkUrl: newBanner.linkUrl || '',
+        altText: newBanner.altText || '',
+      });
+      const response = await fetch(mutation.url, {
+        method: mutation.method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageUrl: newBanner.imageUrl,
-          linkUrl: newBanner.linkUrl || '',
-          altText: newBanner.altText || '',
-          sortOrder: banners.length,
-          isActive: true,
-        }),
+        body: JSON.stringify(
+          editingBannerId
+            ? mutation.body
+            : { ...mutation.body, sortOrder: banners.length, isActive: true },
+        ),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        toast.success('创建成功');
+        toast.success(editingBannerId ? '更新成功' : '创建成功');
         setDialogOpen(false);
-        setNewBanner({ imageUrl: '', linkUrl: '', altText: '' });
+        resetBannerForm();
         fetchBanners();
       } else {
-        toast.error(result.error || '创建失败');
+        toast.error(result.error || (editingBannerId ? '更新失败' : '创建失败'));
       }
     } catch (error) {
-      console.error('创建轮播图失败:', error);
-      toast.error('创建失败');
+      console.error(editingBannerId ? '更新轮播图失败:' : '创建轮播图失败:', error);
+      toast.error(editingBannerId ? '更新失败' : '创建失败');
     }
   };
 
@@ -365,15 +390,17 @@ export default function HomeBannersPage() {
         <div className="flex gap-2">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={openCreateBanner}>
                 <Plus className="mr-2 h-4 w-4" />
                 添加轮播图
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>添加轮播图</DialogTitle>
-                <DialogDescription>上传图片并设置链接</DialogDescription>
+                <DialogTitle>{editingBannerId ? '编辑轮播图' : '添加轮播图'}</DialogTitle>
+                <DialogDescription>
+                  {editingBannerId ? '更新图片、标题或跳转链接' : '上传图片并设置链接'}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -422,8 +449,8 @@ export default function HomeBannersPage() {
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   取消
                 </Button>
-                <Button onClick={createBanner} disabled={!newBanner.imageUrl}>
-                  创建
+                <Button onClick={saveBanner} disabled={!newBanner.imageUrl}>
+                  {editingBannerId ? '保存修改' : '创建'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -465,9 +492,7 @@ export default function HomeBannersPage() {
                   <SortableBannerItem
                     key={banner.id}
                     banner={banner}
-                    onEdit={() => {
-                      toast.info('编辑功能开发中...');
-                    }}
+                    onEdit={() => openEditBanner(banner)}
                     onDelete={() => deleteBanner(banner.id)}
                     onToggle={(isActive) => toggleBanner(banner.id, isActive)}
                   />
@@ -481,4 +506,3 @@ export default function HomeBannersPage() {
     </AdminLayout>
   );
 }
-

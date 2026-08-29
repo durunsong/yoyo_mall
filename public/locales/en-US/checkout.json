@@ -24,6 +24,10 @@
     "missingField": "Please complete {{field}}"
   },
   "toast": {
+    "loginRequired": "Please sign in before checkout",
+    "cartEmpty": "Your cart is empty. Return to choose products again.",
+    "orderFailed": "We couldn't create the order. Check stock and try again.",
+    "orderNotResumable": "This order cannot be resumed. Return to your orders to check its status.",
     "createPaymentFailed": "Failed to create payment intent",
     "paymentInitFailed": "Failed to initialize payment",
     "paymentFailed": "Payment failed",
@@ -44,6 +48,9 @@
     "successDescription": "Your order has been confirmed. We'll ship it out as soon as possible.",
     "viewOrders": "View Order Details"
   },
+  "detail": {
+    "unknownProduct": "Product unavailable"
+  },
   "summary": {
     "title": "Order Summary",
     "itemsCount": "{{count}} item(s)",
@@ -51,6 +58,9 @@
     "subtotal": "Subtotal",
     "shipping": "Shipping",
     "tax": "Tax",
+    "duty": "Duty",
+    "insurance": "Shipping insurance",
+    "discount": "Discount",
     "total": "Total",
     "freeLabel": "FREE",
     "standardShipping": "Standard Shipping",
@@ -59,4 +69,3 @@
   },
   "freeShippingNote": "Free shipping on orders over {{amount}}"
 }
-

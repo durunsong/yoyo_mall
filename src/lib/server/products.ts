@@ -121,46 +121,53 @@ function mapHomepageProduct(product: RawHomepageProduct): HomepageProduct {
 }
 
 export async function getHomepageProducts(limit = 10): Promise<HomepageProduct[]> {
-  const products = await prisma.product.findMany({
-    where: { status: 'PUBLISHED' },
-    include: homepageProductInclude,
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      include: homepageProductInclude,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
 
-  return products.map(mapHomepageProduct);
+    return products.map(mapHomepageProduct);
+  } catch (error) {
+    console.warn('[catalog] Falling back to an empty homepage product list:', error);
+    return [];
+  }
 }
 
 export async function getDiscountedProducts(limit = 20): Promise<HomepageProduct[]> {
-  const products = await prisma.product.findMany({
-    where: {
-      status: 'PUBLISHED',
-      comparePrice: {
-        not: null,
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'PUBLISHED',
+        comparePrice: {
+          not: null,
+        },
       },
-    },
-    include: homepageProductInclude,
-    orderBy: [
-      { updatedAt: 'desc' },
-      { createdAt: 'desc' },
-    ],
-    take: limit * 2,
-  });
+      include: homepageProductInclude,
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      take: limit * 2,
+    });
 
-  const discounted = products
-    .filter((product) => {
-      if (!product.comparePrice) return false;
-      try {
-        const compareValue = Number(product.comparePrice);
-        const saleValue = Number(product.price);
-        return compareValue > saleValue;
-      } catch {
-        return false;
-      }
-    })
-    .slice(0, limit);
+    const discounted = products
+      .filter((product) => {
+        if (!product.comparePrice) return false;
+        try {
+          const compareValue = Number(product.comparePrice);
+          const saleValue = Number(product.price);
+          return compareValue > saleValue;
+        } catch {
+          return false;
+        }
+      })
+      .slice(0, limit);
 
-  return discounted.map(mapHomepageProduct);
+    return discounted.map(mapHomepageProduct);
+  } catch (error) {
+    console.warn('[catalog] Falling back to an empty deals product list:', error);
+    return [];
+  }
 }
 
 function mapProductDetail(product: RawProductDetail): ProductDetailData {
@@ -192,7 +199,10 @@ function mapProductDetail(product: RawProductDetail): ProductDetailData {
     netWeight: product.netWeight ? Number(product.netWeight) : null,
     volumetricWeight: product.volumetricWeight ? Number(product.volumetricWeight) : null,
     packageDimensions: product.packageDimensions ?? null,
-    compliance: product.compliance ?? null,
+    compliance:
+      product.compliance && typeof product.compliance === 'object' && !Array.isArray(product.compliance)
+        ? (product.compliance as Record<string, unknown>)
+        : null,
     category: product.category,
     images: product.images,
     inventory: product.inventory
@@ -224,11 +234,16 @@ function mapProductDetail(product: RawProductDetail): ProductDetailData {
 }
 
 export async function getProductDetail(productId: string): Promise<ProductDetailData | null> {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: productDetailInclude,
-  });
-  return product ? mapProductDetail(product) : null;
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: productDetailInclude,
+    });
+    return product ? mapProductDetail(product) : null;
+  } catch (error) {
+    console.warn('[catalog] Falling back to an unavailable product detail:', error);
+    return null;
+  }
 }
 
 export async function getRelatedProducts(options: {
@@ -236,18 +251,23 @@ export async function getRelatedProducts(options: {
   excludeProductId: string;
   limit: number;
 }): Promise<HomepageProduct[]> {
-  const products = await prisma.product.findMany({
-    where: {
-      status: 'PUBLISHED',
-      categoryId: options.categoryId,
-      NOT: { id: options.excludeProductId },
-    },
-    include: homepageProductInclude,
-    orderBy: { createdAt: 'desc' },
-    take: options.limit,
-  });
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'PUBLISHED',
+        categoryId: options.categoryId,
+        NOT: { id: options.excludeProductId },
+      },
+      include: homepageProductInclude,
+      orderBy: { createdAt: 'desc' },
+      take: options.limit,
+    });
 
-  return products.map(mapHomepageProduct);
+    return products.map(mapHomepageProduct);
+  } catch (error) {
+    console.warn('[catalog] Falling back to an empty related product list:', error);
+    return [];
+  }
 }
 
 async function resolveCategoryIds(categoryIdentifier: string) {
@@ -286,68 +306,87 @@ export async function getProductList(query: ProductListQuery): Promise<ProductLi
   const limit = Math.max(1, Math.min(100, query.limit ?? 10));
   const skip = (page - 1) * limit;
 
-  const filters: Prisma.ProductWhereInput[] = [{ status: 'PUBLISHED' }];
+  try {
+    const filters: Prisma.ProductWhereInput[] = [{ status: 'PUBLISHED' }];
 
-  if (query.search) {
-    filters.push({
-      OR: [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
-        { sku: { contains: query.search, mode: 'insensitive' } },
-        { tags: { has: query.search } },
-      ],
-    });
-  }
-
-  if (query.category && query.category !== 'all') {
-    const categoryIds = await resolveCategoryIds(query.category);
-    if (categoryIds.length > 0) {
-      filters.push({ categoryId: { in: categoryIds } });
+    if (query.search) {
+      filters.push({
+        OR: [
+          { name: { contains: query.search, mode: 'insensitive' } },
+          { description: { contains: query.search, mode: 'insensitive' } },
+          { sku: { contains: query.search, mode: 'insensitive' } },
+          { tags: { has: query.search } },
+        ],
+      });
     }
+
+    if (query.category && query.category !== 'all') {
+      const categoryIds = await resolveCategoryIds(query.category);
+      if (categoryIds.length > 0) {
+        filters.push({ categoryId: { in: categoryIds } });
+      }
+    }
+
+    const where: Prisma.ProductWhereInput = {
+      AND: filters,
+    };
+
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = query.sortOrder ?? (sortBy === 'createdAt' ? 'desc' : 'asc');
+    const orderBy: Prisma.ProductOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: homepageProductInclude,
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    const pagination: ProductListPagination = {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+      hasNext: page < Math.ceil(total / limit),
+      hasPrev: page > 1,
+    };
+
+    return {
+      products: products.map(mapHomepageProduct),
+      pagination,
+      appliedFilters: {
+        search: query.search,
+        category: query.category,
+        sortBy,
+        sortOrder,
+      },
+    };
+  } catch (error) {
+    console.warn('[catalog] Falling back to an empty product list:', error);
+    return {
+      products: [],
+      pagination: {
+        page,
+        limit,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+      appliedFilters: {
+        search: query.search,
+        category: query.category,
+        sortBy: query.sortBy ?? 'createdAt',
+        sortOrder: query.sortOrder ?? (query.sortBy === 'createdAt' || !query.sortBy ? 'desc' : 'asc'),
+      },
+    };
   }
-
-  const where: Prisma.ProductWhereInput = {
-    AND: filters,
-  };
-
-  const sortBy = query.sortBy ?? 'createdAt';
-  const sortOrder = query.sortOrder ?? (sortBy === 'createdAt' ? 'desc' : 'asc');
-  const orderBy: Prisma.ProductOrderByWithRelationInput = {
-    [sortBy]: sortOrder,
-  };
-
-  const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: homepageProductInclude,
-      orderBy,
-      skip,
-      take: limit,
-    }),
-    prisma.product.count({ where }),
-  ]);
-
-  const pagination: ProductListPagination = {
-    page,
-    limit,
-    total,
-    totalPages: Math.max(1, Math.ceil(total / limit)),
-    hasNext: page < Math.ceil(total / limit),
-    hasPrev: page > 1,
-  };
-
-  return {
-    products: products.map(mapHomepageProduct),
-    pagination,
-    appliedFilters: {
-      search: query.search,
-      category: query.category,
-      sortBy,
-      sortOrder,
-    },
-  };
 }
-
-
 
 

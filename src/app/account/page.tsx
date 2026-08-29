@@ -26,13 +26,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useStaticTranslations } from '@/hooks/use-i18n';
+import type { AccountStats } from '@/lib/account/stats';
+
+interface RecentOrder {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalAmount: string;
+  currency: string;
+  createdAt: string;
+}
 
 export default function AccountPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { t } = useStaticTranslations('account');
 
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<AccountStats>({
     totalOrders: 0,
     pendingOrders: 0,
     shippedOrders: 0,
@@ -40,6 +50,9 @@ export default function AccountPage() {
     wishlistCount: 0,
     addressCount: 0,
   });
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
 
   // 检查登录状态
   useEffect(() => {
@@ -53,17 +66,20 @@ export default function AccountPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // TODO: 调用实际API获取统计数据
-        setStats({
-          totalOrders: 12,
-          pendingOrders: 2,
-          shippedOrders: 3,
-          completedOrders: 7,
-          wishlistCount: 8,
-          addressCount: 3,
-        });
+        setStatsLoading(true);
+        setStatsError(false);
+        const response = await fetch('/api/user/summary');
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || '加载账户摘要失败');
+        }
+        setStats(data.data.stats);
+        setRecentOrders(data.data.recentOrders || []);
       } catch (error) {
         console.error('Failed to fetch stats:', error);
+        setStatsError(true);
+      } finally {
+        setStatsLoading(false);
       }
     };
 
@@ -301,15 +317,53 @@ export default function AccountPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-gray-500">
-              <Package className="mx-auto mb-2 h-12 w-12 text-gray-300" />
-              <p>{t('dashboard.recentOrders.empty')}</p>
-              <Link href="/products">
-                <Button variant="outline" className="mt-4">
-                  {t('dashboard.recentOrders.cta')}
+            {statsLoading ? (
+              <div className="space-y-3" aria-busy="true">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="skeleton-wave h-14 rounded" />
+                ))}
+              </div>
+            ) : statsError ? (
+              <div className="py-8 text-center text-gray-500">
+                <p>{t('dashboard.loadFailed')}</p>
+                <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+                  {t('dashboard.retry')}
                 </Button>
-              </Link>
-            </div>
+              </div>
+            ) : recentOrders.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                <Package className="mx-auto mb-2 h-12 w-12 text-gray-300" />
+                <p>{t('dashboard.recentOrders.empty')}</p>
+                <Link href="/products">
+                  <Button variant="outline" className="mt-4">
+                    {t('dashboard.recentOrders.cta')}
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {recentOrders.map((order) => (
+                  <Link
+                    key={order.id}
+                    href={`/account/orders/${order.id}`}
+                    className="flex items-center justify-between gap-4 py-3 transition-colors hover:bg-gray-50"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-gray-900">#{order.orderNumber}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">
+                        {order.currency} {Number(order.totalAmount).toFixed(2)}
+                      </p>
+                      <Badge variant="outline">{order.status}</Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -14,11 +14,12 @@ import { TawkToWidget } from '@/components/chat/tawk-to-widget';
 
 interface RootProvidersProps {
   children: React.ReactNode;
+  authEnabled: boolean;
 }
 
-export function RootProviders({ children }: RootProvidersProps) {
+export function RootProviders({ children, authEnabled }: RootProvidersProps) {
   return (
-    <AuthProvider>
+    <AuthProvider authEnabled={authEnabled}>
       {children}
       <Toaster position="top-right" richColors closeButton />
       {/* 购物车数据同步 */}

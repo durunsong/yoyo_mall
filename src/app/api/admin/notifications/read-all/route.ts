@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 /**
  * 标记所有通知为已读
@@ -18,12 +19,15 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    // TODO: 在实际应用中,应该在数据库中批量更新通知状态
-    // 当前为简化实现,直接返回成功
+    const updated = await prisma.userNotification.updateMany({
+      where: { userId: session.user.id, read: false },
+      data: { read: true, readAt: new Date() },
+    });
     
     return NextResponse.json({
       success: true,
       message: '已全部标记为已读',
+      count: updated.count,
     });
   } catch (error) {
     console.error('标记全部已读失败:', error);
@@ -33,4 +37,3 @@ export async function POST(_request: NextRequest) {
     );
   }
 }
-

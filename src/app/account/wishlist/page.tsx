@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useCartStore } from '@/store/cart-store';
 import { useStaticTranslations } from '@/hooks/use-i18n';
 import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-settings';
+import { addProductToServerCart } from '@/lib/cart/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -54,7 +55,7 @@ interface WishlistItem {
 export default function WishlistPage() {
   const router = useRouter();
   const { status } = useSession();
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const { t } = useStaticTranslations('account');
   const { t: tCommon } = useStaticTranslations('common');
   const { settings } = useSystemSettings();
@@ -63,6 +64,7 @@ export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+  const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
 
   // 检查登录状态
   useEffect(() => {
@@ -129,6 +131,7 @@ export default function WishlistPage() {
 
   // 添加到购物车
   const handleAddToCart = async (item: WishlistItem) => {
+    if (addingIds.has(item.id)) return;
     try {
       const inStock = item.product.inventory && item.product.inventory.quantity > 0;
       
@@ -137,8 +140,10 @@ export default function WishlistPage() {
         return;
       }
 
-      // 构造完整的购物车项目
+      setAddingIds((prev) => new Set(prev).add(item.id));
+      const serverItem = await addProductToServerCart(item.product.id) as { id?: string } | undefined;
       addItem({
+        id: serverItem?.id,
         productId: item.product.id,
         quantity: 1,
         price: parseFloat(item.product.price.toString()),
@@ -147,9 +152,16 @@ export default function WishlistPage() {
       });
 
       toast.success(t('wishlist.toasts.addedToCart'));
+      openCart();
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      toast.error(t('wishlist.toasts.addFailed'));
+      toast.error(error instanceof Error ? error.message : t('wishlist.toasts.addFailed'));
+    } finally {
+      setAddingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
     }
   };
 
@@ -305,10 +317,14 @@ export default function WishlistPage() {
                   <Button
                     className="w-full mt-4"
                     onClick={() => handleAddToCart(item)}
-                    disabled={!inStock}
+                    disabled={!inStock || addingIds.has(item.id)}
                   >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    {t('wishlist.addToCart')}
+                    {addingIds.has(item.id) ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                    )}
+                    {addingIds.has(item.id) ? t('wishlist.addingToCart') : t('wishlist.addToCart')}
                   </Button>
                 </CardContent>
               </Card>
@@ -328,4 +344,3 @@ export default function WishlistPage() {
     </div>
   );
 }
-

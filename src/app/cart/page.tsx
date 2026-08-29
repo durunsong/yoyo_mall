@@ -32,6 +32,7 @@ import { useSystemSettings, getCurrencySymbol } from '@/hooks/use-system-setting
 import {
   calculateShippingAmount,
   calculateTaxAmount,
+  calculateCheckoutTotals,
   SHIPPING_FREE_THRESHOLD,
 } from '@/lib/pricing';
 
@@ -75,8 +76,12 @@ export default function CartPage() {
   const shippingThreshold = SHIPPING_FREE_THRESHOLD;
   const shipping = calculateShippingAmount(subtotal);
   const tax = calculateTaxAmount(subtotal);
-  const discount = coupon?.discount ?? 0;
-  const total = subtotal + shipping + tax - discount;
+  const { discount, total } = calculateCheckoutTotals({
+    subtotal,
+    shipping,
+    tax,
+    discount: coupon?.discount,
+  });
 
   // 应用优惠券
   const handleApplyCoupon = async () => {

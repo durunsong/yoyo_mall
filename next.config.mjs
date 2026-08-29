@@ -1,18 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ESLint 配置
-  // TODO: 修复所有 ESLint 错误后改为 false
-  eslint: {
-    ignoreDuringBuilds: true, // 暂时忽略构建时的 ESLint 检查
-  },
-  
-  // TypeScript 配置
-  // 注意: Next.js 15 params 现在是 Promise 类型,需要异步处理
-  // TODO: 修复所有 params 相关的类型错误后改为 false
-  typescript: {
-    ignoreBuildErrors: true, // 暂时忽略构建错误
-  },
-
   // 图片优化配置
   images: {
     // 支持的图片域名

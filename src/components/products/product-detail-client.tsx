@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Loader2,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
@@ -36,6 +37,7 @@ import { getCurrencySymbol } from '@/hooks/use-system-settings';
 import { createTranslator, type TranslationDictionary } from '@/lib/i18n/dictionary';
 import type { HomepageProduct, ProductDetailData } from '@/types/product';
 import type { SystemSettings } from '@/lib/settings/system-settings';
+import { addProductToServerCart } from '@/lib/cart/client';
 
 const PLACEHOLDER_IMAGE =
   'https://next-static-oss.oss-cn-shanghai.aliyuncs.com/placeholder.png';
@@ -86,7 +88,7 @@ export function ProductDetailClient({
   const tCommon = useMemo(() => createTranslator(translations.common), [translations.common]);
   const { data: session } = useSession();
   const effectiveSessionUser = session?.user ?? sessionUser;
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const wishlistItems = useWishlistStore((state) => state.items);
   const addWishlistItem = useWishlistStore((state) => state.addItem);
   const removeWishlistItem = useWishlistStore((state) => state.removeItem);
@@ -104,6 +106,8 @@ export function ProductDetailClient({
   const [hoveredThumbnail, setHoveredThumbnail] = useState<number | null>(null);
   const [hoveredPreviewIndex, setHoveredPreviewIndex] = useState<number | null>(null);
   const [wishlistLoadingId, setWishlistLoadingId] = useState<string | null>(null);
+  const [cartLoadingId, setCartLoadingId] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [realtimeData, setRealtimeData] = useState<RealtimeProductSnapshot | null>(null);
   const [realtimeError, setRealtimeError] = useState<string | null>(null);
 
@@ -311,25 +315,20 @@ useEffect(() => {
 
   const handleAddToCart = async () => {
     if (!derivedInStock) return;
+    if (addingToCart) return;
     if (!effectiveSessionUser) {
       openModal('login');
       toast.info(tProduct('addToCartLogin') || '请先登录后再添加到购物车');
       return;
     }
+    setAddingToCart(true);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const serverItem = await addProductToServerCart(product.id, quantity) as { id?: string } | undefined;
+      if (serverItem) {
         const imageUrl =
           product.images?.[selectedImage]?.url || product.images?.[0]?.url || PLACEHOLDER_IMAGE;
         addItem({
+          id: serverItem.id,
           productId: product.id,
           quantity,
           price: derivedPrice,
@@ -337,12 +336,15 @@ useEffect(() => {
           image: imageUrl,
         });
         toast.success(tProduct('addedToCart') || '已添加到购物车');
+        openCart();
       } else {
-        toast.error(data.message || tProduct('addToCartFailed') || '添加失败');
+        toast.error(tProduct('addToCartFailed') || '添加失败');
       }
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error(tProduct('addToCartFailed') || '添加失败');
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -399,34 +401,40 @@ useEffect(() => {
     }
   };
 
-  const handleRelatedAddToCart = async (item: HomepageProduct) => {
+  const handleRelatedAddToCart = async (item: {
+    id: string;
+    name: string;
+    price: number;
+    image?: string;
+  }) => {
+    if (cartLoadingId) return;
     if (!effectiveSessionUser) {
       openModal('login');
       toast.info(tProduct('addToCartLogin') || '请先登录后再添加到购物车');
       return;
     }
+    setCartLoadingId(item.id);
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: item.id, quantity: 1 }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const serverItem = await addProductToServerCart(item.id) as { id?: string } | undefined;
+      if (serverItem) {
         addItem({
+          id: serverItem.id,
           productId: item.id,
           quantity: 1,
           price: item.price,
           name: item.name,
-          image: item.image || item.images?.[0]?.url || PLACEHOLDER_IMAGE,
+          image: item.image || PLACEHOLDER_IMAGE,
         });
         toast.success(tProduct('addedToCart') || '已添加到购物车');
+        openCart();
       } else {
-        toast.error(data.message || '添加失败');
+        toast.error('添加失败');
       }
     } catch (error) {
       console.error('Add to cart failed:', error);
       toast.error('添加失败，请重试');
+    } finally {
+      setCartLoadingId(null);
     }
   };
 
@@ -912,10 +920,10 @@ useEffect(() => {
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={!derivedInStock}
+                disabled={!derivedInStock || addingToCart}
               >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                {tProduct('addToCart') || 'Add to Cart'}
+                {addingToCart ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShoppingCart className="mr-2 h-5 w-5" />}
+                {addingToCart ? (tProduct('addingToCart') || '正在加入...') : (tProduct('addToCart') || 'Add to Cart')}
               </Button>
               <Button
                 size="lg"
@@ -1073,6 +1081,7 @@ useEffect(() => {
                   onAddToWishlist={handleRelatedWishlist}
                   isWishlisted={wishlistItems.some((item) => item.productId === relProduct.id)}
                   wishlistLoading={wishlistLoadingId === relProduct.id}
+                  addToCartLoading={cartLoadingId === relProduct.id}
                 />
               ))}
             </div>
@@ -1169,5 +1178,3 @@ useEffect(() => {
     </div>
   );
 }
-
-

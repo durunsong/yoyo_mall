@@ -121,7 +121,9 @@
     "browse": "浏览商品"
   },
   "addToCart": "加入购物车",
+  "addingToCart": "正在加入...",
   "addToWishlist": "添加到心愿单",
+  "removeFromWishlist": "移除心愿单",
   "outOfStock": "暂时缺货",
   "inStock": "有货",
   "featured": "精选",
