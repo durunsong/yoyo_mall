@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useStaticTranslations } from '@/hooks/use-i18n';
+import { getAnnouncementContentStyle } from '@/lib/layout/announcement';
 
 type AnnouncementActionType = 'NONE' | 'URL' | 'OPEN_LOGIN_MODAL' | 'OPEN_REGISTER_MODAL';
 
@@ -195,6 +196,7 @@ export function AnnouncementBar() {
       <div 
         key={key}
         className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-4 text-center text-sm md:text-base"
+        style={getAnnouncementContentStyle(height)}
       >
         {announcement.imageUrl ? (
           <img
