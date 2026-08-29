@@ -98,9 +98,9 @@ export default function OrderDetailPage() {
   if (sessionStatus === 'loading' || loading) {
     return (
       <div className="container mx-auto max-w-4xl space-y-6 px-4 py-8" aria-busy="true">
-        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-32 animate-pulse rounded-lg bg-muted" />
-        <div className="h-64 animate-pulse rounded-lg bg-muted" />
+        <div className="skeleton-wave h-8 w-48 rounded" />
+        <div className="skeleton-wave h-32 rounded-lg" />
+        <div className="skeleton-wave h-64 rounded-lg" />
       </div>
     );
   }

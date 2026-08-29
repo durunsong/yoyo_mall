@@ -43,7 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, Plus, GripVertical, Trash2, Save, Eye, Settings, Package, Grid3x3, Image, Tag } from 'lucide-react';
+import { Loader2, Plus, GripVertical, Trash2, Save, Eye, Settings, Package, Grid3x3, Image, Tag, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   HomePageModule,
@@ -887,7 +887,10 @@ export default function HomeConfigPage() {
             {/* 使用提示 */}
             <Card className="mt-4 border-green-200 bg-green-50">
               <CardHeader>
-                <CardTitle className="text-sm text-green-800">💡 使用提示</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-sm text-green-800">
+                  <Lightbulb className="h-4 w-4" aria-hidden="true" />
+                  使用提示
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-xs text-green-700">
                 <p>• 商品模块支持多种数据源和布局</p>

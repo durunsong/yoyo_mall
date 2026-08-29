@@ -343,28 +343,28 @@ export default function OrdersPage() {
                 <CardHeader className="bg-gray-50 py-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-2">
-                      <div className="h-4 w-40 rounded bg-gray-200 animate-pulse" />
-                      <div className="h-3 w-32 rounded bg-gray-100 animate-pulse" />
+                      <div className="skeleton-wave h-4 w-40 rounded" />
+                      <div className="skeleton-wave h-3 w-32 rounded" />
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="space-y-2 text-right">
-                        <div className="h-3 w-20 rounded bg-gray-100 animate-pulse" />
-                        <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
+                        <div className="skeleton-wave h-3 w-20 rounded" />
+                        <div className="skeleton-wave h-6 w-24 rounded" />
                       </div>
-                      <div className="h-9 w-24 rounded bg-gray-100 animate-pulse" />
+                      <div className="skeleton-wave h-9 w-24 rounded" />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 p-6">
                   {Array.from({ length: 2 }).map((_, itemIndex) => (
                     <div key={itemIndex} className="flex gap-4">
-                      <div className="h-16 w-16 rounded-md bg-gray-100 animate-pulse" />
+                      <div className="skeleton-wave h-16 w-16 rounded-md" />
                       <div className="flex flex-1 items-center justify-between">
                         <div className="space-y-2">
-                          <div className="h-4 w-32 rounded bg-gray-100 animate-pulse" />
-                          <div className="h-3 w-24 rounded bg-gray-100 animate-pulse" />
+                          <div className="skeleton-wave h-4 w-32 rounded" />
+                          <div className="skeleton-wave h-3 w-24 rounded" />
                         </div>
-                        <div className="h-4 w-16 rounded bg-gray-100 animate-pulse" />
+                        <div className="skeleton-wave h-4 w-16 rounded" />
                       </div>
                     </div>
                   ))}

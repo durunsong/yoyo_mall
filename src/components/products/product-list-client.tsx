@@ -306,10 +306,10 @@ export function ProductsPageClient({
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" aria-hidden="true">
           {Array.from({ length: effectiveLimit }).map((_, index) => (
             <div key={index} className="overflow-hidden rounded-lg bg-card shadow-none">
-              <div className="aspect-square animate-pulse bg-muted" />
+              <div className="skeleton-wave aspect-square" />
               <div className="space-y-3 p-4">
-                <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
-                <div className="h-6 w-2/5 animate-pulse rounded bg-muted" />
+                <div className="skeleton-wave h-4 w-4/5 rounded" />
+                <div className="skeleton-wave h-6 w-2/5 rounded" />
               </div>
             </div>
           ))}
